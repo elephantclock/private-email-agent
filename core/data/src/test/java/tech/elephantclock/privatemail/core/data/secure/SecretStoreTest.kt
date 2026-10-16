@@ -88,4 +88,22 @@ class SecretStoreTest {
         keys.delete("pea.secret.acc-a")
         assertEquals(StoredSecret.NeedsReentry, store.get(a))
     }
+
+    @Test
+    fun `the account id is bound to the ciphertext even if two accounts shared a key`() {
+        val shared = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        val oneKey =
+            object : SecretKeys {
+                override fun get(alias: String) = shared
+
+                override fun getOrCreate(alias: String) = shared
+
+                override fun delete(alias: String) = Unit
+            }
+        val sharedStore = SecretStore(prefs, oneKey)
+        sharedStore.put(a, Password("pw-a"))
+        prefs.edit().putString(b.value, prefs.getString(a.value, null)).commit()
+        assertEquals(StoredSecret.NeedsReentry, sharedStore.get(b))
+        assertEquals(StoredSecret.Found(Password("pw-a")), sharedStore.get(a))
+    }
 }

@@ -9,6 +9,7 @@ android {
     defaultConfig {
         minSdk = 31
         consumerProguardFiles("consumer-rules.pro")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -28,6 +29,13 @@ android {
         }
     }
 
+    packaging {
+        resources {
+            // The test APK bundles Angus Mail; its jars each ship these.
+            excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md")
+        }
+    }
+
     lint {
         warningsAsErrors = true
     }
@@ -41,4 +49,7 @@ dependencies {
     testImplementation(libs.junit4)
     testImplementation(libs.greenmail)
     testImplementation(libs.mockwebserver)
+
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }
