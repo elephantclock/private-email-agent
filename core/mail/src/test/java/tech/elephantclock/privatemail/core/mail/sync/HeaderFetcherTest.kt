@@ -174,4 +174,38 @@ class HeaderFetcherTest {
 
         assertEquals("Café crème brûlée", bySubject.getValue("Latin").body.textPreview)
     }
+
+    @Test
+    fun `one malformed message degrades to an empty preview and never stalls the folder`() {
+        folder("INBOX").apply {
+            add(SyncFixtures.plain(1))
+            add(SyncFixtures.hostileBase64())
+            add(SyncFixtures.plain(2))
+        }
+        val batch = fetcher.sync(connect(), account, "INBOX", null)
+        assertEquals(3, batch.messages.size)
+        assertEquals(3L, batch.state.highestUid)
+        val hostile = batch.messages.single { it.header.subject == "Hostile" }
+        assertTrue(hostile.body.textPreview.length <= 5)
+        assertEquals(
+            "Hello number 2",
+            batch.messages
+                .single { it.header.subject == "Plain 2" }
+                .body.textPreview,
+        )
+    }
+
+    @Test
+    fun `undeclared UTF-8 and every Authentication-Results instance in order`() {
+        folder("INBOX").apply {
+            add(SyncFixtures.undeclaredUtf8())
+            add(SyncFixtures.twoAuthResults())
+        }
+        val bySubject = fetcher.sync(connect(), account, "INBOX", null).messages.associateBy { it.header.subject }
+        assertEquals("Grüße aus Köln", bySubject.getValue("Undeclared").body.textPreview)
+        assertEquals(
+            listOf("mx.localhost; dmarc=fail", "forged.example; dmarc=pass"),
+            bySubject.getValue("Auth").header.headers["authentication-results"],
+        )
+    }
 }

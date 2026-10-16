@@ -44,4 +44,24 @@ class SnippetDecoderTest {
         assertEquals("Hi there\nLine&two\nthree", text)
         assertFalse(text.contains("evil"))
     }
+
+    @Test
+    fun `undeclared 8-bit text is tried as UTF-8, then Windows-1252`() {
+        assertEquals("Grüße", SnippetDecoder.decode("Grüße".toByteArray(), "8bit", null, false, true))
+        assertEquals("Grüße", SnippetDecoder.decode("Grüße".toByteArray(), "8bit", "US-ASCII", false, true))
+        assertEquals(
+            "Café €5",
+            SnippetDecoder.decode("Café €5".toByteArray(charset("windows-1252")), "8bit", null, false, true),
+        )
+        assertEquals(
+            "Café",
+            SnippetDecoder.decode("Café".toByteArray(Charsets.ISO_8859_1), "8bit", "iso-8859-1", false, true),
+        )
+    }
+
+    @Test
+    fun `base64 with raw high bytes does not throw`() {
+        val raw = "SGVsbG8=".toByteArray() + byteArrayOf(0xC3.toByte(), 0xA9.toByte())
+        assertEquals("Hello", SnippetDecoder.decode(raw, "base64", "utf-8", false, complete = true))
+    }
 }

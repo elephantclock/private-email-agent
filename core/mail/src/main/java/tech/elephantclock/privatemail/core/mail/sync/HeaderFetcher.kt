@@ -72,7 +72,8 @@ class HeaderFetcher(
                     }.filter { resume == null || it.header.ref.uid > resume.highestUid }
             // On a fresh sync every UID below UIDNEXT was considered, including older mail outside
             // the window that was appended later (higher UID, old date); don't fetch it next time.
-            val considered = if (resume == null) uidNext - 1 else resume.highestUid
+            // A server that omits UIDNEXT gives -1: then only what was fetched counts.
+            val considered = resume?.highestUid ?: (if (uidNext > 0) uidNext - 1 else 0L)
             val highest = (fetched.map { it.header.ref.uid } + considered).max()
             return SyncBatch(SyncState(accountId, folderPath, uidValidity, highest, clock()), fetched, reset)
         } finally {

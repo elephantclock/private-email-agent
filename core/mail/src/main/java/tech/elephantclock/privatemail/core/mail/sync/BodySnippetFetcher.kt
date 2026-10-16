@@ -35,7 +35,9 @@ object BodySnippetFetcher {
                 val protocol = p as IMAPProtocol
                 val structures =
                     items(protocol.fetch(sets(sequenceNumbers), "BODYSTRUCTURE"), BODYSTRUCTURE::class.java)
-                        .mapValues { (_, bs) -> MimeTree.from(bs) }
+                        // A structure we can't make sense of means no preview for that message, not a failed batch.
+                        .mapNotNull { (n, bs) -> runCatching { MimeTree.from(bs) }.getOrNull()?.let { n to it } }
+                        .toMap()
                 val textParts = structures.mapNotNull { (n, root) -> MimeTree.textPart(root)?.let { n to it } }.toMap()
                 val bodies = mutableMapOf<Int, ByteArray>()
                 textParts.entries.groupBy({ it.value.section }, { it.key }).forEach { (section, numbers) ->
@@ -54,19 +56,20 @@ object BodySnippetFetcher {
                         Snippet(root, "", truncated = false, sourceMimeType = "text/plain")
                     } else {
                         val complete = raw.size < SNIPPET_BYTES
-                        Snippet(
-                            structure = root,
-                            text =
+                        // Decoding is pure; a hostile body yields an empty preview and the batch goes on.
+                        val text =
+                            try {
                                 SnippetDecoder.decode(
                                     raw,
                                     part.encoding,
                                     part.params["charset"],
                                     part.subtype.equals("html", true),
                                     complete,
-                                ),
-                            truncated = !complete,
-                            sourceMimeType = part.mimeType,
-                        )
+                                )
+                            } catch (_: RuntimeException) {
+                                ""
+                            }
+                        Snippet(structure = root, text = text, truncated = !complete, sourceMimeType = part.mimeType)
                     }
                 }
             }

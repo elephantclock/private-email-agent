@@ -101,4 +101,30 @@ object SyncFixtures {
         }
 
     fun encodedSubject() = MimeUtility.encodeText("Шоп Sender", "UTF-8", "B")
+
+    /** Built from raw bytes so JavaMail can't re-encode it: "base64" body with raw 0xC3 0xA9 bytes in it. */
+    fun hostileBase64(): MimeMessage {
+        val head =
+            "From: x@evil.example\r\nTo: tester@localhost\r\nSubject: Hostile\r\nMIME-Version: 1.0\r\n" +
+                "Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+        val body = "SGVsbG8=".toByteArray() + byteArrayOf(0xC3.toByte(), 0xA9.toByte()) + "\r\n".toByteArray()
+        return MimeMessage(session, (head.toByteArray() + body).inputStream())
+    }
+
+    /** No charset parameter, but the bytes are UTF-8 (common in real mail). */
+    fun undeclaredUtf8(): MimeMessage {
+        val head =
+            "From: x@shop.example\r\nTo: tester@localhost\r\nSubject: Undeclared\r\nMIME-Version: 1.0\r\n" +
+                "Content-Type: text/plain\r\nContent-Transfer-Encoding: 8bit\r\n\r\n"
+        return MimeMessage(session, (head.toByteArray() + "Grüße aus Köln".toByteArray(Charsets.UTF_8)).inputStream())
+    }
+
+    /** A sender-forged Authentication-Results below the receiving server's real one. */
+    fun twoAuthResults() =
+        base("Auth").apply {
+            setText("x", "UTF-8")
+            addHeader("Authentication-Results", "mx.localhost; dmarc=fail")
+            addHeader("Authentication-Results", "forged.example; dmarc=pass")
+            saveChanges()
+        }
 }
