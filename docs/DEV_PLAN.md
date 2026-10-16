@@ -369,7 +369,7 @@ These build on the `XOAUTH2` extension point from T11. Until then, Gmail works w
 
 | Task | Title | State | Date | Commit |
 |---|---|---|---|---|
-| T00 | Toolchain and emulators | todo | | |
+| T00 | Toolchain and emulators | done | 2026-10-16 | see Log |
 | T01 | Project skeleton and CI | todo | | |
 | T02 | Theme and components | todo | | |
 | T10 | Domain model | todo | | |
@@ -422,3 +422,4 @@ Order: top to bottom of this table, i.e. phases 0 → 1 → 2 → 3 → 4 → 5 
 |---|---|---|
 | 2026-10-16 | — | Plan written. Environment checked (see § 1). |
 | 2026-10-16 | — | Re-prioritised: IMAP/SMTP auth (T11) and account setup (T15) moved up; Google/Microsoft sign-in moved to phase 7 after the beta. |
+| 2026-10-16 | T00 | Installed API 36 `google_apis` arm64 image (r07) and platform-tools r37.0.1. AVDs `Fold` (`pixel_9_pro_fold`) and `Phone` (`pixel_9`), API 36. Fold boots headless: opened 2076x2152, closed (`cmd device_state state 0`) 1080x2424; states CLOSED/HALF_OPENED/OPENED/REAR_DISPLAY. Phone 1080x2424. `sdkmanager`/`avdmanager` print a harmless `test: integer expression expected` on line 173. |
