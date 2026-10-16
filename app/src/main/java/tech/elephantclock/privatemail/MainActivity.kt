@@ -15,13 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import tech.elephantclock.privatemail.ui.theme.PrivateMailTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            PrivateMailTheme {
                 PlaceholderScreen()
             }
         }
@@ -43,5 +44,5 @@ fun PlaceholderScreen(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun PlaceholderScreenPreview() {
-    MaterialTheme { PlaceholderScreen() }
+    PrivateMailTheme { PlaceholderScreen() }
 }

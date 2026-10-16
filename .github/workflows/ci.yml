@@ -24,7 +24,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Check, lint and unit tests
-        run: ./gradlew spotlessCheck lint unitTest assembleDebug --console=plain
+        run: ./gradlew spotlessCheck lint unitTest :app:verifyRoborazziDebug assembleDebug --console=plain
 
       - name: Upload reports on failure
         if: failure()
