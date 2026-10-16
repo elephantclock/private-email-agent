@@ -15,14 +15,28 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    testOptions {
+        unitTests.all {
+            // GreenMail's TLS servers read their certificate once per JVM from these properties.
+            val keystore = file("src/test/resources/tls/localhost.p12").absolutePath
+            it.systemProperty("greenmail.tls.keystore.file", keystore)
+            it.systemProperty("greenmail.tls.keystore.password", "changeit")
+            it.systemProperty("greenmail.tls.key.password", "changeit")
+            // Real-server check (T11 [USER]); skipped unless set.
+            System.getenv("PEA_LIVE_CHECK")?.let { value -> it.systemProperty("pea.liveCheck", value) }
+        }
+    }
+
     lint {
         warningsAsErrors = true
     }
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    api(project(":core:model"))
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.angus.mail)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.greenmail)
 }

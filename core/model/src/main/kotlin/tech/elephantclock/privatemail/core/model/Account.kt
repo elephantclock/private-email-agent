@@ -15,8 +15,9 @@ value class AccountId(
     override fun toString() = value
 }
 
+/** How a connection is encrypted. There is deliberately no plain-text option. */
 @Serializable
-enum class ConnectionSecurity { SSL_TLS, STARTTLS, NONE }
+enum class ConnectionSecurity { SSL_TLS, STARTTLS }
 
 @Serializable
 enum class AuthType { PASSWORD, OAUTH2 }

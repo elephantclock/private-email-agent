@@ -47,6 +47,13 @@ android {
         }
     }
 
+    packaging {
+        resources {
+            // Angus Mail and Jakarta APIs each ship these; keep META-INF/javamail.* (provider lists).
+            excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md")
+        }
+    }
+
     lint {
         warningsAsErrors = true
     }

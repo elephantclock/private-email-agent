@@ -63,6 +63,7 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 greenmail-junit5 = { module = "com.icegreen:greenmail-junit5", version.ref = "greenmail" }
+greenmail = { module = "com.icegreen:greenmail", version.ref = "greenmail" }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 roborazzi-junit-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
