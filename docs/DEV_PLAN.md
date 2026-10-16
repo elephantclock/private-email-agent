@@ -369,8 +369,8 @@ These build on the `XOAUTH2` extension point from T11. Until then, Gmail works w
 
 | Task | Title | State | Date | Commit |
 |---|---|---|---|---|
-| T00 | Toolchain and emulators | done | 2026-10-16 | see Log |
-| T01 | Project skeleton and CI | todo | | |
+| T00 | Toolchain and emulators | done | 2026-10-16 | d790a2a |
+| T01 | Project skeleton and CI | done | 2026-10-16 | f7f6a66 |
 | T02 | Theme and components | todo | | |
 | T10 | Domain model | todo | | |
 | T11 | IMAP and SMTP authentication (priority) | todo | | |
@@ -423,3 +423,4 @@ Order: top to bottom of this table, i.e. phases 0 → 1 → 2 → 3 → 4 → 5 
 | 2026-10-16 | — | Plan written. Environment checked (see § 1). |
 | 2026-10-16 | — | Re-prioritised: IMAP/SMTP auth (T11) and account setup (T15) moved up; Google/Microsoft sign-in moved to phase 7 after the beta. |
 | 2026-10-16 | T00 | Installed API 36 `google_apis` arm64 image (r07) and platform-tools r37.0.1. AVDs `Fold` (`pixel_9_pro_fold`) and `Phone` (`pixel_9`), API 36. Fold boots headless: opened 2076x2152, closed (`cmd device_state state 0`) 1080x2424; states CLOSED/HALF_OPENED/OPENED/REAR_DISPLAY. Phone 1080x2424. `sdkmanager`/`avdmanager` print a harmless `test: integer expression expected` on line 173. |
+| 2026-10-16 | T01 | Versions: AGP 9.4.1, Gradle 9.8.1, Kotlin 2.4.21, KSP 2.3.12, Compose BOM 2026.09.00, M3 Adaptive 1.3.0, Hilt 2.60.1, androidx.hilt 1.4.0, Room 2.8.5, WorkManager 2.12.0, Angus Mail 2.0.5, ML Kit GenAI prompt 1.0.0-beta4 / summarization, rewriting, proofreading 1.0.0-beta1 (no stable yet), GreenMail 2.1.14, Roborazzi 1.76.0, Spotless 8.10.4, ktlint 1.8.0, JUnit 6.1.3 (Jupiter) + JUnit 4.13.2, Robolectric 4.17, Turbine 1.2.1, coroutines 1.11.0. **compileSdk/targetSdk 37** (not 36): Compose 1.12 requires it; installed `platforms;android-37.0`. AGP 9 compiles Kotlin itself (no `kotlin-android` plugin). Hilt, KSP, Room, Roborazzi pinned but not applied yet; untested with AGP 9. `:benchmark` deferred to T60. Root `unitTest` task runs JVM `test` + Android `testDebugUnitTest` (the latter alone skips `:core:model`/`:core:triage`). Homebrew Gradle 9.0 can't load AGP 9.4, so the wrapper was generated in an empty dir. Launch on `Phone` AVD OK (1.4 s). CI green: run 38935416266. |
