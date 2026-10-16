@@ -36,6 +36,11 @@ data class LearnedRuleEntity(
     val vip: Boolean,
     val createdAtMillis: Long,
 ) {
+    init {
+        // copy(accountId = …) would otherwise keep a stale scope.
+        require(scope == (accountId ?: ALL_ACCOUNTS)) { "scope must match accountId" }
+    }
+
     companion object {
         const val ALL_ACCOUNTS = "*"
     }

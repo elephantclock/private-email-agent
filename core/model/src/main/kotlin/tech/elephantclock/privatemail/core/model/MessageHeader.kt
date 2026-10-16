@@ -38,6 +38,7 @@ data class MessageRef(
     }
 }
 
+/** Append only: the database stores these as bits by ordinal. */
 @Serializable
 enum class MessageFlag { SEEN, ANSWERED, FLAGGED, DRAFT, DELETED }
 

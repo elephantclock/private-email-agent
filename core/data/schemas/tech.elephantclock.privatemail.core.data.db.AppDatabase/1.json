@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "ba95b25511879897f173788ae1323dfb",
+    "identityHash": "1c41fdcc2464c57035a909f4eea8ab8b",
     "entities": [
       {
         "tableName": "accounts",
@@ -406,7 +406,7 @@
       },
       {
         "tableName": "messages_fts",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`subject` TEXT NOT NULL, `fromName` TEXT, `fromEmail` TEXT, `snippet` TEXT NOT NULL, content=`messages`)",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`subject` TEXT NOT NULL, `fromName` TEXT, `fromEmail` TEXT, `snippet` TEXT NOT NULL, tokenize=unicode61, content=`messages`)",
         "fields": [
           {
             "fieldPath": "subject",
@@ -437,7 +437,7 @@
         },
         "ftsVersion": "FTS4",
         "ftsOptions": {
-          "tokenizer": "simple",
+          "tokenizer": "unicode61",
           "tokenizerArgs": [],
           "contentTable": "messages",
           "languageIdColumnName": "",
@@ -781,7 +781,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ba95b25511879897f173788ae1323dfb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c41fdcc2464c57035a909f4eea8ab8b')"
     ]
   }
 }

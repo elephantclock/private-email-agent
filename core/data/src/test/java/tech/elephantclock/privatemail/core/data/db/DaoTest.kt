@@ -166,6 +166,16 @@ class DaoTest {
             assertEquals(listOf(invoice), ids("invoi"))
             assertEquals(listOf(invoice), ids("INVOICE october"))
             assertEquals(listOf(russian), ids("опла"))
+            // Capitalised non-ASCII words must match in any case (FTS4's "simple" tokenizer folds ASCII only).
+            assertEquals(listOf(russian), ids("заказ"))
+            assertEquals(listOf(russian), ids("Заказ"))
+            val anna =
+                insert(
+                    DbFixtures.entity(4, subject = "Привет", from = "anna@ru.example", fromName = "Анна Петрова"),
+                ).single()
+            assertEquals(listOf(anna), ids("анна"))
+            val koeln = insert(DbFixtures.entity(5, subject = "Grüße aus Köln")).single()
+            assertEquals(listOf(koeln), ids("koln"))
             assertEquals(listOf(sender), ids("schmidt"))
             assertEquals(listOf(sender), ids("anna@partner"))
             assertEquals(emptyList<Long>(), ids("invoice hello"))
@@ -247,4 +257,33 @@ class DaoTest {
     fun `schema is exported for migrations`() {
         assertTrue(File("schemas/tech.elephantclock.privatemail.core.data.db.AppDatabase/1.json").exists())
     }
+
+    @Test
+    fun `flag bits are pinned to MessageFlag order`() {
+        assertEquals(
+            listOf("SEEN", "ANSWERED", "FLAGGED", "DRAFT", "DELETED"),
+            tech.elephantclock.privatemail.core.model.MessageFlag.entries
+                .map { it.name },
+        )
+        assertEquals(0b10101, setOf(MessageFlagAlias.SEEN, MessageFlagAlias.FLAGGED, MessageFlagAlias.DELETED).toBits())
+    }
+
+    @Test
+    fun `learned rule scope can't go stale`() {
+        val global =
+            LearnedRuleEntity(
+                accountId = null,
+                matcherType = MatcherType.DOMAIN,
+                matcherValue = "a.com",
+                action = VerdictAction.FILE,
+                targetRole = FolderRole.REPORTS,
+                targetCustomName = null,
+                vip = false,
+                createdAtMillis = 1,
+            )
+        assertEquals("*", global.scope)
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) { global.copy(accountId = "acc-1") }
+    }
 }
+
+private typealias MessageFlagAlias = tech.elephantclock.privatemail.core.model.MessageFlag
