@@ -40,8 +40,10 @@ class PinningTrustManager(
         authType: String,
         socket: Socket?,
     ) {
+        // Only the name the client asked for counts. Never fall back to reverse DNS of the peer IP:
+        // whoever controls that IP controls its PTR record.
         val session = (socket as? SSLSocket)?.handshakeSession
-        verify(chain, authType, session?.peerHost ?: socket?.inetAddress?.hostName, session?.peerPort ?: -1)
+        verify(chain, authType, session?.peerHost, session?.peerPort ?: -1)
     }
 
     override fun checkServerTrusted(
@@ -61,7 +63,7 @@ class PinningTrustManager(
         host: String?,
         port: Int,
     ) {
-        if (host == null) throw CertificateException("Server host unknown; refusing to trust")
+        if (host == null || port <= 0) throw CertificateException("Server host or port unknown; refusing to trust")
         val leaf = chain.firstOrNull() ?: throw CertificateException("Empty certificate chain")
         if (pins.isPinned(host, port, sha256Fingerprint(leaf))) return
 

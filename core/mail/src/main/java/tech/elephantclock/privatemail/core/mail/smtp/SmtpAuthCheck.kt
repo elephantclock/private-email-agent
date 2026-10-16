@@ -34,7 +34,8 @@ class SmtpAuthCheck(
         return try {
             transport.connect(server.host, server.port, credentials.username, credentials.password.reveal())
             // Angus skips AUTH silently when the server doesn't offer it; that would "pass" unchecked.
-            if ((transport as SMTPTransport).supportsExtension("AUTH")) {
+            val smtp = transport as SMTPTransport
+            if (smtp.supportsExtension("AUTH") || smtp.supportsExtension("AUTH=LOGIN")) {
                 MailResult.Ok(Unit)
             } else {
                 MailResult.Failed(AuthError.AuthMethodNotSupported("Server offers no AUTH; credentials not checked"))
