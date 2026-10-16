@@ -1,0 +1,37 @@
+name: Request early access
+description: Join the waitlist for the Private Email Agent beta.
+title: "Early access: "
+labels: ["early-access"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in Private Email Agent. Issues on this repository are **public**, so please don't include your email address or anything confidential. We'll reply here to continue privately.
+  - type: input
+    id: phone
+    attributes:
+      label: Phone model
+      placeholder: e.g. Galaxy Z Fold7
+    validations:
+      required: true
+  - type: checkboxes
+    id: providers
+    attributes:
+      label: Email providers you use
+      options:
+        - label: Gmail / Google Workspace
+        - label: Outlook / Microsoft 365
+        - label: Other IMAP (company or hosting provider)
+  - type: dropdown
+    id: volume
+    attributes:
+      label: Emails you receive per day
+      options:
+        - Under 50
+        - 50–200
+        - 200–500
+        - Over 500
+  - type: textarea
+    id: details
+    attributes:
+      label: What wastes most of your email time?
