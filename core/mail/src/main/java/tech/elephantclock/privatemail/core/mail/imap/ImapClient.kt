@@ -1,5 +1,6 @@
 package tech.elephantclock.privatemail.core.mail.imap
 
+import jakarta.mail.Folder
 import jakarta.mail.Session
 import org.eclipse.angus.mail.imap.IMAPFolder
 import org.eclipse.angus.mail.imap.IMAPStore
@@ -27,6 +28,10 @@ class ImapConnection internal constructor(
             }
         return FolderMapper.mapAll(raw)
     }
+
+    /** EXAMINE: read-only, so nothing we fetch can change flags such as \Seen. */
+    internal fun openReadOnly(path: String): IMAPFolder =
+        (store.getFolder(path) as IMAPFolder).apply { open(Folder.READ_ONLY) }
 
     override fun close() = store.close()
 }
