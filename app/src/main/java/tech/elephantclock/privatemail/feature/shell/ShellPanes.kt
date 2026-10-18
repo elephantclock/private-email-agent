@@ -168,3 +168,29 @@ private val ShellDestination.emptyText: Int
             ShellDestination.Discarded -> R.string.shell_discarded_empty
             ShellDestination.Rules -> R.string.shell_rules_empty
         }
+
+/** "x@y needs your password again" with a Sign in button; sync for that account is paused. */
+@Composable
+fun AuthProblemBanner(
+    email: String,
+    onSignIn: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(BrandTheme.colors.urgent)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+            .padding(start = 20.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.shell_auth_problem, email),
+            style = MaterialTheme.typography.bodyMedium,
+            color = BrandTheme.colors.onUrgent,
+            modifier = Modifier.weight(1f),
+        )
+        androidx.compose.material3.TextButton(onClick = onSignIn, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.shell_auth_problem_action), color = BrandTheme.colors.onUrgent)
+        }
+    }
+}

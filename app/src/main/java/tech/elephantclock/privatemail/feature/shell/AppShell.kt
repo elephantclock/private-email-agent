@@ -1,6 +1,7 @@
 package tech.elephantclock.privatemail.feature.shell
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Delete
@@ -78,6 +79,8 @@ fun AppShell(
     windowInfo: WindowInfo = rememberWindowInfo(),
     listPane: ShellListPane = { destination, _, _ -> PlaceholderList(destination) },
     detailPane: ShellDetailPane = { _, _ -> PlaceholderDetail() },
+    /** Shown above the panes, e.g. "needs your password again". */
+    banner: @Composable () -> Unit = {},
     /** Opens this item of the first destination at start (previews and screenshots). */
     initialOpenKey: String? = null,
 ) {
@@ -102,15 +105,18 @@ fun AppShell(
         },
     ) {
         CompositionLocalProvider(LocalFoldPosture provides windowInfo.posture) {
-            // A fresh navigator per destination: switching tabs closes the open item.
-            key(destination) {
-                DestinationPanes(
-                    destination,
-                    windowInfo,
-                    listPane,
-                    detailPane,
-                    initialOpenKey.takeIf { destination == ShellDestination.entries.first() },
-                )
+            Column {
+                banner()
+                // A fresh navigator per destination: switching tabs closes the open item.
+                key(destination) {
+                    DestinationPanes(
+                        destination,
+                        windowInfo,
+                        listPane,
+                        detailPane,
+                        initialOpenKey.takeIf { destination == ShellDestination.entries.first() },
+                    )
+                }
             }
         }
     }
