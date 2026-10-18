@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.angus.mail)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.greenmail)
     testImplementation(libs.mockwebserver)
 

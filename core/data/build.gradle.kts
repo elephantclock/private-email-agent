@@ -27,6 +27,12 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             all {
+                // GreenMail's TLS server (sync tests) uses :core:mail's test certificate.
+                val keystore = rootProject.file("core/mail/src/test/resources/tls/localhost.p12").absolutePath
+                it.systemProperty("greenmail.tls.keystore.file", keystore)
+                it.systemProperty("greenmail.tls.keystore.password", "changeit")
+                it.systemProperty("greenmail.tls.key.password", "changeit")
+                it.systemProperty("pea.test.keystore", keystore)
                 // Robolectric's FileDescriptor interceptor reads JDK internals.
                 it.jvmArgs(
                     "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
@@ -63,6 +69,7 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.room.testing)
+    testImplementation(libs.greenmail)
 
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)

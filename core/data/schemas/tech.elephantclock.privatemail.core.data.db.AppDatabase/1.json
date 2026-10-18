@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1c41fdcc2464c57035a909f4eea8ab8b",
+    "identityHash": "9b0783a0ded74687ea31e3e39387f117",
     "entities": [
       {
         "tableName": "accounts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `email` TEXT NOT NULL, `emailName` TEXT, `displayName` TEXT NOT NULL, `username` TEXT NOT NULL, `authType` TEXT NOT NULL, `providerId` TEXT, `createdAtMillis` INTEGER NOT NULL, `imap_host` TEXT NOT NULL, `imap_port` INTEGER NOT NULL, `imap_security` TEXT NOT NULL, `smtp_host` TEXT NOT NULL, `smtp_port` INTEGER NOT NULL, `smtp_security` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `email` TEXT NOT NULL, `emailName` TEXT, `displayName` TEXT NOT NULL, `username` TEXT NOT NULL, `authType` TEXT NOT NULL, `providerId` TEXT, `createdAtMillis` INTEGER NOT NULL, `authProblem` TEXT, `imap_host` TEXT NOT NULL, `imap_port` INTEGER NOT NULL, `imap_security` TEXT NOT NULL, `smtp_host` TEXT NOT NULL, `smtp_port` INTEGER NOT NULL, `smtp_security` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -55,6 +55,11 @@
             "notNull": true
           },
           {
+            "fieldPath": "authProblem",
+            "columnName": "authProblem",
+            "affinity": "TEXT"
+          },
+          {
             "fieldPath": "imap.host",
             "columnName": "imap_host",
             "affinity": "TEXT",
@@ -100,7 +105,7 @@
       },
       {
         "tableName": "folders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`accountId` TEXT NOT NULL, `path` TEXT NOT NULL, `displayName` TEXT NOT NULL, `uidValidity` INTEGER NOT NULL, `specialUse` TEXT, `role` TEXT, `description` TEXT, `highestUid` INTEGER NOT NULL, `lastSyncMillis` INTEGER, PRIMARY KEY(`accountId`, `path`), FOREIGN KEY(`accountId`) REFERENCES `accounts`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`accountId` TEXT NOT NULL, `path` TEXT NOT NULL, `displayName` TEXT NOT NULL, `uidValidity` INTEGER NOT NULL, `specialUse` TEXT, `role` TEXT, `description` TEXT, `highestUid` INTEGER NOT NULL, `lastSyncMillis` INTEGER, `highestModSeq` INTEGER, PRIMARY KEY(`accountId`, `path`), FOREIGN KEY(`accountId`) REFERENCES `accounts`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "accountId",
@@ -150,6 +155,11 @@
           {
             "fieldPath": "lastSyncMillis",
             "columnName": "lastSyncMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "highestModSeq",
+            "columnName": "highestModSeq",
             "affinity": "INTEGER"
           }
         ],
@@ -781,7 +791,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c41fdcc2464c57035a909f4eea8ab8b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9b0783a0ded74687ea31e3e39387f117')"
     ]
   }
 }

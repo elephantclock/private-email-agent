@@ -49,4 +49,34 @@ sealed interface AuthError {
     data class Unknown(
         val detail: String,
     ) : AuthError
+
+    /** No saved password, or it can't be decrypted any more (`StoredSecret.NeedsReentry`). Nothing was sent. */
+    data object PasswordUnavailable : AuthError
 }
+
+/** Retrying can't fix this until the user acts: a new password, trusting a certificate, other settings. */
+val AuthError.needsUserAction: Boolean
+    get() =
+        when (this) {
+            AuthError.WrongCredentials,
+            AuthError.StartTlsUnavailable,
+            AuthError.PasswordUnavailable,
+            is AuthError.AppPasswordRequired,
+            is AuthError.CertificateUntrusted,
+            is AuthError.AuthMethodNotSupported,
+            -> true
+
+            is AuthError.AccountLockedOrRateLimited,
+            is AuthError.HostNotFound,
+            is AuthError.PortBlockedOrTimeout,
+            is AuthError.TlsFailure,
+            is AuthError.Unknown,
+            -> false
+        }
+
+/**
+ * Don't retry within a session (IDLE reconnects): [needsUserAction], or the server says the
+ * account is locked or rate-limited, where every extra sign-in attempt makes things worse.
+ */
+val AuthError.stopRetrying: Boolean
+    get() = needsUserAction || this is AuthError.AccountLockedOrRateLimited

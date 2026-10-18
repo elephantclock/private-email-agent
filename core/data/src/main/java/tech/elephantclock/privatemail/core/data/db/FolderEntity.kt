@@ -24,4 +24,6 @@ data class FolderEntity(
     /** Sync state: 0 / null until the first sync. */
     val highestUid: Long = 0,
     val lastSyncMillis: Long? = null,
+    /** HIGHESTMODSEQ at the last flag check (CONDSTORE servers); null = unknown, fetch every flag. */
+    val highestModSeq: Long? = null,
 )

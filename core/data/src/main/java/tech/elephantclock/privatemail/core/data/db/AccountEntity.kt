@@ -25,4 +25,10 @@ data class AccountEntity(
     val authType: AuthType,
     val providerId: String?,
     val createdAtMillis: Long,
+    /**
+     * Set when signing in failed in a way only the user can fix (wrong password, untrusted
+     * certificate...): background sync and IDLE skip the account, since retrying every 15
+     * minutes can get it locked. Holds the `AuthError` name. Cleared once the user fixes it (T41).
+     */
+    val authProblem: String? = null,
 )

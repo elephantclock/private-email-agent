@@ -27,6 +27,13 @@ interface AccountDao {
     @Query("SELECT * FROM accounts ORDER BY createdAtMillis")
     fun all(): Flow<List<AccountEntity>>
 
+    /** See [AccountEntity.authProblem]; null clears it. */
+    @Query("UPDATE accounts SET authProblem = :problem WHERE id = :id")
+    suspend fun setAuthProblem(
+        id: String,
+        problem: String?,
+    )
+
     /** Cascades to folders, messages, verdicts, learned rules and undo entries of the account. */
     @Query("DELETE FROM accounts WHERE id = :id")
     suspend fun delete(id: String)
@@ -35,6 +42,10 @@ interface AccountDao {
 @Dao
 interface FolderDao {
     @Upsert suspend fun upsert(folders: List<FolderEntity>)
+
+    /** Folders not stored yet; existing rows (role, description, sync state) are left alone. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertNew(folders: List<FolderEntity>)
 
     @Query("SELECT * FROM folders WHERE accountId = :accountId ORDER BY path")
     suspend fun forAccount(accountId: String): List<FolderEntity>
@@ -45,6 +56,7 @@ interface FolderDao {
         path: String,
     ): FolderEntity?
 
+    /** A plain UPDATE: the folder row must exist ([insertNew] first), or nothing is saved. */
     @Query(
         "UPDATE folders SET uidValidity = :uidValidity, highestUid = :highestUid, lastSyncMillis = :lastSyncMillis " +
             "WHERE accountId = :accountId AND path = :path",
@@ -55,6 +67,13 @@ interface FolderDao {
         uidValidity: Long,
         highestUid: Long,
         lastSyncMillis: Long,
+    )
+
+    @Query("UPDATE folders SET highestModSeq = :highestModSeq WHERE accountId = :accountId AND path = :path")
+    suspend fun updateModSeq(
+        accountId: String,
+        path: String,
+        highestModSeq: Long?,
     )
 }
 
@@ -90,6 +109,29 @@ interface MessageDao {
         flags: Int,
     )
 
+    /** UID and flag bits of every message stored for one folder generation, for reconciliation. */
+    @Query(
+        "SELECT uid, flags FROM messages WHERE accountId = :accountId AND folderPath = :folderPath " +
+            "AND uidValidity = :uidValidity",
+    )
+    suspend fun uidFlags(
+        accountId: String,
+        folderPath: String,
+        uidValidity: Long,
+    ): List<UidFlags>
+
+    /** At most [MAX_BOUND_UIDS] UIDs per call (SQLite's bound-parameter limit); use [deleteUids]. */
+    @Query(
+        "DELETE FROM messages WHERE accountId = :accountId AND folderPath = :folderPath " +
+            "AND uidValidity = :uidValidity AND uid IN (:uids)",
+    )
+    suspend fun deleteUidChunk(
+        accountId: String,
+        folderPath: String,
+        uidValidity: Long,
+        uids: List<Long>,
+    ): Int
+
     /** After a move on the server (T17): same local id, new server location. */
     @Query("UPDATE messages SET folderPath = :folderPath, uidValidity = :uidValidity, uid = :uid WHERE id = :id")
     suspend fun moveTo(
@@ -106,11 +148,17 @@ interface MessageDao {
         folderPath: String,
     )
 
-    /** Priority: kept messages across all accounts, newest first. */
+    /**
+     * Priority: messages with a KEEP verdict that are **still in the Inbox**, across all
+     * accounts, newest first. KEEP means "leave it in the Inbox"; once the message is filed
+     * elsewhere (by the user in any client, or by T17 via [moveTo]) it has been dealt with and
+     * leaves Priority, even though its verdict stays. ("INBOX" is IMAP's canonical name, which
+     * Angus always reports in upper case.)
+     */
     @Transaction
     @Query(
         "SELECT m.* FROM messages m JOIN verdicts v ON v.messageId = m.id " +
-            "WHERE v.action = 'KEEP' ORDER BY m.receivedAtMillis DESC, m.id DESC",
+            "WHERE v.action = 'KEEP' AND m.folderPath = 'INBOX' ORDER BY m.receivedAtMillis DESC, m.id DESC",
     )
     fun priority(): PagingSource<Int, MessageWithVerdict>
 
@@ -142,6 +190,22 @@ interface MessageDao {
         limit: Int = 50,
     ): List<MessageWithVerdict>
 }
+
+/** SQLite allows 999 bound parameters in older versions; stay well below with the other arguments. */
+const val MAX_BOUND_UIDS = 900
+
+/** Deletes the given UIDs of one folder generation, in statements of at most [MAX_BOUND_UIDS]. */
+suspend fun MessageDao.deleteUids(
+    accountId: String,
+    folderPath: String,
+    uidValidity: Long,
+    uids: Collection<Long>,
+): Int = uids.chunked(MAX_BOUND_UIDS).sumOf { deleteUidChunk(accountId, folderPath, uidValidity, it) }
+
+data class UidFlags(
+    val uid: Long,
+    val flags: Int,
+)
 
 @Dao
 interface VerdictDao {

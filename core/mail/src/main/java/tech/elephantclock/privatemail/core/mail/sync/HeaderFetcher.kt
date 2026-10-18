@@ -1,7 +1,6 @@
 package tech.elephantclock.privatemail.core.mail.sync
 
 import jakarta.mail.FetchProfile
-import jakarta.mail.Flags
 import jakarta.mail.Message
 import jakarta.mail.UIDFolder
 import jakarta.mail.internet.InternetAddress
@@ -13,7 +12,6 @@ import tech.elephantclock.privatemail.core.mail.imap.ImapConnection
 import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.Address
 import tech.elephantclock.privatemail.core.model.MessageBody
-import tech.elephantclock.privatemail.core.model.MessageFlag
 import tech.elephantclock.privatemail.core.model.MessageHeader
 import tech.elephantclock.privatemail.core.model.MessageRef
 import java.util.Date
@@ -136,11 +134,6 @@ class HeaderFetcher(
     private fun Array<jakarta.mail.Address>?.toAddresses(): List<Address> =
         this.orEmpty().filterIsInstance<InternetAddress>().mapNotNull { it.toAddress() }
 
-    private fun Flags.toModel(): Set<MessageFlag> {
-        val flags = this
-        return FLAG_MAP.filterKeys { flags.contains(it) }.values.toSet()
-    }
-
     companion object {
         /** Headers the rules engine reads (T20), beyond the envelope. */
         val TRIAGE_HEADERS =
@@ -160,15 +153,6 @@ class HeaderFetcher(
                 "X-MC-User",
                 "X-Campaign",
                 "Feedback-ID",
-            )
-
-        private val FLAG_MAP =
-            mapOf(
-                Flags.Flag.SEEN to MessageFlag.SEEN,
-                Flags.Flag.ANSWERED to MessageFlag.ANSWERED,
-                Flags.Flag.FLAGGED to MessageFlag.FLAGGED,
-                Flags.Flag.DRAFT to MessageFlag.DRAFT,
-                Flags.Flag.DELETED to MessageFlag.DELETED,
             )
 
         private val PROFILE =

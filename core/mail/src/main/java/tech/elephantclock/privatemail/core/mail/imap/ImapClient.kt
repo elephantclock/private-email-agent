@@ -4,6 +4,7 @@ import jakarta.mail.Folder
 import jakarta.mail.Session
 import org.eclipse.angus.mail.imap.IMAPFolder
 import org.eclipse.angus.mail.imap.IMAPStore
+import org.eclipse.angus.mail.imap.ResyncData
 import tech.elephantclock.privatemail.core.mail.MailResult
 import tech.elephantclock.privatemail.core.mail.auth.ErrorMapper
 import tech.elephantclock.privatemail.core.mail.auth.MailCredentials
@@ -17,8 +18,12 @@ import javax.net.ssl.X509TrustManager
 /** A signed-in IMAP connection. Read-only operations only at this stage. */
 class ImapConnection internal constructor(
     private val store: IMAPStore,
+    private val sockets: TlsSocketFactory? = null,
 ) : Closeable {
     val capabilities: Capabilities = Capabilities.from { store.hasCapability(it) }
+
+    /** Angus turns CONDSTORE on with `ENABLE CONDSTORE`, so a server offering CONDSTORE without ENABLE can't use it. */
+    internal val condStoreUsable: Boolean = capabilities.condStore && store.hasCapability("ENABLE")
 
     fun listFolders(): List<RemoteFolder> {
         val raw =
@@ -29,14 +34,33 @@ class ImapConnection internal constructor(
         return FolderMapper.mapAll(raw)
     }
 
-    /** EXAMINE: read-only, so nothing we fetch can change flags such as \Seen. */
-    internal fun openReadOnly(path: String): IMAPFolder =
-        (store.getFolder(path) as IMAPFolder).apply { open(Folder.READ_ONLY) }
+    /**
+     * EXAMINE: read-only, so nothing we fetch can change flags such as \Seen. With [condStore]
+     * (only if [condStoreUsable]) it is `ENABLE CONDSTORE` + `EXAMINE <path> (CONDSTORE)`, so the
+     * server reports HIGHESTMODSEQ.
+     */
+    internal fun openReadOnly(
+        path: String,
+        condStore: Boolean = false,
+    ): IMAPFolder =
+        (store.getFolder(path) as IMAPFolder).apply {
+            if (condStore) open(Folder.READ_ONLY, ResyncData.CONDSTORE) else open(Folder.READ_ONLY)
+        }
 
     /** The signed-in store, for the send and move engines (APPEND, CREATE, read-write SELECT). */
     internal val imapStore: IMAPStore get() = store
 
+    /** Signs out politely. Can block for up to the read timeout on a dead connection; see [abort]. */
     override fun close() = store.close()
+
+    /**
+     * Drops the connection at once: closes the sockets (unblocking any thread in IDLE or a
+     * read), then lets Angus clean up. Safe to call from any thread, more than once.
+     */
+    fun abort() {
+        sockets?.closeAll()
+        runCatching { store.close() }
+    }
 }
 
 /**
@@ -52,11 +76,12 @@ class ImapClient(
         credentials: MailCredentials,
     ): MailResult<ImapConnection> {
         val trust = PinningTrustManager(pins, baseTrust)
-        val props = mailProperties("imap", config.security, TlsSocketFactory(trust), config.timeouts)
+        val sockets = TlsSocketFactory(trust)
+        val props = mailProperties("imap", config.security, sockets, config.timeouts)
         val store = Session.getInstance(props).getStore("imap") as IMAPStore
         return try {
             store.connect(config.host, config.port, credentials.username, credentials.password.reveal())
-            MailResult.Ok(ImapConnection(store))
+            MailResult.Ok(ImapConnection(store, sockets))
         } catch (e: Exception) {
             runCatching { store.close() }
             MailResult.Failed(
