@@ -12,6 +12,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.CancellationException
 import tech.elephantclock.privatemail.core.data.repo.MailRepository
 import java.util.concurrent.TimeUnit
 
@@ -28,9 +29,18 @@ class SyncWorker(
     context: Context,
     params: WorkerParameters,
     private val repository: MailRepository,
+    /** Runs after every sync (the app drains triage here: nudges are lost when no one listens). Never fails the run. */
+    private val afterSync: suspend () -> Unit = {},
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val report = repository.syncAll()
+        try {
+            afterSync()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Triage failures are retried by the next drain; the sync itself succeeded.
+        }
         return if (report.shouldRetry && runAttemptCount + 1 < MAX_ATTEMPTS) Result.retry() else Result.success()
     }
 
@@ -56,6 +66,7 @@ class SyncWorker(
 /** Builds [SyncWorker] with its repository (no DI framework yet); other workers use the default. */
 class SyncWorkerFactory(
     private val repository: () -> MailRepository,
+    private val afterSync: suspend () -> Unit = {},
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -63,7 +74,7 @@ class SyncWorkerFactory(
         workerParameters: WorkerParameters,
     ): ListenableWorker? =
         if (workerClassName == SyncWorker::class.java.name) {
-            SyncWorker(appContext, workerParameters, repository())
+            SyncWorker(appContext, workerParameters, repository(), afterSync)
         } else {
             null
         }

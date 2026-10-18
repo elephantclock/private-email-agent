@@ -6,6 +6,8 @@ import tech.elephantclock.privatemail.core.data.db.AppDatabase
 import tech.elephantclock.privatemail.core.data.repo.MailRepository
 import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
 import tech.elephantclock.privatemail.core.data.secure.SecretStore
+import tech.elephantclock.privatemail.core.data.triage.TriageMover
+import tech.elephantclock.privatemail.core.data.triage.TriageOrchestrator
 import tech.elephantclock.privatemail.core.mail.autoconfig.AndroidDnsClient
 import tech.elephantclock.privatemail.core.mail.autoconfig.Autoconfig
 import tech.elephantclock.privatemail.core.mail.autoconfig.IspdbClient
@@ -33,9 +35,19 @@ class MailGraph(
     /** Certificates the user trusted in the add-account screen; read live by every connection. */
     val certificatePins: CertificatePinStore by lazy { CertificatePinStore(appContext) }
 
-    val repository: MailRepository by lazy {
-        MailRepository(database, PasswordImapConnector(secrets, ImapClient(certificatePins)))
-    }
+    /** One connector for sync and moves, so both see the same pins and password store. */
+    private val connector by lazy { PasswordImapConnector(secrets, ImapClient(certificatePins)) }
+
+    val repository: MailRepository by lazy { MailRepository(database, connector) }
+
+    val mover: TriageMover by lazy { TriageMover(database, repository, connector) }
+
+    /**
+     * Triage with today's defaults: rules only (the on-device model arrives in T31), label-only
+     * (nothing moves on the server until the user applies the first run, T43), no notifications
+     * yet (T49) and no contacts (needs the permission flow).
+     */
+    val orchestrator: TriageOrchestrator by lazy { TriageOrchestrator(database, repository, mover) }
 
     fun addAccountViewModel(initialEmail: String = "") =
         AddAccountViewModel(

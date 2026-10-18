@@ -70,11 +70,27 @@ class SyncWorkerTest {
     private fun run(attempt: Int = 0): ListenableWorker.Result =
         runBlocking {
             TestListenableWorkerBuilder<SyncWorker>(context)
-                .setWorkerFactory(SyncWorkerFactory { repository })
+                .setWorkerFactory(SyncWorkerFactory({ repository }))
                 .setRunAttemptCount(attempt)
                 .build()
                 .doWork()
         }
+
+    @Test
+    fun `triage is drained after every sync, and a failing drain never fails the run`() {
+        val drains = AtomicInteger()
+
+        fun runWith(afterSync: suspend () -> Unit) =
+            runBlocking {
+                TestListenableWorkerBuilder<SyncWorker>(context)
+                    .setWorkerFactory(SyncWorkerFactory({ repository }, afterSync))
+                    .build()
+                    .doWork()
+            }
+        assertEquals(ListenableWorker.Result.success(), runWith { drains.incrementAndGet() })
+        assertEquals(1, drains.get())
+        assertEquals(ListenableWorker.Result.success(), runWith { error("triage broke") })
+    }
 
     @Test
     fun `nothing to sync succeeds`() {
