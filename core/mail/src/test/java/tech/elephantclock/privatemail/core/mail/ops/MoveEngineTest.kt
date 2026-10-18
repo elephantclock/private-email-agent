@@ -254,6 +254,7 @@ class MoveEngineTest(
                 DiscardedMessage(inDiscarded("m1"), now - 31 * day),
                 DiscardedMessage(inDiscarded("m2"), now - 29 * day),
                 // m3: no record, so never purged.
+                DiscardedMessage(MoveItem(9_999, "<gone@test.example>"), now - 40 * day),
             )
         val noTrash = runBlocking { engine().purgeDiscarded(discarded.uidValidity, records) }
         assertTrue(noTrash.noTrash)
@@ -264,6 +265,8 @@ class MoveEngineTest(
         assertNull(report.failure)
         assertEquals("Trash", report.trash)
         assertEquals(listOf(id("m1")), Mailboxes.folder(servers, "Trash").messageIds())
+        // Tells the caller which records point at nothing any more, so it can drop them.
+        assertEquals(listOf(9_999L), report.missing)
         assertEquals(listOf(id("m2"), id("m3")), discarded.visible())
         assertCanaryAlive()
     }

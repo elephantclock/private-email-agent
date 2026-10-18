@@ -243,4 +243,30 @@ class MoveLogicTest {
         val report = move(e, listOf(MoveItem(a1, "<dup@x>"), MoveItem(a2, "<dup@x>")))
         assertEquals(listOf(null, null), report.moved.map { it.newUid })
     }
+
+    @Test
+    fun `undo only removes a destination copy it can prove is the one it made`() {
+        val e = engine(Capabilities.parse("IMAP4rev1"))
+        val uids = seed("a")
+        val report = move(e, items(uids, "a"))
+        // Discarded was rebuilt: the one "<a@x>" there may be the user's own older copy.
+        fake.folder("Discarded").apply {
+            uidValidity = 777
+            messages.clear()
+            deleted.clear()
+            add("<a@x>")
+        }
+        val undo = runBlocking { e.undo(account, report.batchId) }
+        assertEquals(1, undo.restored.size)
+        assertEquals(setOf<Long>(), fake.folder("INBOX").deleted)
+        assertEquals("unverified copy untouched", setOf<Long>(), fake.folder("Discarded").deleted)
+        assertEquals(1, undo.leftCopies.size)
+        assertEquals(
+            listOf("<a@x>"),
+            fake
+                .folder("Discarded")
+                .messages.values
+                .toList(),
+        )
+    }
 }

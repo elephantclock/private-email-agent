@@ -16,6 +16,8 @@ data class UndoReport(
     /** Older than 7 days: not undone. */
     val expired: List<UndoEntry>,
     val failure: TransferFailure?,
+    /** Restored in place, but a destination copy we couldn't prove is ours was left there. */
+    val leftCopies: List<UndoEntry> = emptyList(),
 ) {
     companion object {
         fun merge(
@@ -26,6 +28,7 @@ data class UndoReport(
             parts.flatMap { it.notFound },
             expired + parts.flatMap { it.expired },
             parts.firstNotNullOfOrNull { it.failure },
+            parts.flatMap { it.leftCopies },
         )
     }
 }
@@ -33,7 +36,8 @@ data class UndoReport(
 /**
  * Undoes the entries of one (from, to) folder pair:
  * 1. originals still in the source (no MOVE, no UIDPLUS: only marked) get `\Deleted` removed,
- *    and their copies in the destination are removed again by exact UID;
+ *    and their copies in the destination are removed again, only by a UID verified to be the
+ *    copy we made (same UIDVALIDITY and Message-ID): an unverified match may be the user's own;
  * 2. every other copy is found (its UID if UIDVALIDITY and Message-ID still match, else the one
  *    message with that Message-ID) and moved back; a copy we can't pin down is left alone.
  */
@@ -43,6 +47,8 @@ internal class Undoer(
     private data class Located(
         val entry: UndoEntry,
         val uid: Long?,
+        /** [uid] is the recorded `toUid`, confirmed; not just a Message-ID match. */
+        val verified: Boolean,
     )
 
     suspend fun undo(group: List<UndoEntry>): UndoReport {
@@ -53,11 +59,12 @@ internal class Undoer(
         val inPlace = unmarkOriginals(from, group)
         val (located, destValidity) =
             mailbox.open(to, readWrite = false).use { dst ->
-                group.map { Located(it, locate(dst, it)) } to dst.uidValidity
+                group.map { locate(dst, it) } to dst.uidValidity
             }
 
-        val duplicates = located.filter { it.entry in inPlace }.mapNotNull { it.uid }
+        val duplicates = located.filter { it.entry in inPlace && it.verified }.mapNotNull { it.uid }
         if (duplicates.isNotEmpty()) removeExactly(to, destValidity, duplicates)
+        val leftCopies = located.filter { it.entry in inPlace && !it.verified && it.uid != null }.map { it.entry }
 
         val toMove = located.filter { it.entry !in inPlace && it.uid != null }
         val notFound = located.filter { it.entry !in inPlace && it.uid == null }.map { it.entry }.toMutableList()
@@ -71,7 +78,7 @@ internal class Undoer(
             failure = report.failure
             notFound += report.missing.map { entryByUid.getValue(it) }
         }
-        return UndoReport(restored, notFound, emptyList(), failure)
+        return UndoReport(restored, notFound, emptyList(), failure, leftCopies)
     }
 
     /** Originals that never left the source (marked only): unmark them. Returns their entries. */
@@ -90,14 +97,15 @@ internal class Undoer(
     private fun locate(
         dst: SelectedFolder,
         entry: UndoEntry,
-    ): Long? {
+    ): Located {
         val id = entry.messageIdHeader?.takeIf { UidCommands.messageId(it) == it }
         val uid = entry.toUid
         if (uid != null && dst.uidValidity == entry.toUidValidity) {
             val same = if (id == null) uid in dst.existing(listOf(uid)) else dst.hasMessageId(uid, id)
-            if (same) return uid
+            if (same) return Located(entry, uid, verified = true)
         }
-        return id?.let { dst.searchMessageId(it).singleOrNull() }
+        // Good enough to move a message back (recoverable), never to delete one.
+        return Located(entry, id?.let { dst.searchMessageId(it).singleOrNull() }, verified = false)
     }
 
     /** `\Deleted` and (UIDPLUS) `UID EXPUNGE` on exactly [uids]; without UIDPLUS they stay marked. */

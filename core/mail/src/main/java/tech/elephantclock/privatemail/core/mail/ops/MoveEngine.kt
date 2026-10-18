@@ -52,13 +52,17 @@ data class PurgeReport(
     /** Due, but the server has no special-use Trash folder; we don't guess one. */
     val noTrash: Boolean,
     val failure: TransferFailure?,
+    /** Due UIDs no longer in Discarded (moved or deleted elsewhere): drop their records. */
+    val missing: List<Long> = emptyList(),
 )
 
 /**
  * Files, discards and undoes on the server, touching only the UIDs it is given. Folders are
  * opened read-write only for the operation and closed without expunging; the only expunge is
- * `UID EXPUNGE` of UIDs this engine just marked (UIDPLUS). Call on a background thread's
- * connection that nothing else is using at the same time.
+ * `UID EXPUNGE` of UIDs this engine just marked (UIDPLUS). Use a connection nothing else is
+ * using at the same time. Server refusals mid-run end up in the report's `failure`; a lost
+ * connection or a missing folder throws `MessagingException` (batches done before it are in
+ * the undo log, so a retry is safe).
  */
 class MoveEngine internal constructor(
     private val mailbox: Mailbox,
@@ -74,7 +78,8 @@ class MoveEngine internal constructor(
         io: CoroutineDispatcher = Dispatchers.IO,
     ) : this(ImapMailbox(connection, capabilities), undoLog, clock, io)
 
-    private val provisioner = FolderProvisioner(mailbox)
+    /** Fresh per operation, so folders created elsewhere (e.g. Trash) are seen. */
+    private val provisioner get() = FolderProvisioner(mailbox)
 
     /** Moves [MoveRequest.items] to the target folder (created on demand) and logs each batch for undo. */
     suspend fun move(request: MoveRequest): MoveReport =
@@ -147,15 +152,16 @@ class MoveEngine internal constructor(
         withContext(io) {
             val cutoff = clock() - DISCARD_HOLD_MILLIS
             val due = messages.filter { it.discardedAtMillis <= cutoff }.map { it.item }
-            val discarded = provisioner.pathFor(FolderTarget.Discarded, create = false)
+            val folders = provisioner
+            val discarded = folders.pathFor(FolderTarget.Discarded, create = false)
             if (due.isEmpty() || discarded == null) return@withContext PurgeReport(null, emptyList(), false, null)
             val trash =
-                provisioner.special(SpecialUse.TRASH) ?: return@withContext PurgeReport(null, emptyList(), true, null)
+                folders.special(SpecialUse.TRASH) ?: return@withContext PurgeReport(null, emptyList(), true, null)
             val report =
                 Transfer(
                     mailbox,
                 ).run(discarded, discardedUidValidity, due, trash, allowGmailLabels = false) { _, _ -> }
-            PurgeReport(trash, report.moved, false, report.failure)
+            PurgeReport(trash, report.moved, false, report.failure, report.missing)
         }
 
     /** Drops undo entries older than 7 days; returns how many. */
