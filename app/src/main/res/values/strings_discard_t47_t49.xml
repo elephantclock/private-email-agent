@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- T47 Discarded digest -->
+    <string name="discard_title_today">Discarded today · %1$d</string>
+    <string name="discard_subtitle">Held for 30 days, then moved to Trash. Restore anything to teach the rules.</string>
+    <string name="discard_tab_sender">By sender</string>
+    <string name="discard_tab_reason">By reason</string>
+    <string name="discard_tab_spam">Spam · %1$d</string>
+    <string name="discard_restore">Restore</string>
+    <string name="discard_never">Never discard</string>
+    <string name="discard_unsubscribe">Unsubscribe</string>
+    <string name="discard_footer">Daily digest at 18:00 · change in Rules</string>
+    <string name="discard_empty">Nothing discarded. Discarded mail stays here for 30 days, then goes to Trash.</string>
+    <string name="discard_empty_spam">No junk. Spam and phishing triage catches shows up here.</string>
+    <plurals name="discard_count_description">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+    <plurals name="discard_notice_restored">
+        <item quantity="one">Restored %d message to the Inbox.</item>
+        <item quantity="other">Restored %d messages to the Inbox.</item>
+    </plurals>
+    <plurals name="discard_notice_restore_failed">
+        <item quantity="one">%d message couldn\'t be restored. It is still here; try again later.</item>
+        <item quantity="other">%d messages couldn\'t be restored. They are still here; try again later.</item>
+    </plurals>
+    <string name="discard_notice_never">Mail from %1$s stays in Priority from now on.</string>
+    <string name="discard_notice_unsubscribed">Unsubscribe request sent for %1$s.</string>
+    <string name="discard_notice_refused">%1$s didn\'t accept the unsubscribe request. Nothing else was tried.</string>
+    <string name="discard_notice_failed">Couldn\'t send the unsubscribe request for %1$s. Nothing was sent.</string>
+    <string name="discard_notice_unknown">The connection dropped: the unsubscribe request for %1$s may not have been sent.</string>
+    <string name="discard_dialog_title">Unsubscribe from %1$s?</string>
+    <string name="discard_dialog_one_click">Sends one request to %1$s, as the sender asks for (one-click unsubscribe). No web page is opened and nothing else is sent.</string>
+    <string name="discard_dialog_mail">Sends this email from %1$s:</string>
+    <string name="discard_dialog_to">To: %1$s</string>
+    <string name="discard_dialog_subject">Subject: %1$s</string>
+    <string name="discard_dialog_confirm_one_click">Unsubscribe</string>
+    <string name="discard_dialog_confirm_mail">Send email</string>
+    <string name="discard_dialog_cancel">Cancel</string>
+</resources>

@@ -33,6 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun triage(): TriageDao
 
+    abstract fun discarded(): DiscardDao
+
     companion object {
         /** Excluded from backups by the app's data-extraction rules (database domain). */
         const val NAME = "mail.db"

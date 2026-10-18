@@ -38,6 +38,11 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             all {
+                // The one-click unsubscribe test (T47) serves HTTPS with :core:mail's test certificate.
+                it.systemProperty(
+                    "pea.test.keystore",
+                    rootProject.file("core/mail/src/test/resources/tls/localhost.p12").absolutePath,
+                )
                 // Robolectric's FileDescriptor interceptor reads JDK internals.
                 it.jvmArgs(
                     "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
@@ -92,6 +97,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.work.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockwebserver)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.roborazzi)
