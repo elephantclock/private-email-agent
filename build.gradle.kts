@@ -10,14 +10,16 @@ plugins {
 }
 
 spotless {
+    // fileTree with excludes prunes build folders from the walk itself; target + targetExclude
+    // still walked them and raced with lint writing there ("Could not read path .../build/...").
     kotlin {
-        target("**/*.kt")
-        targetExclude("**/build/**")
+        target(fileTree(rootDir) { include("**/*.kt").exclude("**/build/**", "**/.gradle/**", "**/.kotlin/**") })
         ktlint(libs.versions.ktlint.get())
     }
     kotlinGradle {
-        target("**/*.gradle.kts")
-        targetExclude("**/build/**")
+        target(
+            fileTree(rootDir) { include("**/*.gradle.kts").exclude("**/build/**", "**/.gradle/**", "**/.kotlin/**") },
+        )
         ktlint(libs.versions.ktlint.get())
     }
 }
