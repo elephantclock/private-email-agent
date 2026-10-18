@@ -1,6 +1,8 @@
 package tech.elephantclock.privatemail.core.ai
 
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -67,7 +69,8 @@ data class AiTimeouts(
 
 /**
  * Runs [block] with a timeout and turns engine exceptions into [AiFailure.EngineError]; for
- * implementations (ML Kit, the fake). Cancellation of the caller is rethrown, never swallowed.
+ * implementations (ML Kit, the fake). Cancellation of the caller is rethrown, never swallowed;
+ * a cancellation that comes from the engine while the caller is active is an [AiFailure.EngineError].
  */
 suspend fun <T> aiCall(
     timeoutMillis: Long,
@@ -78,7 +81,10 @@ suspend fun <T> aiCall(
     } catch (_: TimeoutCancellationException) {
         AiResult.Failed(AiFailure.Timeout(timeoutMillis))
     } catch (e: CancellationException) {
-        throw e
+        // Our caller was cancelled: propagate. Otherwise the engine cancelled its own work
+        // (an ML Kit future cancelled by AICore): that's a model problem, so a value.
+        currentCoroutineContext().ensureActive()
+        AiResult.Failed(AiFailure.EngineError("cancelled by engine: ${e.message ?: ""}"))
     } catch (e: Exception) {
         AiResult.Failed(AiFailure.EngineError(e.javaClass.simpleName + ": " + (e.message ?: "")))
     }

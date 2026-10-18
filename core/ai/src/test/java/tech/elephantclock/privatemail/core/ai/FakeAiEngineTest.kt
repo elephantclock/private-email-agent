@@ -145,4 +145,11 @@ class FakeAiEngineTest {
         assertEquals(1f, ModelStatus.Downloading(500, 100).progress)
         assertEquals(null, ModelStatus.Downloading(50, null).progress)
     }
+
+    @Test
+    fun `a cancellation from the engine itself is a failure while the caller is still active`() =
+        runTest {
+            val r = aiCall<Unit>(1_000) { throw CancellationException("AICore cancelled the future") }
+            assertTrue((r as AiResult.Failed).failure is AiFailure.EngineError)
+        }
 }
