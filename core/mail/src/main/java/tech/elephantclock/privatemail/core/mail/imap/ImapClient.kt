@@ -33,6 +33,9 @@ class ImapConnection internal constructor(
     internal fun openReadOnly(path: String): IMAPFolder =
         (store.getFolder(path) as IMAPFolder).apply { open(Folder.READ_ONLY) }
 
+    /** The signed-in store, for the send and move engines (APPEND, CREATE, read-write SELECT). */
+    internal val imapStore: IMAPStore get() = store
+
     override fun close() = store.close()
 }
 
