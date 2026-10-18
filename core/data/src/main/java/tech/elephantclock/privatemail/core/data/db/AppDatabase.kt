@@ -34,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun triage(): TriageDao
 
     abstract fun discarded(): DiscardDao
+    abstract fun reading(): ReadingDao
 
     companion object {
         /** Excluded from backups by the app's data-extraction rules (database domain). */

@@ -20,6 +20,7 @@ import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirectiveWithTwoPanesOnMediumWidth
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -28,9 +29,11 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -57,6 +60,19 @@ enum class ShellDestination(
 /** The fold posture the shell is laid out for; read by [HingeSplit]. */
 val LocalFoldPosture = staticCompositionLocalOf<FoldPosture> { FoldPosture.Flat }
 
+/**
+ * What a pane may ask of the shell: switch tab ([select], e.g. "Review" → Discarded), go back
+ * one step ([back]: detail → list on one pane), and whether list and detail share the screen
+ * ([singlePane] false) or take turns.
+ */
+data class ShellNavigation(
+    val select: (ShellDestination) -> Unit = {},
+    val back: () -> Unit = {},
+    val singlePane: Boolean = true,
+)
+
+val LocalShellNavigation = compositionLocalOf { ShellNavigation() }
+
 /** List pane content: [selectedKey] is the open item, [onOpen] shows an item in the detail pane. */
 typealias ShellListPane = @Composable (
     destination: ShellDestination,
@@ -81,10 +97,11 @@ fun AppShell(
     detailPane: ShellDetailPane = { _, _ -> PlaceholderDetail() },
     /** Shown above the panes, e.g. "needs your password again". */
     banner: @Composable () -> Unit = {},
-    /** Opens this item of the first destination at start (previews and screenshots). */
+    /** Opens this item of [initialDestination] at start (previews and screenshots). */
     initialOpenKey: String? = null,
+    initialDestination: ShellDestination = ShellDestination.Priority,
 ) {
-    var destination by rememberSaveable { mutableStateOf(ShellDestination.Priority) }
+    var destination by rememberSaveable { mutableStateOf(initialDestination) }
     val navigationType = windowInfo.navigationType
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -110,11 +127,12 @@ fun AppShell(
                 // A fresh navigator per destination: switching tabs closes the open item.
                 key(destination) {
                     DestinationPanes(
+                        { destination = it },
                         destination,
                         windowInfo,
                         listPane,
                         detailPane,
-                        initialOpenKey.takeIf { destination == ShellDestination.entries.first() },
+                        initialOpenKey.takeIf { destination == initialDestination },
                     )
                 }
             }
@@ -125,6 +143,7 @@ fun AppShell(
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun DestinationPanes(
+    select: (ShellDestination) -> Unit,
     destination: ShellDestination,
     windowInfo: WindowInfo,
     listPane: ShellListPane,
@@ -149,13 +168,37 @@ private fun DestinationPanes(
     }
     val scope = rememberCoroutineScope()
     val openKey = navigator.currentDestination?.contentKey
+    val singlePane = directive.maxHorizontalPartitions == 1
+    val navigation =
+        remember(navigator, singlePane) {
+            ShellNavigation(
+                select = select,
+                back = { scope.launch { navigator.navigateBack() } },
+                singlePane = singlePane,
+            )
+        }
+    CompositionLocalProvider(LocalShellNavigation provides navigation) {
+        Panes(navigator, destination, openKey, listPane, detailPane) { key ->
+            scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, key) }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun Panes(
+    navigator: ThreePaneScaffoldNavigator<String>,
+    destination: ShellDestination,
+    openKey: String?,
+    listPane: ShellListPane,
+    detailPane: ShellDetailPane,
+    onOpen: (String) -> Unit,
+) {
     NavigableListDetailPaneScaffold(
         navigator = navigator,
         listPane = {
             AnimatedPane {
-                listPane(destination, openKey) { key ->
-                    scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, key) }
-                }
+                listPane(destination, openKey, onOpen)
             }
         },
         detailPane = {

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inbox, folders, email and reply (T44–T46). Kept apart from strings.xml while lanes work in parallel. -->
+<resources>
+    <!-- T44 Inbox and folder lists -->
+    <string name="inbox_title_priority">Priority</string>
+    <string name="inbox_title_folders">Folders</string>
+    <string name="inbox_all_accounts">· all accounts</string>
+    <string name="inbox_one_account">· %1$s</string>
+    <string name="inbox_chip_all">All · %1$d</string>
+    <string name="inbox_folder_inbox">Inbox</string>
+    <string name="inbox_folder_chip">%1$s · %2$d</string>
+    <string name="inbox_search">Search</string>
+    <string name="inbox_search_hint">Search subject, sender or text</string>
+    <string name="inbox_search_close">Close search</string>
+    <string name="inbox_search_empty">Nothing found for “%1$s”.</string>
+    <string name="inbox_empty_priority">Nothing needs you right now. New mail that does appears here.</string>
+    <string name="inbox_empty_folder">No mail in this folder yet.</string>
+    <string name="inbox_empty_folders">Folders appear here after the first sync.</string>
+    <string name="inbox_loading">Loading…</string>
+    <string name="inbox_unread">Unread</string>
+    <string name="inbox_has_attachment">Has attachments</string>
+    <plurals name="inbox_today_filed">
+        <item quantity="one">%1$d filed</item>
+        <item quantity="other">%1$d filed</item>
+    </plurals>
+    <plurals name="inbox_today_discarded">
+        <item quantity="one">%1$d discarded</item>
+        <item quantity="other">%1$d discarded</item>
+    </plurals>
+    <string name="inbox_today">Today: %1$s, %2$s.</string>
+    <string name="inbox_today_rest">Nothing else needs you.</string>
+    <string name="inbox_today_label_only">They are only labelled so far and stay in your Inbox on the server.</string>
+    <string name="inbox_today_review">Review</string>
+    <string name="inbox_refresh_partly">Some mail couldn’t be checked. Pull down to try again.</string>
+    <string name="inbox_refresh_sign_in">An account needs its password again before it can sync.</string>
+    <string name="inbox_dismiss">Dismiss</string>
+</resources>
