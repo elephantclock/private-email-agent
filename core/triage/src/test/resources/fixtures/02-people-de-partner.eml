@@ -1,0 +1,19 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=partnerfirma.de; dkim=pass header.d=partnerfirma.de; dmarc=pass
+ header.from=partnerfirma.de
+Return-Path: <katrin.mueller@partnerfirma.de>
+From: Katrin =?utf-8?q?M=C3=BCller?= <katrin.mueller@partnerfirma.de>
+To: Alex Morgan <alex@ourco.example>
+Subject: Termin =?utf-8?q?n=C3=A4chste?= Woche
+Date: Mon, 12 Oct 2026 09:34:00 +0000
+Message-ID: <golden-02@partnerfirma.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hallo Alex,
+
+passt dir Dienstag um 14 Uhr f=C3=BCr unser Abstimmungsgespr=C3=A4ch?
+
+Viele Gr=C3=BC=C3=9Fe
+Katrin

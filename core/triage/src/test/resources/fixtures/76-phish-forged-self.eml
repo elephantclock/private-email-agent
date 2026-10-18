@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=ourco.example; dkim=none header.d=ourco.example; dmarc=fail
+ header.from=ourco.example
+Return-Path: <alex@ourco.example>
+From: Alex Morgan <alex@ourco.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: I have access to your device
+Date: Tue, 13 Oct 2026 06:32:00 +0000
+Message-ID: <golden-76@ourco.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+I recorded you. Pay 500 USD in bitcoin within 48 hours.

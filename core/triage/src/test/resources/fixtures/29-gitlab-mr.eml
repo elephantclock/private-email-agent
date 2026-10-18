@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=gitlab.com;
+ dkim=pass header.d=gitlab.com; dmarc=pass header.from=gitlab.com
+Return-Path: <gitlab@gitlab.com>
+From: GitLab <gitlab@gitlab.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Merge request !318 was approved
+Date: Mon, 12 Oct 2026 17:13:00 +0000
+Message-ID: <golden-29@gitlab.com>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your merge request !318 'Retry on timeout' was approved by Priya.

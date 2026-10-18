@@ -1,0 +1,23 @@
+{
+  "account": "acc-golden",
+  "me": ["alex@ourco.example", "alex.morgan@gmail.com"],
+  "trustedAuthservIds": ["mx.ourco.example"],
+  "sent": [
+    { "email": "dmitri.ivanov@ourco.example", "count": 14, "lastSentMillis": 1760000000000 },
+    { "email": "maria.rossi@ourco.example", "count": 9, "lastSentMillis": 1760000000000 },
+    { "email": "katrin.mueller@partnerfirma.de", "count": 6, "lastSentMillis": 1760000000000 },
+    { "email": "jonas.weber@partnerfirma.de", "count": 3, "lastSentMillis": 1760000000000 },
+    { "email": "ana.garcia+work@gmail.com", "count": 4, "lastSentMillis": 1760000000000 },
+    { "email": "hello@founder-letters.example", "count": 1, "lastSentMillis": 1760000000000 },
+    { "email": "sales@vendor.example", "count": 2, "lastSentMillis": 1760000000000 },
+    { "email": "alex@ourco.example", "count": 3, "lastSentMillis": 1760000000000 }
+  ],
+  "ownMessageIds": ["<own-1001@ourco.example>", "<own-1002@ourco.example>"],
+  "vips": ["maria.rossi@ourco.example"],
+  "learnedRules": [
+    { "id": 1, "matcher": "domain", "value": "promo.shop.example", "target": "DISCARDED" },
+    { "id": 2, "matcher": "domain", "value": "vendor.example", "target": "DISCARDED" },
+    { "id": 3, "matcher": "sender", "value": "office@greenfield-school.example", "target": "CUSTOM", "customName": "Kids school" },
+    { "id": 4, "matcher": "sender", "value": "sarah.chen@bigclient.example", "target": "PRIORITY", "vip": true }
+  ]
+}

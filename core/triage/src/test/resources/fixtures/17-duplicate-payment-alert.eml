@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=nordbank.example; dkim=pass header.d=nordbank.example;
+ dmarc=pass header.from=nordbank.example
+Return-Path: <alerts-noreply@nordbank.example>
+From: NordBank Alerts <alerts-noreply@nordbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Possible duplicate payment: 49.00 EUR charged twice
+Date: Mon, 12 Oct 2026 13:49:00 +0000
+Message-ID: <golden-17@nordbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+We noticed two identical card payments of 49.00 EUR to STREAMFLIX on 11 Oct. =
+If you did not make the second payment, contact us to dispute it.

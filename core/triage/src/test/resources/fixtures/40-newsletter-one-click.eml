@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=techbrief.example; dkim=pass header.d=techbrief.example;
+ dmarc=pass header.from=techbrief.example
+Return-Path: <brief@techbrief.example>
+From: Daily Tech Brief <brief@techbrief.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Today: chips, clouds and a new phone
+Date: Mon, 12 Oct 2026 20:20:00 +0000
+Message-ID: <golden-40@techbrief.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Five stories you shouldn't miss today.

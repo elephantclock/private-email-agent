@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=md.getsentry.example; dkim=pass header.d=md.getsentry.example;
+ dmarc=pass header.from=md.getsentry.example
+Return-Path: <noreply@md.getsentry.example>
+From: Sentry <noreply@md.getsentry.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: New issue: NullPointerException in SyncWorker
+Date: Mon, 12 Oct 2026 17:47:00 +0000
+Message-ID: <golden-31@md.getsentry.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+A new issue was first seen in production.

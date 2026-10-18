@@ -1,0 +1,18 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=gmail.com;
+ dkim=pass header.d=gmail.com; dmarc=pass header.from=gmail.com
+Return-Path: <ana.garcia@gmail.com>
+From: Ana =?utf-8?q?Garc=C3=ADa?= <ana.garcia@gmail.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?q?=C2=BFCenamos_el_s=C3=A1bado=3F?=
+Date: Mon, 12 Oct 2026 11:16:00 +0000
+Message-ID: <golden-08@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hola Alex,
+
+=C2=BFTe apetece cenar el s=C3=A1bado con nosotros? Av=C3=ADsame.
+
+Un abrazo,
+Ana

@@ -1,0 +1,18 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=fast-ship.example; dkim=pass header.d=fast-ship.example;
+ dmarc=pass header.from=fast-ship.example
+Return-Path: <noreply@fast-ship.example>
+From: =?utf-8?b?2LTYsdmD2Kkg2KfZhNi02K3ZhiDYp9mE2LPYsdmK2Lk=?=
+ <noreply@fast-ship.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?b?2KrZhSDYtNit2YYg2LfZhNio2YM=?=
+Date: Mon, 12 Oct 2026 16:22:00 +0000
+Message-ID: <golden-26@fast-ship.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+=D8=B7=D9=84=D8=A8=D9=83 =D9=81=D9=8A =D8=A7=D9=84=D8=B7=D8=B1=D9=8A=D9=82. =
+=D8=B1=D9=82=D9=85 =D8=A7=D9=84=D8=B7=D9=84=D8=A8 99812. =D8=A7=D9=84=D8=AA=
+=D9=88=D8=B5=D9=8A=D9=84 =D8=A7=D9=84=D9=85=D8=AA=D9=88=D9=82=D8=B9 =D8=BA=D8=
+=AF=D8=A7=D9=8B.

@@ -1,0 +1,16 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=microsoft-account-verify.example; dkim=pass
+ header.d=microsoft-account-verify.example; dmarc=pass
+ header.from=microsoft-account-verify.example
+Return-Path: <security@microsoft-account-verify.example>
+From: Microsoft account team <security@microsoft-account-verify.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your Microsoft security code
+Date: Tue, 13 Oct 2026 02:51:00 +0000
+Message-ID: <golden-63@microsoft-account-verify.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your security code is 4410. Enter it on the verification page to keep your ac=
+count.

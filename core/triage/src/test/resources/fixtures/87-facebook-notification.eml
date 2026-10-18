@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=facebookmail.com; dkim=pass header.d=facebookmail.com;
+ dmarc=pass header.from=facebookmail.com
+Return-Path: <notification@facebookmail.com>
+From: Facebook <notification@facebookmail.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Tom and 3 others commented on your photo
+Date: Tue, 13 Oct 2026 09:39:00 +0000
+Message-ID: <golden-87@facebookmail.com>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+See what your friends are saying.

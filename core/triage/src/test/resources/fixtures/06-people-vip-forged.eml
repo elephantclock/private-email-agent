@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=ourco.example; dkim=none header.d=ourco.example; dmarc=fail
+ header.from=ourco.example
+Return-Path: <maria.rossi@ourco.example>
+From: Maria Rossi <maria.rossi@ourco.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Quick favour - are you at your desk?
+Date: Mon, 12 Oct 2026 10:42:00 +0000
+Message-ID: <golden-06@ourco.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Alex, I'm in a meeting. Can you buy four gift cards for a client and send me =
+the codes? Maria

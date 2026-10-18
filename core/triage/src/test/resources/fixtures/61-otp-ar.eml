@@ -1,0 +1,16 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=gulfbank.example; dkim=pass header.d=gulfbank.example;
+ dmarc=pass header.from=gulfbank.example
+Return-Path: <noreply@gulfbank.example>
+From: =?utf-8?b?2KjZhtmDINin2YTYrtmE2YrYrA==?= <noreply@gulfbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?b?2LHZhdiyINin2YTYqtit2YLZgg==?=
+Date: Tue, 13 Oct 2026 02:17:00 +0000
+Message-ID: <golden-61@gulfbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+=D8=B1=D9=85=D8=B2 =D8=A7=D9=84=D8=AA=D8=AD=D9=82=D9=82 =D8=A7=D9=84=D8=AE=D8=
+=A7=D8=B5 =D8=A8=D9=83 =D9=87=D9=88 918273. =D9=84=D8=A7 =D8=AA=D8=B4=D8=A7=
+=D8=B1=D9=83=D9=87 =D9=85=D8=B9 =D8=A3=D8=AD=D8=AF.

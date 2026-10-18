@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=email.apple.com; dkim=pass header.d=email.apple.com; dmarc=pass
+ header.from=email.apple.com
+Return-Path: <no_reply@email.apple.com>
+From: Apple <no_reply@email.apple.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your receipt from Apple.
+Date: Mon, 12 Oct 2026 12:58:00 +0000
+Message-ID: <golden-14@email.apple.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Receipt
+Apple ID: alex@ourco.example
+iCloud+ 200 GB monthly 2.99 EUR
+Billed to Visa .... 4242

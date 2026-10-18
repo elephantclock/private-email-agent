@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=growth-agency.example; dkim=pass
+ header.d=growth-agency.example; dmarc=pass header.from=growth-agency.example
+Return-Path: <ryan@growth-agency.example>
+From: Ryan Cole <ryan@growth-agency.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Quick question about ourco.example's SEO
+Date: Mon, 12 Oct 2026 22:53:00 +0000
+Message-ID: <golden-49@growth-agency.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex, I noticed your site could rank higher. Do you have 15 minutes this w=
+eek?

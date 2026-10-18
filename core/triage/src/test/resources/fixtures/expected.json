@@ -1,0 +1,524 @@
+{
+  "knownFailures": {
+    "45-newsletter-mentions-invoice.eml": "Money protection (T21) blocks DISCARD whenever a money word appears anywhere in the subject or preview, so a newsletter about invoicing is filed to Money instead of discarded. Left as is on purpose: weakening the protection risks discarding real invoices sent through ESPs; decide with T25's real-mailbox numbers."
+  },
+  "fixtures": {
+    "01-people-ru-colleague.eml": {
+      "decision": "needs-ai",
+      "protected": true
+    },
+    "02-people-de-partner.eml": {
+      "decision": "needs-ai",
+      "protected": true
+    },
+    "03-people-ar-stranger.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "04-people-en-replied-thread.eml": {
+      "decision": "needs-ai",
+      "protected": true
+    },
+    "05-people-vip.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "URGENT",
+      "rule": "vip"
+    },
+    "06-people-vip-forged.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "NORMAL",
+      "rule": "vip",
+      "note": "Forged From of a VIP (dmarc=fail): stays in Priority (relationship protection) but must not alert"
+    },
+    "07-people-fr-stranger.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "08-people-es-plus-tag.eml": {
+      "decision": "needs-ai",
+      "protected": true,
+      "note": "User wrote to ana.garcia+work@gmail.com; the +tag must not matter"
+    },
+    "09-people-discussion-list.eml": {
+      "decision": "needs-ai",
+      "protected": true
+    },
+    "10-people-contact-newsletter.eml": {
+      "decision": "needs-ai",
+      "protected": true,
+      "note": "A newsletter, but the user has written to this sender: never discarded"
+    },
+    "11-invoice-en-noreply.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "12-invoice-de-rechnung.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "13-invoice-ru-schet.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "14-receipt-apple.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "15-receipt-ar.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "16-invoice-from-person.eml": {
+      "decision": "needs-ai",
+      "protected": true
+    },
+    "17-duplicate-payment-alert.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "HIGH",
+      "rule": "role.money",
+      "note": "A duplicate charge needs the user's action: Money, but HIGH so it alerts"
+    },
+    "18-duplicate-payment-ru.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "HIGH",
+      "rule": "role.money"
+    },
+    "19-duplicate-payment-phish.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "20-refund-es.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "21-order-shipped-en.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "22-order-confirmation-with-total.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders",
+      "note": "An order confirmation that mentions the amount is still an order"
+    },
+    "23-booking-hotel-de.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "24-flight-ru.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "25-boarding-pass-en.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "26-delivery-ar.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "27-order-fr.eml": {
+      "action": "FILE",
+      "target": "ORDERS",
+      "importance": "NORMAL",
+      "rule": "role.orders"
+    },
+    "28-github-review.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "29-gitlab-mr.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "30-jira-ticket.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "31-sentry-alert.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "getsentry.example is not a known work tool: the AI decides"
+    },
+    "32-sentry-io-alert.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "33-zendesk-ticket.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "34-linear-issue.eml": {
+      "action": "FILE",
+      "target": "WORK",
+      "importance": "NORMAL",
+      "rule": "role.work"
+    },
+    "35-youtrack-selfhosted.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "A self-hosted tracker isn't in the work-tool list; leaving it to the AI is right"
+    },
+    "36-code-review-from-colleague.eml": {
+      "decision": "needs-ai",
+      "protected": true,
+      "note": "'code is' plus a branch number is not a security code"
+    },
+    "37-newsletter-mailchimp-en.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "38-newsletter-sendgrid-de.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "39-newsletter-ru-unisender.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "40-newsletter-one-click.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "41-newsletter-ar.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "42-newsletter-plain-list.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "Unsubscribe link without an ESP or one-click header: not sure enough to discard"
+    },
+    "43-marketing-free-delivery.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing",
+      "note": "'delivery' in a promotion does not make it an order notification"
+    },
+    "44-marketing-flight-deals.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing",
+      "note": "A flight sale is marketing, not a booking"
+    },
+    "45-newsletter-mentions-invoice.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "46-learned-discard-domain.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "learned:1"
+    },
+    "47-learned-discard-blocked-by-sent-to.eml": {
+      "decision": "needs-ai",
+      "protected": true,
+      "note": "The user's discard rule for vendor.example must not discard someone they wrote to"
+    },
+    "48-learned-file-custom.eml": {
+      "action": "FILE",
+      "target": "CUSTOM",
+      "importance": "NORMAL",
+      "rule": "learned:3",
+      "customName": "Kids school"
+    },
+    "49-cold-pitch-en.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "50-cold-pitch-esp.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "51-cold-pitch-ru.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "52-cold-pitch-fake-re.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "'Re:' in the subject without In-Reply-To or References is no relationship"
+    },
+    "53-cold-pitch-fake-references.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "References to a message the user never sent: not a replied thread"
+    },
+    "54-registration-confirm-en.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "55-registration-welcome-esp.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "Account mail sent through an ESP is not discarded on bulk headers alone"
+    },
+    "56-registration-de.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "57-registration-code.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "58-otp-en.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "59-otp-ru.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "60-otp-de.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "61-otp-ar.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "62-otp-via-esp.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "HIGH",
+      "rule": "role.security-code"
+    },
+    "63-otp-phish-lookalike.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "64-phish-paypal-typo.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "65-phish-idn-apple.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "66-phish-brand-in-display-name.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "67-phish-hidden-chars-auth-fail.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.hidden-characters"
+    },
+    "68-phish-hidden-brand-name.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.disguised-brand",
+      "note": "A brand name split by an invisible character in the display name is disguise, even with auth passing"
+    },
+    "69-hidden-chars-legit-emoji.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "ZWJ inside emoji sequences is legitimate"
+    },
+    "70-phish-auth-fail.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.auth"
+    },
+    "71-phish-forged-lower-auth-results.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.auth",
+      "note": "Topmost (real) instance fails; the lower one, added by the sender, claims a pass"
+    },
+    "72-phish-forged-untrusted-authserv.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "Only a forged Authentication-Results with another authserv-id: auth is unknown, not pass"
+    },
+    "73-phish-trusted-below-forged.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.auth",
+      "note": "The configured authserv-id wins over a forged instance above it"
+    },
+    "74-phish-lookalike-frequent-domain.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike",
+      "note": "Imitates partnerfirma.de, a domain the user writes to often"
+    },
+    "75-phish-lookalike-own-domain.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "76-phish-forged-self.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.auth",
+      "note": "Mail forged from the user's own address is not protected"
+    },
+    "77-legit-paypal.eml": {
+      "action": "FILE",
+      "target": "MONEY",
+      "importance": "NORMAL",
+      "rule": "role.money"
+    },
+    "78-legit-google-signin.eml": {
+      "decision": "needs-ai",
+      "protected": false,
+      "note": "Account security mail: never filed away by rules"
+    },
+    "79-injection-urgent-en.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "80-injection-fake-json.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "81-injection-ru.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "bulk.marketing"
+    },
+    "82-injection-subject-lookalike.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.lookalike"
+    },
+    "83-injection-claims-vip.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "84-injection-fake-auth-in-body.eml": {
+      "action": "JUNK",
+      "target": "JUNK",
+      "importance": "LOW",
+      "rule": "phishing.auth"
+    },
+    "85-linkedin-pymk.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "low-value.social"
+    },
+    "86-linkedin-message.eml": {
+      "decision": "needs-ai",
+      "protected": false
+    },
+    "87-facebook-notification.eml": {
+      "action": "DISCARD",
+      "target": "DISCARDED",
+      "importance": "LOW",
+      "rule": "low-value.social"
+    },
+    "88-uptime-report.eml": {
+      "action": "FILE",
+      "target": "REPORTS",
+      "importance": "LOW",
+      "rule": "role.reports"
+    },
+    "89-dmarc-report.eml": {
+      "action": "FILE",
+      "target": "REPORTS",
+      "importance": "LOW",
+      "rule": "role.reports"
+    },
+    "90-learned-vip.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "URGENT",
+      "rule": "learned:4"
+    },
+    "91-learned-vip-forged.eml": {
+      "action": "KEEP",
+      "target": "PRIORITY",
+      "importance": "NORMAL",
+      "rule": "learned:4",
+      "note": "Learned VIP rule, but authentication fails: no alert"
+    }
+  }
+}

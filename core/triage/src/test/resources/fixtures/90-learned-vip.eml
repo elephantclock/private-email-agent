@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=bigclient.example; dkim=pass header.d=bigclient.example;
+ dmarc=pass header.from=bigclient.example
+Return-Path: <sarah.chen@bigclient.example>
+From: Sarah Chen <sarah.chen@bigclient.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Contract signed
+Date: Tue, 13 Oct 2026 10:30:00 +0000
+Message-ID: <golden-90@bigclient.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Alex, the contract is signed. Let's kick off on Monday.

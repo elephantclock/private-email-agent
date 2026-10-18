@@ -1,0 +1,18 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=growth-agency.example; dkim=pass
+ header.d=growth-agency.example; dmarc=pass header.from=growth-agency.example
+Return-Path: <ryan@growth-agency.example>
+From: Ryan Cole <ryan@growth-agency.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Following up: 3x more leads
+Date: Mon, 12 Oct 2026 23:10:00 +0000
+Message-ID: <golden-50@growth-agency.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-Mailgun-Sid: WyJyYyJd
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Just bumping this to the top of your inbox. Are you the right person to talk =
+to?

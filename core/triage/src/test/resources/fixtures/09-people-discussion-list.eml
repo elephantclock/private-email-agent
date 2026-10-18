@@ -1,0 +1,19 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=ourco.example; dkim=pass header.d=ourco.example; dmarc=pass
+ header.from=ourco.example
+Return-Path: <dmitri.ivanov@ourco.example>
+From: Dmitri Ivanov <dmitri.ivanov@ourco.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: [team] Offsite agenda
+Date: Mon, 12 Oct 2026 11:33:00 +0000
+Message-ID: <golden-09@ourco.example>
+List-Id: Team list <team.ourco.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+Precedence: list
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Team, the draft agenda for the offsite is in the shared folder. Comments by M=
+onday please.

@@ -1,0 +1,18 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=billing.cloudhost.example; dkim=pass
+ header.d=billing.cloudhost.example; dmarc=pass
+ header.from=billing.cloudhost.example
+Return-Path: <no-reply@billing.cloudhost.example>
+From: Cloudhost Billing <no-reply@billing.cloudhost.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Invoice INV-2026-0042 for October
+Date: Mon, 12 Oct 2026 12:07:00 +0000
+Message-ID: <golden-11@billing.cloudhost.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hello Alex,
+
+Your invoice for October is available. Amount due: 129.00 EUR, due on 31 Octo=
+ber 2026.

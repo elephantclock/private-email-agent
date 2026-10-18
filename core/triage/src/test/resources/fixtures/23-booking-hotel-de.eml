@@ -1,0 +1,16 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=hotel-seeblick.example; dkim=pass
+ header.d=hotel-seeblick.example; dmarc=pass
+ header.from=hotel-seeblick.example
+Return-Path: <noreply@hotel-seeblick.example>
+From: Hotel Seeblick <noreply@hotel-seeblick.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Ihre Buchung ist =?utf-8?q?best=C3=A4tigt?=
+Date: Mon, 12 Oct 2026 15:31:00 +0000
+Message-ID: <golden-23@hotel-seeblick.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Vielen Dank f=C3=BCr Ihre Buchung vom 20. bis 22. November. Ihre Reservierung=
+snummer: SB-4411.

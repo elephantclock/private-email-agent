@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=mail-center-secure.example; dkim=pass
+ header.d=mail-center-secure.example; dmarc=pass
+ header.from=mail-center-secure.example
+Return-Path: <alerts@mail-center-secure.example>
+From: "service@paypal.com" <alerts@mail-center-secure.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Payment on hold
+Date: Tue, 13 Oct 2026 03:42:00 +0000
+Message-ID: <golden-66@mail-center-secure.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+A payment to your account is on hold. Log in to release it.

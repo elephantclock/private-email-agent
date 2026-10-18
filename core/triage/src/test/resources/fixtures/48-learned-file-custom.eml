@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=greenfield-school.example; dkim=pass
+ header.d=greenfield-school.example; dmarc=pass
+ header.from=greenfield-school.example
+Return-Path: <office@greenfield-school.example>
+From: Greenfield School Office <office@greenfield-school.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Parents' evening on 5 November
+Date: Mon, 12 Oct 2026 22:36:00 +0000
+Message-ID: <golden-48@greenfield-school.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Dear parents, parents' evening takes place on 5 November from 17:00.

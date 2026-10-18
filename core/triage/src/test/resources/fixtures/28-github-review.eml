@@ -1,0 +1,21 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=github.com;
+ dkim=pass header.d=github.com; dmarc=pass header.from=github.com
+Return-Path: <notifications@github.com>
+From: Sam Lee <notifications@github.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Re: [org/parser] Fix header folding (PR #42)
+Date: Mon, 12 Oct 2026 16:56:00 +0000
+Message-ID: <golden-28@github.com>
+In-Reply-To: <org/parser/pull/42@github.com>
+References: <org/parser/pull/42@github.com>
+List-Id: org/parser <parser.org.github.com>
+List-Unsubscribe: <mailto:unsub+abc@reply.github.com>
+Precedence: list
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+@samlee requested changes on this pull request.
+Please handle the empty continuation line.
+
+Reply to this email directly or view it on GitHub.

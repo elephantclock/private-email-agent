@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=notely.example; dkim=pass header.d=notely.example; dmarc=pass
+ header.from=notely.example
+Return-Path: <no-reply@notely.example>
+From: Notely <no-reply@notely.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Confirm your email address
+Date: Tue, 13 Oct 2026 00:18:00 +0000
+Message-ID: <golden-54@notely.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Welcome to Notely! Click the link below to verify your email address.

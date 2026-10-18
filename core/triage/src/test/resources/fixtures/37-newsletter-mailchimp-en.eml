@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=trailgear.example; dkim=pass header.d=trailgear.example;
+ dmarc=pass header.from=trailgear.example
+Return-Path: <news@trailgear.example>
+From: Trail Gear Co <news@trailgear.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: October picks: 5 jackets for the rain
+Date: Mon, 12 Oct 2026 19:29:00 +0000
+Message-ID: <golden-37@trailgear.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-MC-User: 77aa
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Our favourite rain jackets this month, plus a guide to layering.

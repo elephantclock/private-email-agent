@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=gadgetshop.example; dkim=pass header.d=gadgetshop.example;
+ dmarc=pass header.from=gadgetshop.example
+Return-Path: <no-reply@gadgetshop.example>
+From: Gadget Shop <no-reply@gadgetshop.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your order #A-55120 has shipped
+Date: Mon, 12 Oct 2026 14:57:00 +0000
+Message-ID: <golden-21@gadgetshop.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Good news! Your order has shipped. Tracking number: 1Z999AA10123456784.

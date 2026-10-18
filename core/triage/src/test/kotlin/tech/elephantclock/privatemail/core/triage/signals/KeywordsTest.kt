@@ -67,6 +67,47 @@ class KeywordsTest {
         assertEquals(false, Keywords.hasCode("v4821"))
         assertEquals(false, Keywords.hasCode("12.50"))
         assertEquals(false, Keywords.hasCode("1 2 3 4"))
+        // A number joined to a word by a hyphen is a branch, ticket or part number, not a code.
+        assertEquals(false, Keywords.hasCode("the code is in branch feature-2048"))
+        assertEquals(false, Keywords.hasCode("ticket OPS-1234"))
+        assertEquals(true, Keywords.hasCode("G-482193 is your code"), "one-letter prefix, as Google writes it")
+    }
+
+    @Test
+    fun `duplicate charges`() {
+        listOf(
+            "Possible duplicate payment: 49.00 EUR charged twice",
+            "Duplicate charge on your card",
+            "Двойное списание по карте",
+            "Doppelte Abbuchung festgestellt",
+            "Paiement en double détecté",
+            "Cargo duplicado en tu tarjeta",
+            "تم اكتشاف دفعة مكررة",
+        ).forEach { assertEquals(true, Keywords.duplicateCharge(it), it) }
+        listOf("Payment received", "Duplicate this template", "Charged up for the weekend").forEach {
+            assertEquals(false, Keywords.duplicateCharge(it), it)
+        }
+    }
+
+    @Test
+    fun `order updates are specific, unlike promotions`() {
+        listOf(
+            "Your order #123 has shipped",
+            "Order confirmation #A-1",
+            "Tracking number 1Z999",
+            "Your boarding pass for flight SL 220",
+            "Ваш заказ №55 передан в доставку",
+            "Ihre Buchung ist bestätigt",
+            "Votre commande n° 5521 a été expédiée",
+            "Tu pedido ha sido enviado",
+            "تم شحن طلبك",
+        ).forEach { assertEquals(true, Keywords.orderUpdate(it), it) }
+        listOf(
+            "Black Friday: 50% off and free delivery",
+            "Flights to Lisbon from 29 EUR",
+            "Book your next flight now",
+            "Reisen buchen und sparen",
+        ).forEach { assertEquals(false, Keywords.orderUpdate(it), it) }
     }
 
     @Test

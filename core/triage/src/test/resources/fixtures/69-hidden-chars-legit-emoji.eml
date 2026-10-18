@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=cafe-olcu.example; dkim=pass header.d=cafe-olcu.example;
+ dmarc=pass header.from=cafe-olcu.example
+Return-Path: <hello@cafe-olcu.example>
+From:
+ =?utf-8?b?Q2Fmw6kgw5Zsw6fDvCDwn5Gp4oCN8J+Nsw==?= <hello@cafe-olcu.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Our new menu =?utf-8?b?8J+RqOKAjfCfkanigI3wn5Gn?=
+Date: Tue, 13 Oct 2026 04:33:00 +0000
+Message-ID: <golden-69@cafe-olcu.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Come and try our new autumn menu.

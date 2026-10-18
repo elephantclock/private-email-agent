@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=slowreader.example; dkim=pass header.d=slowreader.example;
+ dmarc=pass header.from=slowreader.example
+Return-Path: <letters@slowreader.example>
+From: The Slow Reader <letters@slowreader.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Issue 88: on boredom
+Date: Mon, 12 Oct 2026 20:54:00 +0000
+Message-ID: <golden-42@slowreader.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+List-Id: <slowreader.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+This week's essay is about boredom and why it matters.

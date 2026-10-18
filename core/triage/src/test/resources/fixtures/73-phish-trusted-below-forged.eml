@@ -1,0 +1,17 @@
+Authentication-Results: mx.evil.example; spf=pass
+ smtp.mailfrom=nordbank.example; dkim=pass header.d=nordbank.example;
+ dmarc=pass header.from=nordbank.example
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=nordbank.example; dkim=fail header.d=nordbank.example;
+ dmarc=fail header.from=nordbank.example
+Return-Path: <security@nordbank.example>
+From: NordBank <security@nordbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Card blocked
+Date: Tue, 13 Oct 2026 05:41:00 +0000
+Message-ID: <golden-73@nordbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your card is blocked. Unblock it here.

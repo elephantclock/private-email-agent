@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=flycheap.example; dkim=pass header.d=flycheap.example;
+ dmarc=pass header.from=flycheap.example
+Return-Path: <deals@flycheap.example>
+From: FlyCheap <deals@flycheap.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Flights to Lisbon from 29 EUR
+Date: Mon, 12 Oct 2026 21:28:00 +0000
+Message-ID: <golden-44@flycheap.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-SG-EID: fc-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Autumn sale: book your next flight now, prices from 29 EUR one way.

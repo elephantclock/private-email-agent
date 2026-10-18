@@ -1,0 +1,19 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=jn-design.example; dkim=pass header.d=jn-design.example;
+ dmarc=pass header.from=jn-design.example
+Return-Path: <jana.novak@jn-design.example>
+From: Jana Novak <jana.novak@jn-design.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Invoice for September work
+Date: Mon, 12 Oct 2026 13:32:00 +0000
+Message-ID: <golden-16@jn-design.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex,
+
+attached is my invoice for the September illustrations. Payment within 14 day=
+s would be great.
+
+Jana

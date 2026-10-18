@@ -1,0 +1,16 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=ourco.atlassian.net; dkim=pass header.d=ourco.atlassian.net;
+ dmarc=pass header.from=ourco.atlassian.net
+Return-Path: <jira@ourco.atlassian.net>
+From: "Priya Shah (Jira)" <jira@ourco.atlassian.net>
+To: Alex Morgan <alex@ourco.example>
+Subject: [JIRA] (OPS-1234) Backup job failing on node 3
+Date: Mon, 12 Oct 2026 17:30:00 +0000
+Message-ID: <golden-30@ourco.atlassian.net>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Priya Shah created OPS-1234. Priority: High. The nightly backup job fails wit=
+h exit code 2.

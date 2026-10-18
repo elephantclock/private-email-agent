@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=notely.example; dkim=pass header.d=notely.example; dmarc=pass
+ header.from=notely.example
+Return-Path: <no-reply@notely.example>
+From: Notely <no-reply@notely.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your confirmation code
+Date: Tue, 13 Oct 2026 01:09:00 +0000
+Message-ID: <golden-57@notely.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your confirmation code is 482913. It expires in 10 minutes.

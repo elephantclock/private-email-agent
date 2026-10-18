@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=ourco.example; dkim=pass header.d=ourco.example; dmarc=pass
+ header.from=ourco.example
+Return-Path: <maria.rossi@ourco.example>
+From: Maria Rossi <maria.rossi@ourco.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Board deck - need your numbers today
+Date: Mon, 12 Oct 2026 10:25:00 +0000
+Message-ID: <golden-05@ourco.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Alex, can you send me the Q3 numbers before 4pm? Thanks, Maria

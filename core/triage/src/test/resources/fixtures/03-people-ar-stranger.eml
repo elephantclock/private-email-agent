@@ -1,0 +1,24 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=gulf-trading.example; dkim=pass header.d=gulf-trading.example;
+ dmarc=pass header.from=gulf-trading.example
+Return-Path: <layla.haddad@gulf-trading.example>
+From: =?utf-8?b?2YTZitmE2Ykg2K3Yr9in2K8=?= <layla.haddad@gulf-trading.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?b?2KfYs9iq2YHYs9in2LEg2LnZhiDYp9mE2KrYudin2YjZhg==?=
+Date: Mon, 12 Oct 2026 09:51:00 +0000
+Message-ID: <golden-03@gulf-trading.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+=D9=85=D8=B1=D8=AD=D8=A8=D8=A7=D9=8B =D8=A3=D9=84=D9=8A=D9=83=D8=B3=D8=8C
+
+=D8=A3=D9=88=D8=AF =D8=A3=D9=86 =D8=A3=D8=B9=D8=B1=D9=81 =D8=A5=D8=B0=D8=A7 =
+=D9=83=D8=A7=D9=86 =D9=84=D8=AF=D9=8A=D9=83=D9=85 =D9=88=D9=82=D8=AA =D9=84=
+=D9=85=D9=83=D8=A7=D9=84=D9=85=D8=A9 =D9=82=D8=B5=D9=8A=D8=B1=D8=A9 =D8=A7=D9=
+=84=D8=A3=D8=B3=D8=A8=D9=88=D8=B9 =D8=A7=D9=84=D9=82=D8=A7=D8=AF=D9=85 =D9=84=
+=D9=85=D9=86=D8=A7=D9=82=D8=B4=D8=A9 =D9=85=D8=B4=D8=B1=D9=88=D8=B9 =D8=AC=D8=
+=AF=D9=8A=D8=AF.
+
+=D9=85=D8=B9 =D8=A7=D9=84=D8=AA=D8=AD=D9=8A=D8=A9
+=D9=84=D9=8A=D9=84=D9=89

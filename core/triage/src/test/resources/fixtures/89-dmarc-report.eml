@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=google.com;
+ dkim=pass header.d=google.com; dmarc=pass header.from=google.com
+Return-Path: <noreply-dmarc-support@google.com>
+From: Google <noreply-dmarc-support@google.com>
+To: Alex Morgan <alex@ourco.example>
+Subject:
+ Report domain: ourco.example Submitter: google.com Report-ID: 1234567890
+Date: Tue, 13 Oct 2026 10:13:00 +0000
+Message-ID: <golden-89@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+This is an aggregate report from google.com.

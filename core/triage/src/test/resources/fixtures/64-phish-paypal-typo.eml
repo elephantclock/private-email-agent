@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=paypa1.com;
+ dkim=pass header.d=paypa1.com; dmarc=pass header.from=paypa1.com
+Return-Path: <service@paypa1.com>
+From: PayPal <service@paypa1.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your account has been limited
+Date: Tue, 13 Oct 2026 03:08:00 +0000
+Message-ID: <golden-64@paypa1.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+We noticed unusual activity. Confirm your details within 24 hours to restore =
+access.

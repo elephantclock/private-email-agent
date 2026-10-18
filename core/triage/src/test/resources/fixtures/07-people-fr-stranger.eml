@@ -1,0 +1,20 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=atelier-lyon.example; dkim=pass header.d=atelier-lyon.example;
+ dmarc=pass header.from=atelier-lyon.example
+Return-Path: <pierre.durand@atelier-lyon.example>
+From: Pierre Durand <pierre.durand@atelier-lyon.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Rendez-vous =?utf-8?q?=C3=A0?= Lyon
+Date: Mon, 12 Oct 2026 10:59:00 +0000
+Message-ID: <golden-07@atelier-lyon.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Bonjour Alex,
+
+Seriez-vous disponible jeudi pour un caf=C3=A9 =C3=A0 Lyon ? J'aimerais vous =
+pr=C3=A9senter notre atelier.
+
+Cordialement,
+Pierre

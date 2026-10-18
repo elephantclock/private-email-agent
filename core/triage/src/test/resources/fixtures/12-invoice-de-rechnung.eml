@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=stadtwerke-nord.example; dkim=pass
+ header.d=stadtwerke-nord.example; dmarc=pass
+ header.from=stadtwerke-nord.example
+Return-Path: <noreply@stadtwerke-nord.example>
+From: Stadtwerke Kundenservice <noreply@stadtwerke-nord.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Ihre Rechnung =?utf-8?q?f=C3=BCr?= September
+Date: Mon, 12 Oct 2026 12:24:00 +0000
+Message-ID: <golden-12@stadtwerke-nord.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Sehr geehrter Herr Morgan,
+
+anbei erhalten Sie Ihre Rechnung. Der Betrag wird per Lastschrift eingezogen.

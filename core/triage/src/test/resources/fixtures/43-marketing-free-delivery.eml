@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=megastore.example; dkim=pass header.d=megastore.example;
+ dmarc=pass header.from=megastore.example
+Return-Path: <offers@megastore.example>
+From: MegaStore <offers@megastore.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Black Friday starts now: 50% off and free delivery
+Date: Mon, 12 Oct 2026 21:11:00 +0000
+Message-ID: <golden-43@megastore.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-Mailgun-Sid: WyI0NiJd
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Everything half price this weekend. Free delivery on all orders over 20 EUR.

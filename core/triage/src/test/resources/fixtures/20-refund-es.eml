@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=tiendasol.example; dkim=pass header.d=tiendasol.example;
+ dmarc=pass header.from=tiendasol.example
+Return-Path: <noreply@tiendasol.example>
+From: Tienda Sol <noreply@tiendasol.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Tu reembolso ha sido procesado
+Date: Mon, 12 Oct 2026 14:40:00 +0000
+Message-ID: <golden-20@tiendasol.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hola Alex, hemos procesado el reembolso de 35,00 EUR a tu tarjeta.

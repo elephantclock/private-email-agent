@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=account-notice.example; dkim=fail
+ header.d=account-notice.example; dmarc=none
+ header.from=account-notice.example
+Return-Path: <review@account-notice.example>
+From: Account Review <review@account-notice.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your =?utf-8?q?mail=E2=80=8Bbox?= is almost full
+Date: Tue, 13 Oct 2026 03:59:00 +0000
+Message-ID: <golden-67@account-notice.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your mailbox will stop receiving mail. Upgrade your storage now.

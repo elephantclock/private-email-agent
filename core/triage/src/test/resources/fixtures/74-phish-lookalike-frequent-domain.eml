@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=partnerfrima.de; dkim=pass header.d=partnerfrima.de; dmarc=pass
+ header.from=partnerfrima.de
+Return-Path: <katrin.mueller@partnerfrima.de>
+From: Katrin =?utf-8?q?M=C3=BCller?= <katrin.mueller@partnerfrima.de>
+To: Alex Morgan <alex@ourco.example>
+Subject: Updated bank details for our invoices
+Date: Tue, 13 Oct 2026 05:58:00 +0000
+Message-ID: <golden-74@partnerfrima.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hallo Alex, please use our new bank account for all future payments.

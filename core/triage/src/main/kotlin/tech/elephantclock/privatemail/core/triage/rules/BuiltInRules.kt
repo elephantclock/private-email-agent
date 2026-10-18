@@ -9,6 +9,7 @@ import tech.elephantclock.privatemail.core.model.Verdict
 import tech.elephantclock.privatemail.core.model.VerdictSource
 import tech.elephantclock.privatemail.core.triage.MailItem
 import tech.elephantclock.privatemail.core.triage.people.Protection
+import tech.elephantclock.privatemail.core.triage.signals.BrandDisguise
 import tech.elephantclock.privatemail.core.triage.signals.Domains
 import tech.elephantclock.privatemail.core.triage.signals.Keywords
 import tech.elephantclock.privatemail.core.triage.signals.SignalExtractor
@@ -31,6 +32,14 @@ class RuleContext(
 
     val accountSecurity: Boolean by lazy(LazyThreadSafetyMode.NONE) { Keywords.accountSecurity(content) }
     val ordersOrTravel: Boolean by lazy(LazyThreadSafetyMode.NONE) { Keywords.ordersOrTravel(content) }
+    val orderUpdate: Boolean by lazy(LazyThreadSafetyMode.NONE) { Keywords.orderUpdate(content) }
+    val duplicateCharge: Boolean by lazy(LazyThreadSafetyMode.NONE) { Keywords.duplicateCharge(content) }
+
+    /** The subject is about an order or booking and not about money ("Order confirmation #12"). */
+    val orderSubject: Boolean by lazy(LazyThreadSafetyMode.NONE) {
+        val subject = message.header.subject
+        Keywords.ordersOrTravel(subject) && !Keywords.money(subject)
+    }
     val workTool: Boolean get() = senderRegistrable in BuiltInRules.WORK_TOOLS
 }
 
@@ -69,6 +78,17 @@ object BuiltInRules {
                     null
                 }
             },
+            Rule("phishing.disguised-brand") { c ->
+                val header = c.message.header
+                val brand =
+                    if (c.signals.hiddenCharacters) {
+                        BrandDisguise.detect(header.from?.name, c.senderRegistrable)
+                            ?: BrandDisguise.detect(header.subject, c.senderRegistrable)
+                    } else {
+                        null
+                    }
+                brand?.let { Verdict.junk(src, "Hidden characters disguise the name $it") }
+            },
         )
 
     val BULK: List<Rule> =
@@ -89,7 +109,7 @@ object BuiltInRules {
                     }
                 val marketing =
                     s.hasListUnsubscribe && indicator != null && !s.isReply && !c.workTool &&
-                        !c.ordersOrTravel && !c.accountSecurity
+                        !c.orderUpdate && !c.accountSecurity
                 if (marketing) Verdict.discard(src, "Newsletter or marketing: unsubscribe link, $indicator") else null
             },
         )
@@ -111,10 +131,28 @@ object BuiltInRules {
                 if (c.signals.securityCode) Verdict.keep(Importance.HIGH, src, "Security code") else null
             },
             Rule("role.money") { c ->
-                if (c.signals.moneySignal && c.automated) {
-                    Verdict.file(FolderTarget(FolderRole.MONEY), Importance.NORMAL, src, "Payment, invoice or receipt")
-                } else {
-                    null
+                when {
+                    !c.signals.moneySignal || !c.automated -> {
+                        null
+                    }
+
+                    c.duplicateCharge -> {
+                        Verdict.file(FolderTarget(FolderRole.MONEY), Importance.HIGH, src, "Possible duplicate charge")
+                    }
+
+                    // An order confirmation that mentions the total is an order (role.orders below).
+                    c.orderSubject && c.ordersOrTravel -> {
+                        null
+                    }
+
+                    else -> {
+                        Verdict.file(
+                            FolderTarget(FolderRole.MONEY),
+                            Importance.NORMAL,
+                            src,
+                            "Payment, invoice or receipt",
+                        )
+                    }
                 }
             },
             Rule("role.orders") { c ->

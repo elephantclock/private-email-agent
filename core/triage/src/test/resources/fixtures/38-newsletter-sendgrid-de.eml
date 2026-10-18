@@ -1,0 +1,19 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=roesterei-braun.example; dkim=pass
+ header.d=roesterei-braun.example; dmarc=pass
+ header.from=roesterei-braun.example
+Return-Path: <newsletter@roesterei-braun.example>
+From:
+ =?utf-8?q?Kaffeer=C3=B6sterei?= Braun <newsletter@roesterei-braun.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Neue =?utf-8?q?R=C3=B6stung=3A_=C3=84thiopien?= Yirgacheffe
+Date: Mon, 12 Oct 2026 19:46:00 +0000
+Message-ID: <golden-38@roesterei-braun.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-SG-EID: xyz123
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Entdecken Sie unsere neue R=C3=B6stung mit Noten von Jasmin und Zitrone.

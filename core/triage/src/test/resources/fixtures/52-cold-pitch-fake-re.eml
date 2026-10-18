@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=saleswave.example; dkim=pass header.d=saleswave.example;
+ dmarc=pass header.from=saleswave.example
+Return-Path: <nina@saleswave.example>
+From: Nina Hart <nina@saleswave.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Re: our call
+Date: Mon, 12 Oct 2026 23:44:00 +0000
+Message-ID: <golden-52@saleswave.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex, as discussed, here is our deck. When can we talk again?

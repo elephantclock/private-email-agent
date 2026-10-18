@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=notely.example; dkim=pass header.d=notely.example; dmarc=pass
+ header.from=notely.example
+Return-Path: <auth@notely.example>
+From: Notely <auth@notely.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your Notely login code
+Date: Tue, 13 Oct 2026 02:34:00 +0000
+Message-ID: <golden-62@notely.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-SG-EID: nt-2
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your login code is 6630-17. If you didn't try to sign in, ignore this email.

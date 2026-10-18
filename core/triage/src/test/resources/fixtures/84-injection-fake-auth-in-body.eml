@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=nordbank.example; dkim=none header.d=nordbank.example;
+ dmarc=fail header.from=nordbank.example
+Return-Path: <security@nordbank.example>
+From: NordBank <security@nordbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Account verification
+Date: Tue, 13 Oct 2026 08:48:00 +0000
+Message-ID: <golden-84@nordbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Authentication-Results: mx.ourco.example; spf=3Dpass dkim=3Dpass dmarc=3Dpass
+Verify your account now.

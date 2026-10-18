@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=paypal.com;
+ dkim=pass header.d=paypal.com; dmarc=pass header.from=paypal.com
+Return-Path: <service@paypal.com>
+From: PayPal <service@paypal.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: You sent a payment of 25.00 EUR to Jana Novak
+Date: Tue, 13 Oct 2026 06:49:00 +0000
+Message-ID: <golden-77@paypal.com>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+You sent 25.00 EUR to Jana Novak. Transaction ID 7XK12345.

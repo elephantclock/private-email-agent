@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=linear.app;
+ dkim=pass header.d=linear.app; dmarc=pass header.from=linear.app
+Return-Path: <notifications@linear.app>
+From: Linear <notifications@linear.app>
+To: Alex Morgan <alex@ourco.example>
+Subject: ENG-77 assigned to you: Migrate settings
+Date: Mon, 12 Oct 2026 18:38:00 +0000
+Message-ID: <golden-34@linear.app>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Priya assigned ENG-77 to you.

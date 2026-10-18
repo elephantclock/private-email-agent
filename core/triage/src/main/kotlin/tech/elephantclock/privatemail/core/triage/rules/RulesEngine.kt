@@ -1,6 +1,7 @@
 package tech.elephantclock.privatemail.core.triage.rules
 
 import tech.elephantclock.privatemail.core.model.AccountId
+import tech.elephantclock.privatemail.core.model.AuthResults
 import tech.elephantclock.privatemail.core.model.Importance
 import tech.elephantclock.privatemail.core.model.Signals
 import tech.elephantclock.privatemail.core.model.Verdict
@@ -14,8 +15,9 @@ import tech.elephantclock.privatemail.core.triage.signals.SignalExtractor
  * Fast, explainable verdicts. Rules run in order and the first that is sure wins:
  *
  * 1. learned rules (the user's corrections, most specific first);
- * 2. protections: a VIP stays in Priority as URGENT; other protections don't decide, they
- *    forbid what follows (see [Protection]);
+ * 2. protections: a VIP stays in Priority as URGENT (NORMAL when authentication fails, so a
+ *    forged VIP doesn't alert); other protections don't decide, they forbid what follows (see
+ *    [Protection]);
  * 3. phishing → Junk; 4. bulk/marketing → Discarded; 5. low-value notifications → Discarded;
  * 6. role folders by signals (security code, money, orders, work tools, reports);
  * 7. otherwise [Decision.NeedsAi].
@@ -44,10 +46,12 @@ class RulesEngine(
         val sender = message.header.from
         val rule = sender?.let { learned.match(account, it) }
         if (rule != null) {
-            final(LearnedRules.verdict(rule), "learned:${rule.id}", context)?.let { return it }
+            val verdict = LearnedRules.verdict(rule).let { if (rule.vip) unverifiedVip(it, signals) else it }
+            final(verdict, "learned:${rule.id}", context)?.let { return it }
         }
         if (protection.vip) {
-            final(Verdict.keep(Importance.URGENT, VerdictSource.RULE, "VIP sender"), VIP, context)?.let { return it }
+            val verdict = unverifiedVip(Verdict.keep(Importance.URGENT, VerdictSource.RULE, "VIP sender"), signals)
+            final(verdict, VIP, context)?.let { return it }
         }
         for (r in PIPELINE) {
             val verdict = r.check(context) ?: continue
@@ -65,6 +69,23 @@ class RulesEngine(
         if (context.protection.forbids(verdict.action)) return null
         return Decision.Final(context.protection.enforce(verdict), ruleId, context.signals, context.protection)
     }
+
+    /**
+     * A VIP's From is easy to forge, so failed authentication ([AuthResults.anyFail] on the
+     * trusted result) keeps the message in Priority but at NORMAL: no alert for a possible fake.
+     */
+    private fun unverifiedVip(
+        verdict: Verdict,
+        signals: Signals,
+    ): Verdict =
+        if (signals.auth.anyFail) {
+            verdict.copy(
+                importance = Importance.NORMAL,
+                reason = "${verdict.reason}, but the message failed authentication",
+            )
+        } else {
+            verdict
+        }
 
     private fun needsAiReason(protection: Protection): String =
         if (protection.blocksDiscard) {

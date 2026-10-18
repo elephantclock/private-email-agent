@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=notely.example; dkim=pass header.d=notely.example; dmarc=pass
+ header.from=notely.example
+Return-Path: <hello@notely.example>
+From: Notely <hello@notely.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Welcome to Notely - please verify your account
+Date: Tue, 13 Oct 2026 00:35:00 +0000
+Message-ID: <golden-55@notely.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-SG-EID: nt-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Thanks for signing up. Verify your account to get started.

@@ -1,0 +1,22 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=travel-mag.example; dkim=pass header.d=travel-mag.example;
+ dmarc=pass header.from=travel-mag.example
+Return-Path: <news@travel-mag.example>
+From: =?utf-8?b?2YXYrNmE2Kkg2KfZhNiz2YHYsQ==?= <news@travel-mag.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?b?2KPZgdi22YQg2KfZhNmI2KzZh9in2Kog2YTZh9iw2Kcg2KfZhNi02Ko=?=
+ =?utf-8?q?=D8=A7=D8=A1?=
+Date: Mon, 12 Oct 2026 20:37:00 +0000
+Message-ID: <golden-41@travel-mag.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+Precedence: bulk
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+=D8=A7=D9=83=D8=AA=D8=B4=D9=81 =D8=A3=D8=AC=D9=85=D9=84 =D8=A7=D9=84=D8=A3=D9=
+=85=D8=A7=D9=83=D9=86 =D9=84=D9=82=D8=B6=D8=A7=D8=A1 =D8=B9=D8=B7=D9=84=D8=A9=
+ =D8=A7=D9=84=D8=B4=D8=AA=D8=A7=D8=A1 =D9=85=D8=B9 =D8=B9=D8=B1=D9=88=D8=B6 =
+=D8=AE=D8=A7=D8=B5=D8=A9 =D9=84=D9=84=D9=85=D8=B4=D8=AA=D8=B1=D9=83=D9=8A=D9=
+=86.

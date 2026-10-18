@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=acmebank.example; dkim=pass header.d=acmebank.example;
+ dmarc=pass header.from=acmebank.example
+Return-Path: <noreply@acmebank.example>
+From: Acme Bank <noreply@acmebank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your verification code
+Date: Tue, 13 Oct 2026 01:26:00 +0000
+Message-ID: <golden-58@acmebank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your verification code is 381 204. Never share it with anyone.

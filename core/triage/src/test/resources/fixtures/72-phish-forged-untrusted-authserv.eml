@@ -1,0 +1,14 @@
+Authentication-Results: mx.evil.example; spf=pass
+ smtp.mailfrom=nordbank.example; dkim=pass header.d=nordbank.example;
+ dmarc=pass header.from=nordbank.example
+Return-Path: <security@nordbank.example>
+From: NordBank <security@nordbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Security notice
+Date: Tue, 13 Oct 2026 05:24:00 +0000
+Message-ID: <golden-72@nordbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Please read this important notice about your account.

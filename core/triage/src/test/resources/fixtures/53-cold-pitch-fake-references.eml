@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=saleswave.example; dkim=pass header.d=saleswave.example;
+ dmarc=pass header.from=saleswave.example
+Return-Path: <nina@saleswave.example>
+From: Nina Hart <nina@saleswave.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Re: partnership
+Date: Tue, 13 Oct 2026 00:01:00 +0000
+Message-ID: <golden-53@saleswave.example>
+References: <random-4471@saleswave.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex, circling back on my last message.

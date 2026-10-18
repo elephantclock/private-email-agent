@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=gadgetshop.example; dkim=pass header.d=gadgetshop.example;
+ dmarc=pass header.from=gadgetshop.example
+Return-Path: <no-reply@gadgetshop.example>
+From: Gadget Shop <no-reply@gadgetshop.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Order confirmation #A-55121
+Date: Mon, 12 Oct 2026 15:14:00 +0000
+Message-ID: <golden-22@gadgetshop.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Thanks for your order! Items: USB-C cable x2. Total charged: 18.00 EUR. We'll=
+ email you when it ships.

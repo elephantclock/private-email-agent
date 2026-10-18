@@ -28,6 +28,21 @@ object Keywords {
         return KeywordLists.ORDER_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
     }
 
+    /**
+     * An update about the user's own order, shipment or booking. Stricter than [ordersOrTravel]:
+     * promotions ("free delivery", "flights from 29 EUR") don't count.
+     */
+    fun orderUpdate(text: String): Boolean {
+        val t = prepare(text)
+        return TransactionalLists.ORDER_UPDATE_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+    }
+
+    /** A payment taken twice ("duplicate payment", "двойное списание"). */
+    fun duplicateCharge(text: String): Boolean {
+        val t = prepare(text)
+        return TransactionalLists.DUPLICATE_CHARGE_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+    }
+
     /** Reports and monitoring alerts. */
     fun report(text: String): Boolean {
         val t = prepare(text)
@@ -83,7 +98,9 @@ object Keywords {
 
     /**
      * Whether `t[k]` makes an adjacent digit run part of something else: a letter or digit, `/`, `#`,
-     * or a `.`/`,` between digits (a decimal or a date). A full stop ending the sentence is fine.
+     * a `.`/`,` between digits (a decimal or a date), or a `-` after a word of two or more letters
+     * (`OPS-1234`, `feature-2048`; Google's one-letter `G-482193` is still a code). A full stop
+     * ending the sentence is fine.
      */
     private fun isCodeNeighbour(
         t: String,
@@ -91,6 +108,7 @@ object Keywords {
     ): Boolean {
         val c = t[k]
         if (c.isLetterOrDigit() || c == '/' || c == '#') return true
+        if (c == '-') return k >= 2 && t[k - 1].isLetter() && t[k - 2].isLetter()
         if (c != '.' && c != ',') return false
         val before = k > 0 && Character.isDigit(t[k - 1])
         val after = k + 1 < t.length && Character.isDigit(t[k + 1])

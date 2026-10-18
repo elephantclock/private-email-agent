@@ -1,0 +1,19 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=founder-letters.example; dkim=pass
+ header.d=founder-letters.example; dmarc=pass
+ header.from=founder-letters.example
+Return-Path: <hello@founder-letters.example>
+From: Founder Letters <hello@founder-letters.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Letter #41: what we learned from our first 100 customers
+Date: Mon, 12 Oct 2026 11:50:00 +0000
+Message-ID: <golden-10@founder-letters.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-MC-User: a1b2c3d4
+List-Id: <founder-letters.mc.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+This month: pricing experiments, two hires and a failed launch. Read on.

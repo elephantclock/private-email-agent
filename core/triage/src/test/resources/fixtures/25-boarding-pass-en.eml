@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=skyline-air.example; dkim=pass header.d=skyline-air.example;
+ dmarc=pass header.from=skyline-air.example
+Return-Path: <noreply@skyline-air.example>
+From: SkyLine Airways <noreply@skyline-air.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Your boarding pass for flight SL 220
+Date: Mon, 12 Oct 2026 16:05:00 +0000
+Message-ID: <golden-25@skyline-air.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your boarding pass is attached. Gate closes 20 minutes before departure.

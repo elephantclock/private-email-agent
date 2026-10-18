@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=boutique-lumiere.example; dkim=pass
+ header.d=boutique-lumiere.example; dmarc=pass
+ header.from=boutique-lumiere.example
+Return-Path: <ne-pas-repondre@boutique-lumiere.example>
+From:
+ Boutique =?utf-8?q?Lumi=C3=A8re?= <ne-pas-repondre@boutique-lumiere.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Votre commande =?utf-8?b?bsKwIDU1MjEgYSDDqXTDqSBleHDDqWRpw6ll?=
+Date: Mon, 12 Oct 2026 16:39:00 +0000
+Message-ID: <golden-27@boutique-lumiere.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Bonjour, votre commande a =C3=A9t=C3=A9 exp=C3=A9di=C3=A9e. Livraison pr=C3=
+=A9vue jeudi.

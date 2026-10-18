@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=promo.shop.example; dkim=pass header.d=promo.shop.example;
+ dmarc=pass header.from=promo.shop.example
+Return-Path: <deals@promo.shop.example>
+From: Shop Promo <deals@promo.shop.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Weekend deals inside
+Date: Mon, 12 Oct 2026 22:02:00 +0000
+Message-ID: <golden-46@promo.shop.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Our weekend deals are here.

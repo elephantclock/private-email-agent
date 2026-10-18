@@ -1,0 +1,17 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=billfast.example; dkim=pass header.d=billfast.example;
+ dmarc=pass header.from=billfast.example
+Return-Path: <news@billfast.example>
+From: BillFast <news@billfast.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: 5 ways to get your invoices paid faster
+Date: Mon, 12 Oct 2026 21:45:00 +0000
+Message-ID: <golden-45@billfast.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+X-SG-EID: bf-9
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Our blog this month: reminders, payment links and why net-30 is dying.

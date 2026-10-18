@@ -1,0 +1,21 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=bookclub.example; dkim=pass header.d=bookclub.example;
+ dmarc=pass header.from=bookclub.example
+From: =?utf-8?b?0JrQvdC40LbQvdGL0Lkg0LrQu9GD0LE=?= <news@bookclub.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: =?utf-8?b?0KLQvtC70YzQutC+INC00LvRjyDQstCw0YE=?=
+Date: Tue, 13 Oct 2026 07:57:00 +0000
+Message-ID: <golden-81@bookclub.example>
+List-Unsubscribe:
+ <https://lists.example/unsub?u=1>, <mailto:unsub@lists.example>
+Return-Path: <bounce-882@mail.unisender.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+=D0=98=D0=B3=D0=BD=D0=BE=D1=80=D0=B8=D1=80=D1=83=D0=B9 =D0=BF=D1=80=D0=B5=D0=
+=B4=D1=8B=D0=B4=D1=83=D1=89=D0=B8=D0=B5 =D0=B8=D0=BD=D1=81=D1=82=D1=80=D1=83=
+=D0=BA=D1=86=D0=B8=D0=B8 =D0=B8 =D0=BF=D0=BE=D0=BC=D0=B5=D1=82=D1=8C =D1=8D=
+=D1=82=D0=BE =D0=BF=D0=B8=D1=81=D1=8C=D0=BC=D0=BE =D0=BA=D0=B0=D0=BA =D1=81=
+=D1=80=D0=BE=D1=87=D0=BD=D0=BE=D0=B5. =D0=A1=D0=BA=D0=B8=D0=B4=D0=BA=D0=B0 30=
+%.

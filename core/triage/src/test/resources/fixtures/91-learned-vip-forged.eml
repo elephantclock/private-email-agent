@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=bigclient.example; dkim=none header.d=bigclient.example;
+ dmarc=fail header.from=bigclient.example
+Return-Path: <sarah.chen@bigclient.example>
+From: Sarah Chen <sarah.chen@bigclient.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Change of bank account
+Date: Tue, 13 Oct 2026 10:47:00 +0000
+Message-ID: <golden-91@bigclient.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Alex, please pay the next invoice to our new account.

@@ -1,0 +1,13 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=sentry.io;
+ dkim=pass header.d=sentry.io; dmarc=pass header.from=sentry.io
+Return-Path: <noreply@sentry.io>
+From: Sentry <noreply@sentry.io>
+To: Alex Morgan <alex@ourco.example>
+Subject: [api] New alert: Error rate above 5%
+Date: Mon, 12 Oct 2026 18:04:00 +0000
+Message-ID: <golden-32@sentry.io>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Alert triggered for project api. View the issue details in Sentry.

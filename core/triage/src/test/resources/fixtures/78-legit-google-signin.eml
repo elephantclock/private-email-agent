@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=accounts.google.com; dkim=pass header.d=accounts.google.com;
+ dmarc=pass header.from=accounts.google.com
+Return-Path: <no-reply@accounts.google.com>
+From: Google <no-reply@accounts.google.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Security alert: new sign-in on Pixel 9
+Date: Tue, 13 Oct 2026 07:06:00 +0000
+Message-ID: <golden-78@accounts.google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+We noticed a new sign-in to your Google Account on a Pixel 9 device.

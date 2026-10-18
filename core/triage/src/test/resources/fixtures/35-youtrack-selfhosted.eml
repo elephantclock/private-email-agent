@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=ourco.example; dkim=pass header.d=ourco.example; dmarc=pass
+ header.from=ourco.example
+Return-Path: <youtrack@ourco.example>
+From: YouTrack <youtrack@ourco.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: [YouTrack, Commented] PRJ-5 Search is slow
+Date: Mon, 12 Oct 2026 18:55:00 +0000
+Message-ID: <golden-35@ourco.example>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Dmitri commented on PRJ-5: profiling shows the FTS query dominates.

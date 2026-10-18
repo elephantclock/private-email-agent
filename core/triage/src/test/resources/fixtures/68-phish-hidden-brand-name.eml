@@ -1,0 +1,16 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=secure-notice-center.example; dkim=pass
+ header.d=secure-notice-center.example; dmarc=pass
+ header.from=secure-notice-center.example
+Return-Path: <notice@secure-notice-center.example>
+From:
+ =?utf-8?q?Pay=E2=80=8BPal?= Service <notice@secure-notice-center.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Action needed on your account
+Date: Tue, 13 Oct 2026 04:16:00 +0000
+Message-ID: <golden-68@secure-notice-center.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Please review a recent transaction on your account.

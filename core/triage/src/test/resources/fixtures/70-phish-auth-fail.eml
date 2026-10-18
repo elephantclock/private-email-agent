@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=fail
+ smtp.mailfrom=nordbank.example; dkim=none header.d=nordbank.example;
+ dmarc=fail header.from=nordbank.example
+Return-Path: <security@nordbank.example>
+From: NordBank <security@nordbank.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Unusual sign-in to your account
+Date: Tue, 13 Oct 2026 04:50:00 +0000
+Message-ID: <golden-70@nordbank.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+We blocked a sign-in attempt. Verify your account now.

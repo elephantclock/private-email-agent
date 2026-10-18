@@ -1,0 +1,14 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=vendor.example; dkim=pass header.d=vendor.example; dmarc=pass
+ header.from=vendor.example
+Return-Path: <sales@vendor.example>
+From: Vendor Sales <sales@vendor.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Follow-up on your quote
+Date: Mon, 12 Oct 2026 22:19:00 +0000
+Message-ID: <golden-47@vendor.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex, following up on the quote I sent last week. Any questions?

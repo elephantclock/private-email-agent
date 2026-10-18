@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=status-monitor.example; dkim=pass
+ header.d=status-monitor.example; dmarc=pass
+ header.from=status-monitor.example
+Return-Path: <noreply@status-monitor.example>
+From: Status Monitor <noreply@status-monitor.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Weekly uptime report: 99.98%
+Date: Tue, 13 Oct 2026 09:56:00 +0000
+Message-ID: <golden-88@status-monitor.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your services were up 99.98% of the time this week.

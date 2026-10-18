@@ -1,0 +1,13 @@
+Authentication-Results: mx.ourco.example; spf=pass smtp.mailfrom=linkedin.com;
+ dkim=pass header.d=linkedin.com; dmarc=pass header.from=linkedin.com
+Return-Path: <messages-noreply@linkedin.com>
+From: LinkedIn <messages-noreply@linkedin.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: Alex, you have 5 new people you may know
+Date: Tue, 13 Oct 2026 09:05:00 +0000
+Message-ID: <golden-85@linkedin.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Grow your network: see people you may know.

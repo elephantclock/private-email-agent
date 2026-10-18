@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=ourco.zendesk.com; dkim=pass header.d=ourco.zendesk.com;
+ dmarc=pass header.from=ourco.zendesk.com
+Return-Path: <support@ourco.zendesk.com>
+From: Support <support@ourco.zendesk.com>
+To: Alex Morgan <alex@ourco.example>
+Subject: [Ticket #5521] Customer cannot log in
+Date: Mon, 12 Oct 2026 18:21:00 +0000
+Message-ID: <golden-33@ourco.zendesk.com>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+A ticket was updated. Status: Open. Assignee: Alex Morgan.

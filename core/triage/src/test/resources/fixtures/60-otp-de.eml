@@ -1,0 +1,15 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=sparkasse-mitte.example; dkim=pass
+ header.d=sparkasse-mitte.example; dmarc=pass
+ header.from=sparkasse-mitte.example
+Return-Path: <noreply@sparkasse-mitte.example>
+From: Sparkasse <noreply@sparkasse-mitte.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Ihr =?utf-8?q?Best=C3=A4tigungscode?=
+Date: Tue, 13 Oct 2026 02:00:00 +0000
+Message-ID: <golden-60@sparkasse-mitte.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Ihr Best=C3=A4tigungscode lautet 774411.

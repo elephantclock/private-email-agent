@@ -1,0 +1,21 @@
+Authentication-Results: mx.ourco.example; spf=pass
+ smtp.mailfrom=freelance-studio.example; dkim=pass
+ header.d=freelance-studio.example; dmarc=pass
+ header.from=freelance-studio.example
+Return-Path: <tom.baker@freelance-studio.example>
+From: Tom Baker <tom.baker@freelance-studio.example>
+To: Alex Morgan <alex@ourco.example>
+Subject: Re: Logo drafts
+Date: Mon, 12 Oct 2026 10:08:00 +0000
+Message-ID: <golden-04@freelance-studio.example>
+In-Reply-To: <own-1001@ourco.example>
+References: <own-1001@ourco.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex,
+
+Thanks for the feedback, I'll send round two tomorrow.
+
+Tom
