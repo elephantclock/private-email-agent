@@ -57,7 +57,8 @@ object BulkDetector {
             address.localPart
                 .substringBefore('+')
                 .filter { it != '-' && it != '_' && it != '.' }
-        return NO_REPLY_PREFIXES.any { local.startsWith(it) } || local in NO_REPLY_EXACT
+        return NO_REPLY_ANYWHERE.any { it in local } || NO_REPLY_PREFIXES.any { local.startsWith(it) } ||
+            local in NO_REPLY_EXACT
     }
 
     /** ESP from its own headers, else from the bounce (`Return-Path`) domain. */
@@ -79,6 +80,9 @@ object BulkDetector {
     }
 
     private const val MAX_LIST_ID = 255
+
+    /** After removing `-`, `_` and `.`; these also appear mid-name (`messages-noreply`, `invoice-donotreply`). */
+    private val NO_REPLY_ANYWHERE = listOf("noreply", "donotreply")
 
     /** After removing `-`, `_` and `.`: English, Spanish, French, German and transliterated Russian. */
     private val NO_REPLY_PREFIXES =

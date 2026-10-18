@@ -35,6 +35,27 @@ class KeywordsTest {
     }
 
     @Test
+    fun `account security and personal messages`() {
+        listOf(
+            "Reset your password",
+            "Новый вход в аккаунт",
+            "Neues Gerät angemeldet",
+            "Votre mot de passe",
+            "Tu contraseña",
+            "تسجيل الدخول",
+        ).forEach { assertEquals(true, Keywords.accountSecurity(it), it) }
+        assertEquals(false, Keywords.accountSecurity("Autumn sale"))
+        listOf(
+            "Anna sent you a message",
+            "Новое сообщение от Анны",
+            "Einladung zum Netzwerk",
+            "Nuevo mensaje",
+            "رسالة جديدة",
+        ).forEach { assertEquals(true, Keywords.personalMessage(it), it) }
+        assertEquals(false, Keywords.personalMessage("Anna liked your photo"))
+    }
+
+    @Test
     fun `digit runs`() {
         assertEquals(true, Keywords.hasCode("is 4821"))
         assertEquals(true, Keywords.hasCode("is 482 193."))

@@ -80,6 +80,8 @@ class BulkDetectorTest {
                 Arguments.of("donotreply@x.com", true),
                 Arguments.of("noreply+bounce123@x.com", true),
                 Arguments.of("noreply-orders@x.com", true),
+                Arguments.of("messages-noreply@linkedin.com", true),
+                Arguments.of("invoice.donotreply@x.com", true),
                 Arguments.of("NoReply@X.com", true),
                 Arguments.of("mailer-daemon@x.com", true),
                 Arguments.of("ne-otvechat@x.ru", true),

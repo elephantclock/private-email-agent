@@ -12,26 +12,41 @@ object Keywords {
     /** A security-code phrase and a 4–8 digit code (spaces or one dash allowed: `123 456`, `123-456`). */
     fun securityCode(text: String): Boolean {
         val t = prepare(text)
-        return SECURITY_PHRASES.any { Text.containsWord(t, it, wholeWord = false) } && hasCode(t)
+        return KeywordLists.SECURITY_PHRASES.any { Text.containsWord(t, it, wholeWord = false) } && hasCode(t)
     }
 
     /** A money phrase: invoices, receipts, payments, refunds, transfers. */
     fun money(text: String): Boolean {
         val t = prepare(text)
-        return MONEY_STEMS.any { Text.containsWord(t, it, wholeWord = false) } ||
-            MONEY_WORDS.any { Text.containsWord(t, it, wholeWord = true) }
+        return KeywordLists.MONEY_STEMS.any { Text.containsWord(t, it, wholeWord = false) } ||
+            KeywordLists.MONEY_WORDS.any { Text.containsWord(t, it, wholeWord = true) }
     }
 
     /** Orders, deliveries, bookings and tickets. */
     fun ordersOrTravel(text: String): Boolean {
         val t = prepare(text)
-        return ORDER_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+        return KeywordLists.ORDER_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
     }
 
     /** Reports and monitoring alerts. */
     fun report(text: String): Boolean {
         val t = prepare(text)
-        return REPORT_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+        return KeywordLists.REPORT_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+    }
+
+    /**
+     * Account-security wording (password resets, new sign-ins). Not a protection, but rules never
+     * discard such mail on bulk headers alone: they leave it to the AI.
+     */
+    fun accountSecurity(text: String): Boolean {
+        val t = prepare(text)
+        return KeywordLists.ACCOUNT_SECURITY_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
+    }
+
+    /** A notification that someone wrote to the user personally ("sent you a message"). */
+    fun personalMessage(text: String): Boolean {
+        val t = prepare(text)
+        return KeywordLists.PERSONAL_MESSAGE_STEMS.any { Text.containsWord(t, it, wholeWord = false) }
     }
 
     private fun prepare(text: String): String = Text.normalizeForSearch(Text.cap(text, Text.MAX_SCAN))
@@ -84,248 +99,4 @@ object Keywords {
 
     private const val MIN_CODE = 4
     private const val MAX_CODE = 8
-
-    // All entries lower-case, ё written as е (see Text.normalizeForSearch).
-    private val SECURITY_PHRASES =
-        listOf(
-            // English
-            "verification code",
-            "security code",
-            "confirmation code",
-            "login code",
-            "log-in code",
-            "sign-in code",
-            "signin code",
-            "authentication code",
-            "access code",
-            "one-time",
-            "one time code",
-            "otp",
-            "passcode",
-            "2fa",
-            "two-factor",
-            "your code",
-            "code is",
-            "pin code",
-            // Russian
-            "код подтверждения",
-            "код для входа",
-            "код доступа",
-            "код безопасности",
-            "проверочный код",
-            "одноразов",
-            "ваш код",
-            "код:",
-            "код -",
-            "код —",
-            // German
-            "bestätigungscode",
-            "sicherheitscode",
-            "verifizierungscode",
-            "einmalcode",
-            "einmalpasswort",
-            "anmeldecode",
-            "ihr code",
-            "dein code",
-            "zugangscode",
-            // French
-            "code de vérification",
-            "code de sécurité",
-            "code de confirmation",
-            "code de connexion",
-            "votre code",
-            "code à usage unique",
-            // Spanish
-            "código de verificación",
-            "código de seguridad",
-            "código de confirmación",
-            "código de acceso",
-            "tu código",
-            "su código",
-            // Arabic
-            "رمز التحقق",
-            "رمز الأمان",
-            "رمز التأكيد",
-            "كود التحقق",
-            "رمز التفعيل",
-            "رمز الدخول",
-            "لمرة واحدة",
-            "رمزك",
-        )
-
-    private val MONEY_STEMS =
-        listOf(
-            // English
-            "invoice",
-            "receipt",
-            "refund",
-            "payment",
-            "billing",
-            "chargeback",
-            "remittance",
-            "payout",
-            "amount due",
-            "overdue",
-            "wire transfer",
-            "bank transfer",
-            "direct debit",
-            "transaction",
-            "your statement",
-            // Russian
-            "счет на оплату",
-            "счет-фактур",
-            "счет №",
-            "счет n",
-            "оплат",
-            "платеж",
-            "квитанц",
-            "кассовый чек",
-            "возврат средств",
-            "возврат денег",
-            "списан",
-            "задолженност",
-            "инвойс",
-            "к оплате",
-            "денежный перевод",
-            "банковский перевод",
-            // German
-            "rechnung",
-            "zahlung",
-            "quittung",
-            "rückerstattung",
-            "überweisung",
-            "lastschrift",
-            "gutschrift",
-            "mahnung",
-            "zahlungserinnerung",
-            // French
-            "facture",
-            "paiement",
-            "reçu",
-            "remboursement",
-            "virement",
-            "prélèvement",
-            // Spanish
-            "factura",
-            "pago",
-            "recibo",
-            "reembolso",
-            "transferencia bancaria",
-            "cobro",
-            // Arabic
-            "فاتورة",
-            "الفاتورة",
-            "دفع",
-            "الدفع",
-            "إيصال",
-            "ايصال",
-            "استرداد",
-            "تحويل بنكي",
-            "حوالة",
-        )
-
-    /** Short words that must stand alone ("bill" but not "billion"). */
-    private val MONEY_WORDS = listOf("bill", "paid", "charged", "счет", "чек")
-
-    private val ORDER_STEMS =
-        listOf(
-            // English
-            "your order",
-            "order confirm",
-            "order #",
-            "order no",
-            "shipped",
-            "shipping confirm",
-            "delivery",
-            "tracking number",
-            "booking",
-            "reservation",
-            "itinerary",
-            "e-ticket",
-            "boarding pass",
-            "check-in",
-            "flight",
-            // Russian
-            "ваш заказ",
-            "заказ №",
-            "заказ n",
-            "заказ оформлен",
-            "доставк",
-            "отправлен",
-            "трек-номер",
-            "бронирован",
-            "электронный билет",
-            "посадочный талон",
-            "регистрация на рейс",
-            "рейс",
-            // German
-            "ihre bestellung",
-            "deine bestellung",
-            "bestellbestätigung",
-            "versand",
-            "lieferung",
-            "buchung",
-            "reservierung",
-            "flugticket",
-            "bordkarte",
-            // French
-            "votre commande",
-            "commande n",
-            "expédi",
-            "livraison",
-            "réservation",
-            "billet électronique",
-            "carte d'embarquement",
-            "vol ",
-            // Spanish
-            "tu pedido",
-            "su pedido",
-            "pedido n",
-            "envío",
-            "entrega",
-            "reserva",
-            "billete",
-            "tarjeta de embarque",
-            "vuelo",
-            // Arabic
-            "طلبك",
-            "رقم الطلب",
-            "الشحن",
-            "التوصيل",
-            "الحجز",
-            "حجز",
-            "تذكرة",
-            "بطاقة الصعود",
-            "رحلة",
-        )
-
-    private val REPORT_STEMS =
-        listOf(
-            "report",
-            "alert",
-            "monitoring",
-            "digest",
-            "summary",
-            "weekly",
-            "daily",
-            "monthly",
-            "uptime",
-            "downtime",
-            "отчет",
-            "сводка",
-            "оповещени",
-            "мониторинг",
-            "bericht",
-            "warnung",
-            "zusammenfassung",
-            "rapport",
-            "alerte",
-            "résumé",
-            "informe",
-            "alerta",
-            "resumen",
-            "تقرير",
-            "تنبيه",
-            "ملخص",
-        )
 }
