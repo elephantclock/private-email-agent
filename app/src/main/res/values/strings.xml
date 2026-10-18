@@ -5,4 +5,15 @@
     <string name="importance_high">High</string>
     <string name="importance_normal">Normal</string>
     <string name="importance_low">Low</string>
+    <!-- Shell (T40) -->
+    <string name="nav_priority">Priority</string>
+    <string name="nav_folders">Folders</string>
+    <string name="nav_discarded">Discarded</string>
+    <string name="nav_rules">Rules</string>
+    <string name="shell_all_accounts">· all accounts</string>
+    <string name="shell_priority_empty">Mail that needs you appears here after the first sync.</string>
+    <string name="shell_folders_empty">Your folders appear here after the first sync.</string>
+    <string name="shell_discarded_empty">Discarded mail is kept here for 30 days, then goes to Trash.</string>
+    <string name="shell_rules_empty">Folder descriptions and learned rules appear here.</string>
+    <string name="shell_detail_empty">Select an email to read it.</string>
 </resources>
