@@ -4,6 +4,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+import tech.elephantclock.privatemail.core.mail.ops.UndoEntry
 import tech.elephantclock.privatemail.core.model.Account
 import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.Address
@@ -162,4 +163,39 @@ fun LearnedRuleEntity.toModel() =
         target = FolderTarget(targetRole, targetCustomName),
         createdAtMillis = createdAtMillis,
         vip = vip,
+    )
+
+/** Decodes a stored address list (`toJson`, `ccJson`, ...). */
+fun decodeAddresses(value: String): List<Address> = json.decodeFromString(addresses, value)
+
+fun UndoEntry.toEntity() =
+    UndoEntity(
+        accountId = accountId.value,
+        batchId = batchId,
+        localId = localId,
+        action = action,
+        fromFolder = fromFolder,
+        fromUidValidity = fromUidValidity,
+        fromUid = fromUid,
+        toFolder = toFolder,
+        toUidValidity = toUidValidity,
+        toUid = toUid,
+        messageIdHeader = messageIdHeader,
+        createdAtMillis = createdAtMillis,
+    )
+
+fun UndoEntity.toEntry() =
+    UndoEntry(
+        accountId = AccountId(accountId),
+        batchId = batchId,
+        localId = localId,
+        action = action,
+        fromFolder = fromFolder,
+        fromUidValidity = fromUidValidity,
+        fromUid = fromUid,
+        toFolder = toFolder,
+        toUidValidity = toUidValidity,
+        toUid = toUid,
+        messageIdHeader = messageIdHeader,
+        createdAtMillis = createdAtMillis,
     )

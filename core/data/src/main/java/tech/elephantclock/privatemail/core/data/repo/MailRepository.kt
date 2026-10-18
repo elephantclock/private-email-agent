@@ -37,6 +37,7 @@ import tech.elephantclock.privatemail.core.mail.sync.IdleEvent
 import tech.elephantclock.privatemail.core.mail.sync.IdleLoop
 import tech.elephantclock.privatemail.core.model.Account
 import tech.elephantclock.privatemail.core.model.AccountId
+import tech.elephantclock.privatemail.core.model.SpecialUse
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -44,7 +45,8 @@ import java.util.concurrent.ConcurrentHashMap
  * ever flagged, moved or deleted on the server here).
  *
  * Which folders: the Inbox, plus every folder with a triage role (the value folders,
- * Discarded, Junk), so the folder screens and Priority stay current. Others are listed
+ * Discarded, Junk), so the folder screens and Priority stay current, plus Sent (for
+ * `RelationshipRepository`: who the user writes to). Others are listed
  * (so T41/T44 can offer them) but not synced.
  *
  * Entry points: [syncAll] (the periodic worker), [watchInboxes] (IMAP IDLE while the app is
@@ -210,11 +212,12 @@ class MailRepository(
                 emptyList()
             }
         db.folders().insertNew(remote.filter { it.selectable }.map { it.toEntity(id) })
+        // Sent too: the relationship index (who the user writes to) is built from it.
         val withRole =
             db
                 .folders()
                 .forAccount(id.value)
-                .filter { it.role != null }
+                .filter { it.role != null || it.specialUse == SpecialUse.SENT }
                 .map { it.path }
         return (listOf(INBOX) + withRole).distinct()
     }

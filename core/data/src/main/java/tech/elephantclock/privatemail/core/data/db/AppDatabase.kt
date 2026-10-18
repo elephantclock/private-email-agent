@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase
         LearnedRuleEntity::class,
         UndoEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,10 +31,16 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun undo(): UndoDao
 
+    abstract fun triage(): TriageDao
+
     companion object {
         /** Excluded from backups by the app's data-extraction rules (database domain). */
         const val NAME = "mail.db"
 
-        fun open(context: Context): AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, NAME).build()
+        fun open(context: Context): AppDatabase =
+            Room
+                .databaseBuilder(context, AppDatabase::class.java, NAME)
+                .addMigrations(*Migrations.ALL)
+                .build()
     }
 }

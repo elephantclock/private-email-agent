@@ -247,7 +247,7 @@ class DaoTest {
             withAccount()
 
             fun entry(at: Long) =
-                UndoEntity(0, "acc-1", "b$at", 1, VerdictAction.DISCARD, "INBOX", 7, 1, "Discarded", 3, "<m1>", at)
+                UndoEntity(0, "acc-1", "b$at", 1, VerdictAction.DISCARD, "INBOX", 7, 1, "Discarded", 9, 3, "<m1>", at)
             db.undo().insertAll(listOf(entry(100), entry(200), entry(300)))
             assertEquals(2, db.undo().purgeOlderThan(250))
             assertEquals(1, db.undo().batch("acc-1", "b300").size)

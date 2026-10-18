@@ -141,6 +141,20 @@ interface MessageDao {
         uid: Long,
     )
 
+    /**
+     * UIDVALIDITY changed: rows of the old generations are stale. Rows already under the server's
+     * new [uidValidity] are kept: triage may have moved messages there since, and they keep their
+     * verdicts and discard times.
+     */
+    @Query(
+        "DELETE FROM messages WHERE accountId = :accountId AND folderPath = :folderPath AND uidValidity != :uidValidity",
+    )
+    suspend fun deleteStaleGenerations(
+        accountId: String,
+        folderPath: String,
+        uidValidity: Long,
+    )
+
     /** UIDVALIDITY changed: everything stored for the folder is stale. */
     @Query("DELETE FROM messages WHERE accountId = :accountId AND folderPath = :folderPath")
     suspend fun deleteFolder(

@@ -26,7 +26,8 @@ import tech.elephantclock.privatemail.core.model.AccountId
  *    point has a higher mod-sequence and is caught next time. A failure here is recorded but
  *    doesn't stop new mail (unless the connection itself is gone).
  * 2. Fetch new mail ([HeaderFetcher]) and store it in one transaction with the new sync state.
- *    On a UIDVALIDITY change everything stored for the folder is deleted first.
+ *    On a UIDVALIDITY change rows of the old generations are deleted first; rows already under
+ *    the new one (moved in by triage) are kept.
  */
 internal class FolderSyncer(
     private val db: AppDatabase,
@@ -81,7 +82,7 @@ internal class FolderSyncer(
             db.withTransaction {
                 val messages = db.messages()
                 if (batch.reset) {
-                    messages.deleteFolder(account, path)
+                    messages.deleteStaleGenerations(account, path, batch.state.uidValidity)
                     db.folders().updateModSeq(account, path, null)
                 }
                 val rows = messages.insertAll(batch.messages.map { messageEntity(it.header, it.body) })

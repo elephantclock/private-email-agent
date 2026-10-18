@@ -51,4 +51,10 @@ data class MessageEntity(
     /** JSON list of `Attachment`. */
     val attachmentsJson: String,
     val hasAttachments: Boolean,
+    /**
+     * When the app last moved the message on the server ([MessageDao.recordMove]); for a message in
+     * Discarded this is its discard time, which feeds the 30-day purge (INTERNALDATE survives a
+     * move, so the server can't tell). Null when it arrived where it is. Added in schema v2.
+     */
+    val movedAtMillis: Long? = null,
 )

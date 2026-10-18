@@ -37,6 +37,8 @@ data class MoveReport(
     /** The server has neither MOVE nor UIDPLUS: originals are marked `\Deleted`, not expunged. */
     val markedOnly: Boolean,
     val failure: TransferFailure?,
+    /** UIDVALIDITY of [destination] that [MovedMessage.newUid]s belong to; null when nothing was tried. */
+    val destinationUidValidity: Long? = null,
 )
 
 /** A message in Discarded and when it was discarded (INTERNALDATE survives a move, so the caller keeps this). */
@@ -100,7 +102,15 @@ class MoveEngine internal constructor(
                 ) { batch, destinationUidValidity ->
                     undoLog.record(batch.map { it.toUndo(request, destination, destinationUidValidity, now) })
                 }
-            MoveReport(request.batchId, destination, report.moved, report.missing, report.markedOnly, report.failure)
+            MoveReport(
+                request.batchId,
+                destination,
+                report.moved,
+                report.missing,
+                report.markedOnly,
+                report.failure,
+                report.destinationUidValidity,
+            )
         }
 
     private fun MovedMessage.toUndo(

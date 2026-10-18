@@ -23,6 +23,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    sourceSets {
+        // MigrationTestHelper reads the exported schemas as assets.
+        getByName("test").assets.srcDir("$projectDir/schemas")
+        // The golden fixtures (T23) drive the orchestrator's end-to-end test.
+        getByName("test").resources.srcDir(rootProject.file("core/triage/src/test/resources"))
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -57,6 +64,8 @@ android {
 dependencies {
     api(project(":core:model"))
     api(project(":core:mail"))
+    // Triage orchestrator (T24): MailItem, Decision and the rules engine.
+    api(project(":core:triage"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)

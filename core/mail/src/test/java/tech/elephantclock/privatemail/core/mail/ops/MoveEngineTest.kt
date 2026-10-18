@@ -147,6 +147,7 @@ class MoveEngineTest(
         val discarded = Mailboxes.folder(servers, "Discarded")
         assertEquals(listOf(uids["m1"], uids["m3"]), entries.map { it.fromUid })
         assertTrue(entries.all { it.toUidValidity == discarded.uidValidity && it.toFolder == "Discarded" })
+        assertEquals("the caller needs it for its own records", discarded.uidValidity, report.destinationUidValidity)
         assertEquals(discarded.uids(), entries.map { it.toUid })
         assertEquals(listOf(uids.getValue("m1") * 10, uids.getValue("m3") * 10), entries.map { it.localId })
         assertTrue(entries.all { it.action == VerdictAction.DISCARD && it.createdAtMillis == now })

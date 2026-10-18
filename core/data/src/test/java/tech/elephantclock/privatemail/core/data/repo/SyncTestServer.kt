@@ -29,18 +29,20 @@ import java.util.Properties
 import java.util.concurrent.atomic.AtomicInteger
 
 /** GreenMail (plain IMAP for "another client", implicit TLS for the app) with one account. */
-class SyncTestServer : Closeable {
+class SyncTestServer(
+    val email: String = EMAIL,
+) : Closeable {
     val greenMail =
         GreenMail(arrayOf(ServerSetupTest.IMAP.dynamicPort(), ServerSetupTest.IMAPS.dynamicPort())).apply { start() }
-    val user = greenMail.setUser(EMAIL, EMAIL, PASSWORD)
+    val user = greenMail.setUser(email, email, PASSWORD)
     private val session = Session.getInstance(Properties())
 
     val account =
         Account(
             id = AccountId("acc-sync"),
-            email = Address.of(EMAIL),
+            email = Address.of(email),
             displayName = "Test",
-            username = EMAIL,
+            username = email,
             imap = ServerConfig("localhost", greenMail.imaps.port, ConnectionSecurity.SSL_TLS),
             smtp = ServerConfig("localhost", 465, ConnectionSecurity.SSL_TLS),
         )
@@ -79,7 +81,7 @@ class SyncTestServer : Closeable {
     ): MimeMessage =
         MimeMessage(session).apply {
             setFrom(InternetAddress("sender@shop.example"))
-            setRecipients(jakarta.mail.Message.RecipientType.TO, EMAIL)
+            setRecipients(jakarta.mail.Message.RecipientType.TO, email)
             setSubject(subject)
             sentDate = received
             setText("Body of $subject")
@@ -100,7 +102,7 @@ class SyncTestServer : Closeable {
         block: (Folder, UIDFolder) -> Unit,
     ) {
         val store = session.getStore("imap")
-        store.connect("localhost", greenMail.imap.port, EMAIL, PASSWORD)
+        store.connect("localhost", greenMail.imap.port, email, PASSWORD)
         try {
             val folder = store.getFolder(path).apply { open(Folder.READ_WRITE) }
             block(folder, folder as UIDFolder)

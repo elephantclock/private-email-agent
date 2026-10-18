@@ -1,5 +1,6 @@
 package tech.elephantclock.privatemail.core.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -26,4 +27,10 @@ data class VerdictEntity(
     val confidence: Float,
     val summary: String?,
     val decidedAtMillis: Long,
+    /**
+     * Triage decided to move the message (auto-file was on) and the move hasn't been confirmed
+     * yet; retried until it is. Never set again after an undo, so an undone move stays undone.
+     * Added in schema v2.
+     */
+    @ColumnInfo(defaultValue = "0") val pendingMove: Boolean = false,
 )
