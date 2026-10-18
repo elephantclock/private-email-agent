@@ -21,8 +21,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
-    implementation(libs.kotlinx.coroutines.core)
+    // Verdict, FolderTarget, MessageHeader and StateFlow are part of this module's API.
+    api(project(":core:model"))
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
