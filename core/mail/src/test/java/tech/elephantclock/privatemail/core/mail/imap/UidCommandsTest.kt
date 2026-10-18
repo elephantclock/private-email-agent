@@ -65,4 +65,25 @@ class UidCommandsTest {
         assertNull(UidCommands.messageId("no id here"))
         assertEquals(listOf("<a@b>", "<c@d>"), UidCommands.messageIds(listOf("<a@b>\r\n <c@d>", "junk")))
     }
+
+    @Test
+    fun `Gmail label commands quote user labels and keep system labels as atoms`() {
+        assertEquals(
+            "UID STORE 1:2 +X-GM-LABELS (\"Work stuff\")",
+            UidCommands.gmailLabels(listOf(1L, 2L), listOf("Work stuff"), add = true),
+        )
+        assertEquals(
+            "UID STORE 7 -X-GM-LABELS (\\Inbox)",
+            UidCommands.gmailLabels(listOf(7L), listOf("\\Inbox"), add = false),
+        )
+        // Non-ASCII labels use modified UTF-7, like mailbox names; quotes and backslashes are escaped.
+        assertEquals(
+            "UID STORE 3 +X-GM-LABELS (\"&BCAEMAQxBD4EQgQw-\")",
+            UidCommands.gmailLabels(listOf(3L), listOf("Работа"), true),
+        )
+        assertEquals("UID STORE 3 +X-GM-LABELS (\"a\\\"b\")", UidCommands.gmailLabels(listOf(3L), listOf("a\"b"), true))
+        assertThrows(
+            IllegalArgumentException::class.java,
+        ) { UidCommands.gmailLabels(listOf(3L), listOf("x\r\n"), true) }
+    }
 }

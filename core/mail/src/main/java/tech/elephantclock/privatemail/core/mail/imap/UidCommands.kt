@@ -1,5 +1,7 @@
 package tech.elephantclock.privatemail.core.mail.imap
 
+import org.eclipse.angus.mail.imap.protocol.BASE64MailboxEncoder
+
 /** `[COPYUID ...]` from a COPY or MOVE reply: which new UID each source UID got (RFC 4315). */
 data class CopyUid(
     val uidValidity: Long,
@@ -90,6 +92,29 @@ object UidCommands {
             val rest = searchPattern.find(line.trim())?.groupValues?.get(1) ?: return@flatMap emptyList()
             rest.trim().split(Regex("\\s+")).mapNotNull { it.toLongOrNull() }
         }
+
+    /**
+     * `UID STORE <uids> +X-GM-LABELS (<labels>)` (or `-`). System labels such as `\\Inbox` go
+     * as atoms; others as quoted strings in modified UTF-7, like mailbox names.
+     */
+    fun gmailLabels(
+        uids: Collection<Long>,
+        labels: List<String>,
+        add: Boolean,
+    ): String {
+        require(labels.isNotEmpty()) { "no labels" }
+        val list = labels.joinToString(" ") { gmailLabel(it) }
+        return "UID STORE ${set(uids)} ${if (add) '+' else '-'}X-GM-LABELS ($list)"
+    }
+
+    private val systemLabel = Regex("""\\[A-Za-z]+""")
+
+    private fun gmailLabel(label: String): String {
+        require(label.isNotBlank() && label.none { it == '\r' || it == '\n' }) { "bad label" }
+        if (systemLabel.matches(label)) return label
+        val encoded = BASE64MailboxEncoder.encode(label)
+        return "\"" + encoded.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+    }
 
     /** The first `<id@host>` in a header value, or null. */
     fun messageId(value: String?): String? = value?.let { messageIdPattern.find(it)?.value }

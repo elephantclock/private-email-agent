@@ -6,7 +6,52 @@ import org.eclipse.angus.mail.iap.Argument
 import org.eclipse.angus.mail.imap.IMAPFolder
 import org.eclipse.angus.mail.imap.protocol.BASE64MailboxEncoder
 import org.eclipse.angus.mail.imap.protocol.IMAPProtocol
+import java.io.Closeable
 import java.nio.charset.StandardCharsets
+
+/** One selected folder, as the move engine sees it. [UidFolder] on a server; fakes in tests. */
+internal interface SelectedFolder : Closeable {
+    val path: String
+    val uidValidity: Long
+
+    fun existing(uids: Collection<Long>): Set<Long>
+
+    fun uidMove(
+        uids: Collection<Long>,
+        destination: String,
+    ): CopyUid?
+
+    fun uidCopy(
+        uids: Collection<Long>,
+        destination: String,
+    ): CopyUid?
+
+    fun storeFlags(
+        uids: Collection<Long>,
+        flags: String,
+        add: Boolean,
+    )
+
+    fun uidExpunge(uids: Collection<Long>)
+
+    /** Gmail only: add or remove labels (`X-GM-LABELS`). */
+    fun storeGmailLabels(
+        uids: Collection<Long>,
+        labels: List<String>,
+        add: Boolean,
+    )
+
+    fun searchMessageId(
+        messageId: String,
+        minUid: Long = 1,
+    ): List<Long>
+
+    fun hasMessageId(
+        uid: Long,
+        messageId: String,
+        draft: Boolean = false,
+    ): Boolean
+}
 
 /**
  * UID commands on one selected folder. Every command names exact UIDs, and there is no way to
@@ -17,11 +62,12 @@ import java.nio.charset.StandardCharsets
 internal class UidFolder(
     val folder: IMAPFolder,
     val capabilities: Capabilities,
-) {
-    val uidValidity: Long get() = folder.uidValidity
+) : SelectedFolder {
+    override val path: String get() = folder.fullName
+    override val uidValidity: Long get() = folder.uidValidity
 
     /** Of [uids], those that exist in the folder now. */
-    fun existing(uids: Collection<Long>): Set<Long> {
+    override fun existing(uids: Collection<Long>): Set<Long> {
         if (uids.isEmpty()) return emptySet()
         val wanted = uids.toSet()
         return UidCommands
@@ -32,7 +78,7 @@ internal class UidFolder(
     }
 
     /** `UID MOVE`; needs MOVE. The COPYUID, if the server sent one. */
-    fun uidMove(
+    override fun uidMove(
         uids: Collection<Long>,
         destination: String,
     ): CopyUid? {
@@ -40,13 +86,13 @@ internal class UidFolder(
         return copyOrMove("UID MOVE", uids, destination)
     }
 
-    fun uidCopy(
+    override fun uidCopy(
         uids: Collection<Long>,
         destination: String,
     ): CopyUid? = copyOrMove("UID COPY", uids, destination)
 
     /** `UID STORE <uids> +FLAGS.SILENT (<flags>)` (or `-FLAGS`). */
-    fun storeFlags(
+    override fun storeFlags(
         uids: Collection<Long>,
         flags: String,
         add: Boolean,
@@ -55,25 +101,39 @@ internal class UidFolder(
     }
 
     /** Removes exactly [uids] (which must be marked `\Deleted`); nothing else is expunged. */
-    fun uidExpunge(uids: Collection<Long>) {
+    override fun uidExpunge(uids: Collection<Long>) {
         check(capabilities.uidPlus) { "UID EXPUNGE needs UIDPLUS" }
         run("UID EXPUNGE ${UidCommands.set(uids)}")
     }
 
     /** UIDs ≥ [minUid] whose Message-ID header is [messageId]. */
-    fun searchMessageId(
+    override fun searchMessageId(
         messageId: String,
-        minUid: Long = 1,
+        minUid: Long,
     ): List<Long> =
         // "n:*" also matches the highest UID when that is below n, so filter again.
         searchHeader("UID ${minUid.coerceAtLeast(1)}:*", messageId).filter { it >= minUid }
 
     /** Whether [uid] exists and carries [messageId] (and the `\Draft` flag when [draft]). */
-    fun hasMessageId(
+    override fun hasMessageId(
         uid: Long,
         messageId: String,
-        draft: Boolean = false,
+        draft: Boolean,
     ): Boolean = uid in searchHeader("UID $uid${if (draft) " DRAFT" else ""}", messageId)
+
+    override fun storeGmailLabels(
+        uids: Collection<Long>,
+        labels: List<String>,
+        add: Boolean,
+    ) {
+        check(capabilities.gmail) { "X-GM-LABELS needs Gmail" }
+        run(UidCommands.gmailLabels(uids, labels, add))
+    }
+
+    /** Closes without expunging (Angus sends UNSELECT, or EXAMINE + CLOSE; neither removes anything). */
+    override fun close() {
+        if (folder.isOpen) runCatching { folder.close(false) }
+    }
 
     private fun searchHeader(
         criteria: String,
@@ -115,16 +175,24 @@ internal class UidFolder(
         }
 
     companion object {
-        /**
-         * Opens [path] read-write, runs [block], then closes without expunging (Angus sends
-         * UNSELECT, or EXAMINE + CLOSE, neither of which removes anything).
-         */
+        /** SELECT (read-write) or EXAMINE [path]. Close it (or `use` it); closing never expunges. */
+        fun open(
+            connection: ImapConnection,
+            path: String,
+            capabilities: Capabilities,
+            readWrite: Boolean,
+        ): UidFolder {
+            val folder = connection.imapStore.getFolder(path) as IMAPFolder
+            folder.open(if (readWrite) Folder.READ_WRITE else Folder.READ_ONLY)
+            return UidFolder(folder, capabilities)
+        }
+
         fun <T> withReadWrite(
             connection: ImapConnection,
             path: String,
             capabilities: Capabilities,
             block: (UidFolder) -> T,
-        ): T = withFolder(connection, path, capabilities, Folder.READ_WRITE, block)
+        ): T = open(connection, path, capabilities, readWrite = true).use(block)
 
         /** EXAMINE: for searches that must not change anything. */
         fun <T> withReadOnly(
@@ -132,22 +200,6 @@ internal class UidFolder(
             path: String,
             capabilities: Capabilities,
             block: (UidFolder) -> T,
-        ): T = withFolder(connection, path, capabilities, Folder.READ_ONLY, block)
-
-        private fun <T> withFolder(
-            connection: ImapConnection,
-            path: String,
-            capabilities: Capabilities,
-            mode: Int,
-            block: (UidFolder) -> T,
-        ): T {
-            val folder = connection.imapStore.getFolder(path) as IMAPFolder
-            folder.open(mode)
-            try {
-                return block(UidFolder(folder, capabilities))
-            } finally {
-                if (folder.isOpen) runCatching { folder.close(false) }
-            }
-        }
+        ): T = open(connection, path, capabilities, readWrite = false).use(block)
     }
 }
