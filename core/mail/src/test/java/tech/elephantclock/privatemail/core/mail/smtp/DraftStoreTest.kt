@@ -118,4 +118,11 @@ class DraftStoreTest {
         assertEquals(OldDraft.REMOVED, store.delete(imap(), first.stored))
         assertEquals(OldDraft.GONE, store.delete(imap(), first.stored))
     }
+
+    @Test
+    fun `a draft may hold an unfinished address`() {
+        val saved = store.save(imap(), draft.copy(to = listOf(Address.of("bob@"))))
+        assertEquals(listOf(draft.messageId), Mailboxes.folder(servers, "Drafts").messageIds())
+        assertNotNull(saved.stored.uid)
+    }
 }

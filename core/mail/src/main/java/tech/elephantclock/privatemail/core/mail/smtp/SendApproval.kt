@@ -24,11 +24,15 @@ annotation class UserInitiatedSend
  */
 class SendApproval
     @UserInitiatedSend
-    constructor(
+    internal constructor(
         message: OutgoingMessage,
-        private val clock: () -> Long = System::currentTimeMillis,
+        private val clock: () -> Long,
         private val validForMillis: Long = DEFAULT_VALIDITY_MILLIS,
     ) {
+        /** The only public way in: real clock, fixed [DEFAULT_VALIDITY_MILLIS]; nothing can stretch it. */
+        @UserInitiatedSend
+        constructor(message: OutgoingMessage) : this(message, System::currentTimeMillis)
+
         private val fingerprint = message.fingerprint()
         private val createdAtMillis = clock()
         private val used = AtomicBoolean(false)

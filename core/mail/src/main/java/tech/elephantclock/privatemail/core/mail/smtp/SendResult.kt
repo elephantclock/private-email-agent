@@ -49,6 +49,11 @@ sealed interface SendError {
 
     data object NoRecipients : SendError
 
+    /** An address or header the message can't be built with (e.g. "bob@"). Nothing was contacted. */
+    data class InvalidMessage(
+        val detail: String,
+    ) : SendError
+
     /** Sign-in, TLS or network failure before the message was accepted. */
     data class Connection(
         val error: AuthError,

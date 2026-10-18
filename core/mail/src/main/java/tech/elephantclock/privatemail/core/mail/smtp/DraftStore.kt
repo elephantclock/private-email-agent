@@ -53,6 +53,7 @@ class DraftStore(
                     add(Flags.Flag.DRAFT)
                     add(Flags.Flag.SEEN)
                 },
+                strict = false,
             )
         val stored = Appender.append(connection, path, mime, message.messageId, capabilities)
         val previous =

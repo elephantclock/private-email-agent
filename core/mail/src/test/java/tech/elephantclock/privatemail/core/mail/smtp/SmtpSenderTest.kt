@@ -199,4 +199,14 @@ class SmtpSenderTest {
         val result = send(server = ServerConfig("localhost", TestServers.closedPort(), ConnectionSecurity.SSL_TLS))
         assertTrue(result.toString(), (result as SendResult.NotSent).error is SendError.Connection)
     }
+
+    @Test
+    fun `a malformed recipient is refused without using up the approval`() {
+        val bad = reply().copy(to = listOf(Address.of("bob@")), cc = emptyList(), bcc = emptyList())
+        val approval = approve(bad)
+        val result = send(bad, approval)
+        assertTrue(result.toString(), (result as SendResult.NotSent).error is SendError.InvalidMessage)
+        assertEquals(0, deliveredCount())
+        assertEquals("SendApproval(used=false)", approval.toString())
+    }
 }

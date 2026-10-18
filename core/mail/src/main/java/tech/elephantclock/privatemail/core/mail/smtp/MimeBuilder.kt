@@ -27,9 +27,11 @@ internal object MimeBuilder {
         message: OutgoingMessage,
         nowMillis: Long,
         flags: Flags = Flags(),
+        strict: Boolean,
     ): MimeMessage =
         FixedIdMessage(plainSession, message.messageId).apply {
-            setFrom(message.from.toInternet())
+            fun List<Address>.toInternet() = map { it.toInternet(strict) }.toTypedArray()
+            setFrom(message.from.toInternet(strict))
             if (message.to.isNotEmpty()) setRecipients(Message.RecipientType.TO, message.to.toInternet())
             if (message.cc.isNotEmpty()) setRecipients(Message.RecipientType.CC, message.cc.toInternet())
             // Kept here for the Sent copy and drafts; SMTPTransport never writes Bcc into what it delivers.
@@ -45,11 +47,12 @@ internal object MimeBuilder {
             saveChanges()
         }
 
-    private fun List<Address>.toInternet() = map { it.toInternet() }.toTypedArray()
-
-    private fun Address.toInternet(): InternetAddress =
+    /**
+     * With [strict] (sending), a malformed address throws `AddressException`. Drafts may hold
+     * unfinished ones ("bob@"); header injection is ruled out by [OutgoingMessage] either way.
+     */
+    private fun Address.toInternet(strict: Boolean): InternetAddress =
         InternetAddress(email, name, "UTF-8").apply {
-            // Strict parse of the address part; rejects anything a header could be smuggled through.
-            InternetAddress(email, true).validate()
+            if (strict) InternetAddress(email, true).validate()
         }
 }

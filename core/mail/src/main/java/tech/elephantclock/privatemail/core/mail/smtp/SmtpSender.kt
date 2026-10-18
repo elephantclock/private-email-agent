@@ -1,6 +1,7 @@
 package tech.elephantclock.privatemail.core.mail.smtp
 
 import jakarta.mail.Flags
+import jakarta.mail.MessagingException
 import jakarta.mail.SendFailedException
 import jakarta.mail.Session
 import jakarta.mail.internet.InternetAddress
@@ -50,9 +51,14 @@ class SmtpSender(
         imapCapabilities: Capabilities? = imap?.capabilities,
     ): SendResult {
         if (message.recipients.isEmpty()) return SendResult.NotSent(SendError.NoRecipients)
+        // Build (and validate every address) before the approval is used, so a typo doesn't burn it.
+        val mime =
+            try {
+                MimeBuilder.build(message, clock(), Flags(Flags.Flag.SEEN), strict = true)
+            } catch (e: MessagingException) {
+                return SendResult.NotSent(SendError.InvalidMessage(e.message ?: "invalid message"))
+            }
         approval.consumeFor(message)?.let { return SendResult.NotSent(it) }
-
-        val mime = MimeBuilder.build(message, clock(), Flags(Flags.Flag.SEEN))
         transmit(mime, message, server, credentials, timeouts)?.let { return SendResult.NotSent(it) }
 
         val copy =
