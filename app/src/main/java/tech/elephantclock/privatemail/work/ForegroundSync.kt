@@ -1,9 +1,11 @@
 package tech.elephantclock.privatemail.work
 
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +23,19 @@ class ForegroundSync(
 ) {
     fun start(): Job =
         owner.lifecycleScope.launch(dispatcher) {
-            owner.repeatOnLifecycle(Lifecycle.State.STARTED) { watch() }
+            owner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                try {
+                    watch()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Nothing here may crash the app; the next return to the foreground starts over.
+                    Log.w(TAG, "foreground sync stopped: ${e.javaClass.simpleName}")
+                }
+            }
         }
+
+    private companion object {
+        const val TAG = "ForegroundSync"
+    }
 }

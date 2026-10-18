@@ -7,9 +7,11 @@ import jakarta.mail.Flags
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -28,6 +30,8 @@ import tech.elephantclock.privatemail.core.data.db.MessageEntity
 import tech.elephantclock.privatemail.core.data.db.toEntity
 import tech.elephantclock.privatemail.core.data.db.toFlags
 import tech.elephantclock.privatemail.core.mail.auth.AuthError
+import tech.elephantclock.privatemail.core.mail.sync.IdleEvent
+import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.FolderRole
 import tech.elephantclock.privatemail.core.model.Importance
 import tech.elephantclock.privatemail.core.model.MessageFlag
@@ -221,6 +225,31 @@ class MailRepositoryTest {
             }
             val result = withTimeout(5_000) { sync.await() } as AccountSyncResult.Synced
             assertEquals(1, result.folders.single().added)
+        }
+
+    @Test
+    fun `one account's watch failing leaves the others watching`() =
+        runBlocking {
+            withAccount()
+            val broken = server.account.copy(id = AccountId("acc-broken"))
+            db.accounts().upsert(broken.toEntity(createdAtMillis = 2))
+            server.append("INBOX", "For the healthy account")
+            val watching =
+                MailRepository(db, server.connector(), idleEvents = { account, _ ->
+                    if (account.id == broken.id) {
+                        flow { throw IllegalStateException("unexpected") }
+                    } else {
+                        flow {
+                            emit(IdleEvent.Connected)
+                            awaitCancellation()
+                        }
+                    }
+                })
+            val watch = launch(Dispatchers.IO) { watching.watchInboxes() }
+            withTimeout(5_000) { while (db.folders().get(id.value, "INBOX")?.highestUid != 1L) delay(50) }
+            delay(300)
+            assertTrue(watch.isActive)
+            watch.cancelAndJoin()
         }
 
     @Test

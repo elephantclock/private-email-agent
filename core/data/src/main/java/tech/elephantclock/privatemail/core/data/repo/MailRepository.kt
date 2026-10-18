@@ -7,7 +7,9 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -55,7 +57,8 @@ class MailRepository(
     headerFetcher: HeaderFetcher = HeaderFetcher(),
     changeFetcher: ChangeFetcher = ChangeFetcher(),
     private val io: CoroutineDispatcher = Dispatchers.IO,
-    private val idleLoop: (connect: () -> MailResult<ImapConnection>) -> IdleLoop = { IdleLoop(it, INBOX) },
+    private val idleEvents: (Account, connect: () -> MailResult<ImapConnection>) -> Flow<IdleEvent> =
+        { _, connect -> IdleLoop(connect, INBOX).events() },
 ) {
     private val syncer = FolderSyncer(db, headerFetcher, changeFetcher, io)
     private val locks = ConcurrentHashMap<Pair<String, String>, Mutex>()
@@ -136,12 +139,25 @@ class MailRepository(
             .all()
             .map { accounts -> accounts.filter { it.authProblem == null }.map { it.toModel() } }
             .distinctUntilChanged()
-            .collectLatest { accounts -> coroutineScope { accounts.forEach { launch { watchInbox(it) } } } }
+            .collectLatest { accounts -> coroutineScope { accounts.forEach { launch { watchInboxGuarded(it) } } } }
+    }
+
+    /** One account's surprise (a database error, a bug) must not end the other accounts' watches. */
+    private suspend fun watchInboxGuarded(account: Account) {
+        while (true) {
+            try {
+                watchInbox(account)
+                return // the IDLE loop stopped for good (see IdleEvent.Stopped)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                delay(WATCH_RESTART_MILLIS)
+            }
+        }
     }
 
     internal suspend fun watchInbox(account: Account) {
-        idleLoop { connector.connect(account) }
-            .events()
+        idleEvents(account) { connector.connect(account) }
             // Changes that arrive during a sync collapse into one more sync afterwards.
             .conflate()
             .collect { event ->
@@ -236,5 +252,7 @@ class MailRepository(
     companion object {
         /** IMAP's one fixed folder name; Angus always reports it in upper case. */
         const val INBOX = "INBOX"
+
+        private const val WATCH_RESTART_MILLIS = 60_000L
     }
 }

@@ -99,11 +99,13 @@ class IdleLoopTest {
         }
 
     @Test
-    fun `IDLE is renewed on the same connection`() =
+    fun `IDLE is renewed on the same connection and renewals are not changes`() =
         runBlocking {
-            val c = collect(IdleLoop(connector(), renewMillis = 400, minCycleMillis = 0))
+            val c = collect(IdleLoop(connector(), renewMillis = 300, minCycleMillis = 0))
             assertEquals(IdleEvent.Connected, c.next())
-            repeat(3) { assertEquals(IdleEvent.Changed, c.next(timeoutMillis = 2_000)) }
+            assertNull(c.none(forMillis = 1_500)) // about five renewals
+            deliver(3)
+            assertEquals(IdleEvent.Changed, c.next(timeoutMillis = 2_000))
             assertEquals(1, proxy.accepted)
             c.job.cancelAndJoin()
         }
@@ -146,6 +148,18 @@ class IdleLoopTest {
             c.job.cancelAndJoin()
             val took = System.currentTimeMillis() - started
             assertTrue("cancel took $took ms", took < 1_000)
+        }
+
+    @Test
+    fun `server keepalives during IDLE are not reported as changes`() =
+        runBlocking {
+            ScriptedImapServer(keepaliveMillis = 200).use { server ->
+                val c = collect(IdleLoop(connector(port = server.port), renewMillis = 60_000))
+                assertEquals(IdleEvent.Connected, c.next())
+                // Five "* OK Still here" lines arrive in this time; none is a change.
+                assertNull(c.none(forMillis = 1_200))
+                c.job.cancelAndJoin()
+            }
         }
 
     @Test
@@ -196,6 +210,30 @@ class IdleLoopTest {
             }
             // Each attempt happens after the previous wait, never sooner.
             attempts.zipWithNext().zip(waits).forEach { (pair, wait) -> assertEquals(wait, pair.second - pair.first) }
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `an exception while signing in is a transient failure, not a crash`() =
+        runTest {
+            val boom = IllegalStateException("keystore said no")
+            var calls = 0
+            val loop =
+                IdleLoop(
+                    connect = {
+                        if (calls++ == 0) throw boom
+                        MailResult.Failed(AuthError.WrongCredentials)
+                    },
+                    backoff = Backoff(initialMillis = 1_000, maxMillis = 1_000, random = Random(3)),
+                    io = StandardTestDispatcher(testScheduler),
+                    clock = { testScheduler.currentTime },
+                )
+            val events = loop.events().toList()
+            assertEquals(2, events.size)
+            val first = events[0] as IdleEvent.Disconnected
+            // Coroutines may hand back a copy with a recovered stack trace, so compare type and message.
+            assertTrue("${first.cause}", first.cause is IllegalStateException && first.cause?.message == boom.message)
+            assertEquals(IdleEvent.Stopped(AuthError.WrongCredentials), events[1])
         }
 
     @Test

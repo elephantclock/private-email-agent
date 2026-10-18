@@ -51,4 +51,23 @@ class ForegroundSyncTest {
         idle()
         assertEquals(2 to 2, started to stopped)
     }
+
+    @Test
+    fun `a failing watch never crashes the app and runs again next time`() {
+        val owner = Owner().apply { registry.currentState = Lifecycle.State.CREATED }
+        var runs = 0
+        ForegroundSync(owner, Dispatchers.Main.immediate) {
+            runs++
+            throw IllegalStateException("unexpected")
+        }.start()
+        val idle = { shadowOf(Looper.getMainLooper()).idle() }
+
+        owner.registry.currentState = Lifecycle.State.STARTED
+        idle()
+        owner.registry.currentState = Lifecycle.State.CREATED
+        idle()
+        owner.registry.currentState = Lifecycle.State.STARTED
+        idle()
+        assertEquals(2, runs)
+    }
 }

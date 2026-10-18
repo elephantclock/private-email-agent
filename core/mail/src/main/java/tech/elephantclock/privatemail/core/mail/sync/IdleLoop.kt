@@ -1,6 +1,8 @@
 package tech.elephantclock.privatemail.core.mail.sync
 
 import jakarta.mail.FolderClosedException
+import jakarta.mail.event.MessageCountEvent
+import jakarta.mail.event.MessageCountListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +28,7 @@ sealed interface IdleEvent {
     /** Signed in and watching the folder. Anything may have changed while we were away: sync now. */
     data object Connected : IdleEvent
 
-    /** The server reported a change (new mail, flags, expunge), or the IDLE was renewed. */
+    /** The server reported a change in the folder: new mail, flags, or an expunge. */
     data object Changed : IdleEvent
 
     /** The connection failed or dropped; the loop reconnects after [retryInMillis]. */
@@ -91,10 +93,20 @@ class IdleLoop(
         while (true) {
             // Not cancellable mid-call (a socket connect can't be interrupted; it has its own
             // timeouts), so a connection that arrives after cancellation is still closed below.
-            val result = withContext(io + NonCancellable) { connect() }
             var error: AuthError? = null
             var cause: Throwable? = null
+            val result =
+                try {
+                    withContext(io + NonCancellable) { connect() }
+                } catch (e: Exception) {
+                    // E.g. the Keystore failing to read the password: retry later, never crash the collector.
+                    null.also { cause = e }
+                }
             when (result) {
+                null -> {
+                    Unit
+                }
+
                 is MailResult.Failed -> {
                     if (result.error.stopRetrying) {
                         send(IdleEvent.Stopped(result.error))
@@ -140,6 +152,21 @@ class IdleLoop(
 
     private suspend fun ProducerScope<IdleEvent>.session(connection: ImapConnection) {
         val folder = connection.cancellable(io) { it.openReadOnly(folderPath) }
+        // Only real folder notifications are changes. IDLE also returns on keepalives such as
+        // Dovecot's "* OK Still here" (every 2 minutes) and on our own renewal; those aren't.
+        // Angus delivers these events on its own thread; trySend never blocks it.
+        folder.addMessageCountListener(
+            object : MessageCountListener {
+                override fun messagesAdded(e: MessageCountEvent) {
+                    trySend(IdleEvent.Changed)
+                }
+
+                override fun messagesRemoved(e: MessageCountEvent) {
+                    trySend(IdleEvent.Changed)
+                }
+            },
+        )
+        folder.addMessageChangedListener { trySend(IdleEvent.Changed) }
         send(IdleEvent.Connected)
         while (true) {
             val cycleStart = clock()
@@ -154,7 +181,6 @@ class IdleLoop(
                 renew.cancel()
             }
             if (!folder.isOpen) throw FolderClosedException(folder, "connection lost while idling")
-            send(IdleEvent.Changed)
             // A server that answers IDLE at once, over and over, must not become a busy loop.
             val elapsed = clock() - cycleStart
             if (elapsed < minCycleMillis) delay(minCycleMillis - elapsed)

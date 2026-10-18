@@ -18,6 +18,8 @@ import kotlin.concurrent.thread
  */
 class ScriptedImapServer(
     private val capabilities: String = "IMAP4rev1 AUTH=PLAIN ENABLE CONDSTORE IDLE",
+    /** While a client idles, send `* OK Still here` this often (Dovecot does, every 2 minutes); 0 = never. */
+    private val keepaliveMillis: Long = 0,
 ) : Closeable {
     data class Msg(
         val uid: Long,
@@ -92,6 +94,10 @@ class ScriptedImapServer(
                     out.say(seqFetch(tag, command))
                 }
 
+                verb == "IDLE" -> {
+                    idle(tag, input, out)
+                }
+
                 verb == "NOOP" || verb == "CLOSE" || verb == "UNSELECT" -> {
                     out.say("$tag OK done")
                 }
@@ -151,6 +157,31 @@ class ScriptedImapServer(
         return (lines + "$tag OK FETCH done").joinToString("\r\n")
     }
 
+    /** `+ idling`, keepalives until the client sends DONE, then the tagged OK. */
+    private fun idle(
+        tag: String,
+        input: BufferedReader,
+        out: OutputStream,
+    ) {
+        out.say("+ idling")
+        val keepalive =
+            keepaliveMillis.takeIf { it > 0 }?.let { every ->
+                thread(isDaemon = true) {
+                    runCatching {
+                        while (true) {
+                            Thread.sleep(every)
+                            out.say("* OK Still here")
+                        }
+                    }
+                }
+            }
+        val done = input.readLine()
+        keepalive?.interrupt()
+        keepalive?.join()
+        if (done != null) commands += done
+        out.say("$tag OK IDLE done")
+    }
+
     /** `FETCH 1:3,5 (FLAGS)` by sequence number. */
     private fun seqFetch(
         tag: String,
@@ -168,10 +199,11 @@ class ScriptedImapServer(
         return (lines + "$tag OK FETCH done").joinToString("\r\n")
     }
 
-    private fun OutputStream.say(text: String) {
-        write("$text\r\n".toByteArray(Charsets.ISO_8859_1))
-        flush()
-    }
+    private fun OutputStream.say(text: String) =
+        synchronized(this) {
+            write("$text\r\n".toByteArray(Charsets.ISO_8859_1))
+            flush()
+        }
 
     override fun close() = server.close()
 }
