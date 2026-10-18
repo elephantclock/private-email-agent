@@ -10,7 +10,9 @@ import org.junit.jupiter.params.provider.ValueSource
 
 class LookalikeDomainTest {
     private val detector =
-        LookalikeDomain(frequentDomains = listOf("izi.travel", "elephantclock.tech", "acme-logistics.de"))
+        LookalikeDomain(
+            frequentDomains = listOf("izi.travel", "elephantclock.tech", "acme-logistics.de", "partner.com"),
+        )
 
     @ParameterizedTest(name = "{0} imitates {1}")
     @MethodSource("lookalikes")
@@ -27,6 +29,8 @@ class LookalikeDomainTest {
             "paypal.com", "accounts.google.com", "mail.izi.travel", "izi.travel", "e.linkedin.com",
             "email.apple.com", "google.de", "amazon.co.uk", "amazon.it", "sberbank.ru", "online.sberbank.ru",
             "github.com", "notifications.github.com", "elephantclock.tech", "PayPal.COM.",
+            // Regional domains of brands and frequent domains: same name under another suffix
+            "google.com.au", "mail.google.com.br", "amazon.com.br", "yandex.com.tr", "paypal.com.au", "partner.com.au",
             // Ordinary domains near brand names
             "black.com", "apply.com", "amazom.com", "email.com", "acme-logistic.de", "offices.com", "bookings.com",
             "stripes.com", "cooking.com",
@@ -109,6 +113,9 @@ class LookalikeDomainTest {
                 // Brand used inside another domain
                 Arguments.of("paypal.com.secure-login.ru", "paypal.com"),
                 Arguments.of("izi.travel.account-check.com", "izi.travel"),
+                Arguments.of("paypal.com.evil.example", "paypal.com"),
+                Arguments.of("izi.travel.de", "izi.travel"), // a subdomain of travel.de, not izi's
+                Arguments.of("login.google.com.secure.co.uk", "google.com"),
                 Arguments.of("paypal-secure.com", "paypal.com"),
                 Arguments.of("secure-paypa1.net", "paypal.com"),
                 Arguments.of("sberbank-online.info", "sberbank.ru"),

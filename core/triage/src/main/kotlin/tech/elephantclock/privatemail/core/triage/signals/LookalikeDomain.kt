@@ -62,8 +62,12 @@ class LookalikeDomain(
         val registrable = Domains.registrable(ascii)
         if (registrable in neverFlagged) return null
 
+        // A protected domain used as a subdomain (paypal.com.evil.example). Not when the sender's own
+        // registrable name is the same (google.com.au, amazon.com.br): that's the brand's regional domain.
+        val name = Domains.nameLabel(registrable)
         for (reg in protectedRegistrable) {
-            if (ascii.startsWith("$reg.") || ascii.contains(".$reg.")) return report(reg)
+            val embedded = ascii.startsWith("$reg.") || ascii.contains(".$reg.")
+            if (embedded && Domains.nameLabel(reg) != name) return report(reg)
         }
 
         val label = Domains.nameLabel(Domains.registrable(Domains.toUnicode(ascii)))
