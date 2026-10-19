@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- T49: triage alerts and the daily digest (asked for after the first account is added). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".PrivateMailApp"
@@ -21,6 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- T49: the notification's Archive button (immutable PendingIntent only; not exported). -->
+        <receiver
+            android:name=".notify.ArchiveReceiver"
+            android:exported="false" />
 
         <!-- PrivateMailApp configures WorkManager itself (its worker factory), so the default initializer goes. -->
         <provider

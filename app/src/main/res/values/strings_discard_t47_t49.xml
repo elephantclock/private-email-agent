@@ -37,4 +37,39 @@
     <string name="discard_dialog_confirm_one_click">Unsubscribe</string>
     <string name="discard_dialog_confirm_mail">Send email</string>
     <string name="discard_dialog_cancel">Cancel</string>
+
+    <!-- T49 Notifications and digest -->
+    <string name="notify_channel_urgent">Urgent mail</string>
+    <string name="notify_channel_urgent_description">VIPs, security codes, duplicate charges. With sound.</string>
+    <string name="notify_channel_high">Important mail</string>
+    <string name="notify_channel_high_description">Mail that needs you soon. Silent.</string>
+    <string name="notify_channel_digest">Daily digest</string>
+    <string name="notify_channel_digest_description">What triage filed and discarded today, at 18:00.</string>
+    <string name="notify_unknown_sender">Unknown sender</string>
+    <string name="notify_no_subject">(no subject)</string>
+    <string name="notify_public_title">New important email</string>
+    <string name="notify_action_open">Open</string>
+    <string name="notify_action_reply">Draft reply</string>
+    <string name="notify_action_archive">Archive</string>
+    <string name="notify_digest_title">Today\'s mail</string>
+    <plurals name="notify_digest_filed">
+        <item quantity="one">%d filed</item>
+        <item quantity="other">%d filed</item>
+    </plurals>
+    <plurals name="notify_digest_discarded">
+        <item quantity="one">%d discarded</item>
+        <item quantity="other">%d discarded</item>
+    </plurals>
+    <plurals name="notify_digest_junk">
+        <item quantity="one">%d junk</item>
+        <item quantity="other">%d junk</item>
+    </plurals>
+    <plurals name="notify_digest_needs_you">
+        <item quantity="one">%d message still needs you.</item>
+        <item quantity="other">%d messages still need you.</item>
+    </plurals>
+    <plurals name="notify_digest_unverified">
+        <item quantity="one">%d important-looking message failed sender checks and didn\'t alert.</item>
+        <item quantity="other">%d important-looking messages failed sender checks and didn\'t alert.</item>
+    </plurals>
 </resources>
