@@ -63,24 +63,27 @@ fun ReplyRoute(
     viewModel: ReplyViewModel,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Flex mode: the short editor that fits below the hinge (mockup 10). */
+    compact: Boolean = false,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
-    ReplyScreen(
-        state = state,
-        actions =
-            ReplyActions(
-                onTo = viewModel::setTo,
-                onSubject = viewModel::setSubject,
-                onBody = viewModel::setBody,
-                onSend = viewModel::requestSend,
-                onCancelSend = viewModel::cancelSend,
-                onConfirmSend = { sendConfirmed(viewModel) },
-                onSaveDraft = viewModel::saveDraft,
-                onClose = onClose,
-            ),
-        modifier = modifier,
-    )
+    val actions =
+        ReplyActions(
+            onTo = viewModel::setTo,
+            onSubject = viewModel::setSubject,
+            onBody = viewModel::setBody,
+            onSend = viewModel::requestSend,
+            onCancelSend = viewModel::cancelSend,
+            onConfirmSend = { sendConfirmed(viewModel) },
+            onSaveDraft = viewModel::saveDraft,
+            onClose = onClose,
+        )
+    if (compact) {
+        CompactReplyEditor(state, actions, modifier)
+    } else {
+        ReplyScreen(state = state, actions = actions, modifier = modifier)
+    }
 }
 
 /**
@@ -146,30 +149,7 @@ fun ReplyScreen(
             }
         }
     }
-    state.pending?.let { message ->
-        AlertDialog(
-            onDismissRequest = actions.onCancelSend,
-            title = { Text(stringResource(R.string.reply_confirm_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(stringResource(R.string.reply_confirm_to, message.to.joinToString(", ") { it.email }))
-                    Text(stringResource(R.string.reply_confirm_subject, message.subject))
-                }
-            },
-            // The theme leaves surfaceContainerHigh at Material's default; use the brand surface.
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            confirmButton = {
-                TextButton(onClick = actions.onConfirmSend, modifier = Modifier.testTag("confirm_send")) {
-                    Text(stringResource(R.string.reply_confirm_send), fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = actions.onCancelSend, modifier = Modifier.testTag("cancel_send")) {
-                    Text(stringResource(R.string.reply_confirm_cancel))
-                }
-            },
-        )
-    }
+    SendConfirmDialog(state, actions)
 }
 
 @Composable
@@ -207,5 +187,37 @@ private fun ReplyHeader(
                 fontWeight = FontWeight.ExtraBold,
             )
         }
+    }
+}
+
+/** "Send this reply?" for [ReplyUiState.pending]; its Send button is the only path to sending. */
+@Composable
+internal fun SendConfirmDialog(
+    state: ReplyUiState,
+    actions: ReplyActions,
+) {
+    state.pending?.let { message ->
+        AlertDialog(
+            onDismissRequest = actions.onCancelSend,
+            title = { Text(stringResource(R.string.reply_confirm_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(stringResource(R.string.reply_confirm_to, message.to.joinToString(", ") { it.email }))
+                    Text(stringResource(R.string.reply_confirm_subject, message.subject))
+                }
+            },
+            // The theme leaves surfaceContainerHigh at Material's default; use the brand surface.
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            confirmButton = {
+                TextButton(onClick = actions.onConfirmSend, modifier = Modifier.testTag("confirm_send")) {
+                    Text(stringResource(R.string.reply_confirm_send), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = actions.onCancelSend, modifier = Modifier.testTag("cancel_send")) {
+                    Text(stringResource(R.string.reply_confirm_cancel))
+                }
+            },
+        )
     }
 }

@@ -39,13 +39,18 @@ import androidx.compose.ui.unit.dp
 import tech.elephantclock.privatemail.R
 import tech.elephantclock.privatemail.ui.theme.BrandTheme
 
-/** The form column: email, what was found, password, errors, the main button, server settings. */
+/**
+ * The form column: email, what was found, password, errors, the main button, server settings.
+ * In Flex mode the main button and the settings toggle go below the hinge ([withActions] false,
+ * [AddAccountFormActions] there); the open settings section stays with the fields.
+ */
 @Composable
 internal fun AddAccountForm(
     state: AddAccountUiState,
     password: String,
     actions: AddAccountActions,
     modifier: Modifier = Modifier,
+    withActions: Boolean = true,
 ) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         FieldLabel(stringResource(R.string.add_email_label))
@@ -88,20 +93,30 @@ internal fun AddAccountForm(
         state.problems.forEach { ProblemCard(it) }
         if (state.testPassed && state.busy == null) SuccessText(stringResource(R.string.add_test_passed))
 
-        PrimaryButton(state, password, actions)
-        TextButton(
-            onClick = actions::onToggleServerSettings,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        ) {
-            val open = state.serverSettingsOpen
-            val toggle = if (open) R.string.add_server_settings_collapse else R.string.add_server_settings_expand
-            Text(
-                stringResource(toggle),
-                style = MaterialTheme.typography.titleSmall,
-            )
-        }
+        if (withActions) AddAccountFormActions(state, password, actions)
         if (state.serverSettingsOpen) ServerSettingsSection(state, password, actions)
+    }
+}
+
+/** Add account (or the progress of it) and the "Server settings" toggle. */
+@Composable
+internal fun AddAccountFormActions(
+    state: AddAccountUiState,
+    password: String,
+    actions: AddAccountActions,
+) {
+    PrimaryButton(state, password, actions)
+    TextButton(
+        onClick = actions::onToggleServerSettings,
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+    ) {
+        val open = state.serverSettingsOpen
+        val toggle = if (open) R.string.add_server_settings_collapse else R.string.add_server_settings_expand
+        Text(
+            stringResource(toggle),
+            style = MaterialTheme.typography.titleSmall,
+        )
     }
 }
 

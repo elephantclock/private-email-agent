@@ -44,6 +44,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.elephantclock.privatemail.R
+import tech.elephantclock.privatemail.feature.shell.HingeSplit
 import tech.elephantclock.privatemail.feature.shell.WindowInfo
 import tech.elephantclock.privatemail.feature.shell.rememberWindowInfo
 import tech.elephantclock.privatemail.ui.theme.BrandTheme
@@ -146,7 +147,33 @@ private fun AddAccountLayout(
     windowInfo: WindowInfo,
     reentry: Boolean,
 ) {
-    if (windowInfo.isCompactWidth) {
+    if (windowInfo.isTabletop) {
+        // Flex mode (T4A): brand panel and fields above the hinge, the actions below it.
+        HingeSplit(
+            posture = windowInfo.posture,
+            top = {
+                Row(Modifier.fillMaxSize()) {
+                    Hero(reentry, compact = false, Modifier.weight(0.4f).fillMaxHeight())
+                    Box(Modifier.weight(0.6f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
+                        Column(
+                            Modifier
+                                .widthIn(max = 480.dp)
+                                .verticalScroll(rememberScrollState())
+                                .windowInsetsPadding(
+                                    WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                                ).padding(horizontal = 32.dp, vertical = 24.dp),
+                        ) { AddAccountForm(state, password, actions, withActions = false) }
+                    }
+                }
+            },
+            bottom = {
+                FlexActions {
+                    AddAccountFormActions(state, password, actions)
+                    Footer()
+                }
+            },
+        )
+    } else if (windowInfo.isCompactWidth) {
         Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
             Hero(reentry, compact = true, Modifier.fillMaxWidth())
             AddAccountForm(state, password, actions, Modifier.padding(start = 24.dp, end = 24.dp, top = 28.dp))

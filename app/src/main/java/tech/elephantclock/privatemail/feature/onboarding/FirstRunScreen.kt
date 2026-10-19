@@ -67,7 +67,7 @@ fun FirstRunScreen(
         windowInfo = windowInfo,
         modifier = modifier,
         header = { FirstRunHeader(state, review) },
-        actions = { FirstRunActionsBar(state, review, actions, onDark = !windowInfo.isCompactWidth) },
+        actions = { FirstRunActionsBar(state, review, actions, onDark = windowInfo.actionsOnDark) },
     ) {
         when {
             state.busy || review == null -> if (!state.failed) NothingMovesYet()

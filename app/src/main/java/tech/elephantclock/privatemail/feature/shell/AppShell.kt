@@ -102,7 +102,10 @@ fun AppShell(
     initialDestination: ShellDestination = ShellDestination.Priority,
 ) {
     var destination by rememberSaveable { mutableStateOf(initialDestination) }
-    val navigationType = windowInfo.navigationType
+    // Flex mode with an email open: the bottom half is for the reply (mockup 10), so no bar.
+    var itemOpenAlone by remember { mutableStateOf(false) }
+    val navigationType =
+        if (windowInfo.isTabletop && itemOpenAlone) NavigationSuiteType.None else windowInfo.navigationType
     NavigationSuiteScaffold(
         modifier = modifier,
         navigationSuiteType = navigationType,
@@ -128,6 +131,7 @@ fun AppShell(
                 key(destination) {
                     DestinationPanes(
                         { destination = it },
+                        { itemOpenAlone = it },
                         destination,
                         windowInfo,
                         listPane,
@@ -144,6 +148,7 @@ fun AppShell(
 @Composable
 private fun DestinationPanes(
     select: (ShellDestination) -> Unit,
+    onItemOpenAlone: (Boolean) -> Unit,
     destination: ShellDestination,
     windowInfo: WindowInfo,
     listPane: ShellListPane,
@@ -169,6 +174,8 @@ private fun DestinationPanes(
     val scope = rememberCoroutineScope()
     val openKey = navigator.currentDestination?.contentKey
     val singlePane = directive.maxHorizontalPartitions == 1
+    val openAlone = singlePane && navigator.currentDestination?.pane == ListDetailPaneScaffoldRole.Detail
+    LaunchedEffect(openAlone) { onItemOpenAlone(openAlone) }
     val navigation =
         remember(navigator, singlePane) {
             ShellNavigation(

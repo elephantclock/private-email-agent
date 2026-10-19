@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import tech.elephantclock.privatemail.core.model.FolderRole
+import tech.elephantclock.privatemail.feature.shell.HingeSplit
 import tech.elephantclock.privatemail.feature.shell.WindowInfo
 import tech.elephantclock.privatemail.ui.theme.Brand
 import tech.elephantclock.privatemail.ui.theme.BrandTheme
@@ -41,8 +42,9 @@ import tech.elephantclock.privatemail.ui.theme.DarkBrandColors
 
 /**
  * The frame of screens 02 and 03. Cover screen: the dark header on top, the content scrolling
- * under it and the actions pinned to the bottom. Inner screen (and Flex): the header as a side
- * panel with the actions at its foot, the content beside it capped at 560 dp.
+ * under it and the actions pinned to the bottom. Inner screen: the header as a side panel with
+ * the actions at its foot, the content beside it capped at 560 dp. Flex mode (T4A): header and
+ * content above the hinge, the actions below it.
  */
 @Composable
 internal fun OnboardingFrame(
@@ -53,7 +55,9 @@ internal fun OnboardingFrame(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        if (windowInfo.isCompactWidth) {
+        if (windowInfo.isTabletop) {
+            FlexFrame(windowInfo, header, actions, content)
+        } else if (windowInfo.isCompactWidth) {
             Column(Modifier.fillMaxSize().imePadding()) {
                 HeaderBlock(Modifier.fillMaxWidth(), header)
                 Column(
@@ -104,6 +108,63 @@ internal fun OnboardingFrame(
         }
     }
 }
+
+/** Flex mode: header panel and scrolling content side by side above the hinge, actions below. */
+@Composable
+private fun FlexFrame(
+    windowInfo: WindowInfo,
+    header: @Composable ColumnScope.() -> Unit,
+    actions: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    HingeSplit(
+        posture = windowInfo.posture,
+        top = {
+            Row(Modifier.fillMaxSize()) {
+                HeaderBlock(
+                    Modifier
+                        .weight(0.4f)
+                        .fillMaxHeight()
+                        .background(BrandTheme.colors.header)
+                        .verticalScroll(rememberScrollState()),
+                    header,
+                )
+                Box(Modifier.weight(0.6f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
+                    Column(
+                        Modifier
+                            .widthIn(max = 560.dp)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .windowInsetsPadding(
+                                WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                            ).padding(vertical = 16.dp),
+                        content = content,
+                    )
+                }
+            }
+        },
+        bottom = { FlexActions(actions) },
+    )
+}
+
+/** The actions below the hinge, centred and capped like the content above. */
+@Composable
+internal fun ColumnScope.FlexActions(actions: @Composable ColumnScope.() -> Unit) {
+    Box(Modifier.fillMaxWidth().weight(1f).imePadding(), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier
+                .widthIn(max = 560.dp)
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            content = actions,
+        )
+    }
+}
+
+/** On the inner screen's dark side panel the actions use the gold accent; elsewhere the defaults. */
+internal val WindowInfo.actionsOnDark: Boolean get() = !isCompactWidth && !isTabletop
 
 @Composable
 private fun HeaderBlock(

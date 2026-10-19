@@ -1,7 +1,5 @@
 package tech.elephantclock.privatemail.feature.inbox
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -56,42 +54,22 @@ fun FolderListScreen(
 ) {
     val account = state.accounts.firstOrNull { it.id == state.selectedAccount }
     ListBackground {
-        Column(modifier.fillMaxSize()) {
-            InboxHeader(
-                title = stringResource(R.string.inbox_title_folders),
-                subtitle = account?.let { stringResource(R.string.inbox_one_account, it.label) },
-                searching = state.searching,
-                query = state.query,
-                onQuery = actions.onQuery,
-                onOpenSearch = actions.onOpenSearch,
-                onCloseSearch = actions.onCloseSearch,
-            ) {
-                if (state.accounts.size > 1) {
-                    state.accounts.forEach { a ->
-                        FolderChip(
-                            label = a.label,
-                            selected = a.id == state.selectedAccount,
-                            onClick = { actions.onSelectAccount(a.id) },
-                            dotColor = accountColor(a.colorIndex),
-                        )
-                    }
-                }
-                state.folders.forEach { f ->
-                    val name =
-                        if (f.path ==
-                            MailRepository.INBOX
-                        ) {
-                            stringResource(R.string.inbox_folder_inbox)
-                        } else {
-                            f.label
-                        }
-                    FolderChip(
-                        label = if (f.unread > 0) stringResource(R.string.inbox_folder_chip, name, f.unread) else name,
-                        selected = f.path == state.selectedFolder,
-                        onClick = { actions.onSelectFolder(f.path) },
-                    )
-                }
-            }
+        ListPaneLayout(
+            modifier = modifier,
+            header = {
+                InboxHeader(
+                    title = stringResource(R.string.inbox_title_folders),
+                    subtitle = account?.let { stringResource(R.string.inbox_one_account, it.label) },
+                    searching = state.searching,
+                    query = state.query,
+                    onQuery = actions.onQuery,
+                    onOpenSearch = actions.onOpenSearch,
+                    onCloseSearch = actions.onCloseSearch,
+                ) { FolderChips(state, actions) }
+            },
+            notices = {},
+            today = null,
+        ) {
             ListBody(
                 state = state,
                 items = items,
@@ -104,5 +82,35 @@ fun FolderListScreen(
                 showToday = false,
             )
         }
+    }
+}
+
+@Composable
+private fun FolderChips(
+    state: InboxUiState,
+    actions: ListActions,
+) {
+    if (state.accounts.size > 1) {
+        state.accounts.forEach { a ->
+            FolderChip(
+                label = a.label,
+                selected = a.id == state.selectedAccount,
+                onClick = { actions.onSelectAccount(a.id) },
+                dotColor = accountColor(a.colorIndex),
+            )
+        }
+    }
+    state.folders.forEach { f ->
+        val name =
+            if (f.path == MailRepository.INBOX) {
+                stringResource(R.string.inbox_folder_inbox)
+            } else {
+                f.label
+            }
+        FolderChip(
+            label = if (f.unread > 0) stringResource(R.string.inbox_folder_chip, name, f.unread) else name,
+            selected = f.path == state.selectedFolder,
+            onClick = { actions.onSelectFolder(f.path) },
+        )
     }
 }

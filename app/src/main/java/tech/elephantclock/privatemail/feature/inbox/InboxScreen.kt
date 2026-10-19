@@ -1,8 +1,6 @@
 package tech.elephantclock.privatemail.feature.inbox
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -75,44 +73,56 @@ fun InboxScreen(
 ) {
     val selected = state.accounts.firstOrNull { it.id == state.selectedAccount }
     ListBackground {
-        Column(modifier.fillMaxSize()) {
-            InboxHeader(
-                title = stringResource(R.string.inbox_title_priority),
-                subtitle =
-                    if (selected == null) {
-                        stringResource(R.string.inbox_all_accounts)
-                    } else {
-                        stringResource(R.string.inbox_one_account, selected.label)
-                    },
-                searching = state.searching,
-                query = state.query,
-                onQuery = actions.onQuery,
-                onOpenSearch = actions.onOpenSearch,
-                onCloseSearch = actions.onCloseSearch,
-            ) {
-                FolderChip(
-                    label = stringResource(R.string.inbox_chip_all, state.priorityTotal),
-                    selected = state.selectedAccount == null,
-                    onClick = { actions.onSelectAccount(null) },
-                )
-                if (state.accounts.size > 1) {
-                    state.accounts.forEach { a ->
-                        FolderChip(
-                            label = a.label,
-                            selected = a.id == state.selectedAccount,
-                            onClick = { actions.onSelectAccount(a.id) },
-                            dotColor = accountColor(a.colorIndex),
-                        )
-                    }
-                }
-            }
+        ListPaneLayout(
+            modifier = modifier,
+            header = {
+                InboxHeader(
+                    title = stringResource(R.string.inbox_title_priority),
+                    subtitle =
+                        if (selected == null) {
+                            stringResource(R.string.inbox_all_accounts)
+                        } else {
+                            stringResource(R.string.inbox_one_account, selected.label)
+                        },
+                    searching = state.searching,
+                    query = state.query,
+                    onQuery = actions.onQuery,
+                    onOpenSearch = actions.onOpenSearch,
+                    onCloseSearch = actions.onCloseSearch,
+                ) { AccountChips(state, actions) }
+            },
+            notices = {},
+            today = state.today?.let { today -> { TodayCard(today, actions.onReviewDiscarded) } },
+        ) { showToday ->
             ListBody(
                 state = state,
                 items = items,
                 selectedId = selectedId,
                 actions = actions,
                 emptyText = stringResource(R.string.inbox_empty_priority),
-                showToday = true,
+                showToday = showToday,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountChips(
+    state: InboxUiState,
+    actions: ListActions,
+) {
+    FolderChip(
+        label = stringResource(R.string.inbox_chip_all, state.priorityTotal),
+        selected = state.selectedAccount == null,
+        onClick = { actions.onSelectAccount(null) },
+    )
+    if (state.accounts.size > 1) {
+        state.accounts.forEach { a ->
+            FolderChip(
+                label = a.label,
+                selected = a.id == state.selectedAccount,
+                onClick = { actions.onSelectAccount(a.id) },
+                dotColor = accountColor(a.colorIndex),
             )
         }
     }

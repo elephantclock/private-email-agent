@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -48,6 +49,7 @@ fun DetailRoute(
     viewModel: DetailViewModel,
     onReply: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    belowHinge: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -62,13 +64,14 @@ fun DetailRoute(
         onAttachment = viewModel::openAttachment,
         onReply = onReply,
         modifier = modifier,
+        belowHinge = belowHinge,
     )
 }
 
 /**
  * The open email (mockups 08, 09): chips, subject, brief, next steps (AI only), then the original
  * email collapsed and the attachments. In Flex mode the reading part sits above the hinge and the
- * Reply action below it.
+ * Reply action below it, or [belowHinge] in its place (the compact reply editor, mockup 10).
  */
 @Composable
 fun DetailScreen(
@@ -78,6 +81,7 @@ fun DetailScreen(
     onAttachment: (String) -> Unit,
     onReply: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    belowHinge: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val navigation = LocalShellNavigation.current
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).testTag("detail")) {
@@ -94,7 +98,10 @@ fun DetailScreen(
                 ) { Reading(state, onToggleOriginal, onRetry, onAttachment) }
             },
             bottom = {
-                if (onReply != null && state.header != null) ActionBar(onReply)
+                when {
+                    belowHinge != null -> belowHinge()
+                    onReply != null && state.header != null -> ActionBar(onReply)
+                }
             },
         )
     }

@@ -56,7 +56,7 @@ fun PersonaliseScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.medium,
                 colors =
-                    if (windowInfo.isCompactWidth) {
+                    if (!windowInfo.actionsOnDark) {
                         ButtonDefaults.buttonColors()
                     } else {
                         // On the dark side panel the button is gold, like the mockups' accents.
