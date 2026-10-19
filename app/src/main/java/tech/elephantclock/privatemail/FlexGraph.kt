@@ -1,15 +1,20 @@
 package tech.elephantclock.privatemail
 
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import tech.elephantclock.privatemail.feature.inbox.SuppressedItem
+import tech.elephantclock.privatemail.feature.inbox.TimeLabels
 import tech.elephantclock.privatemail.feature.shell.FlexReadingDetail
 import tech.elephantclock.privatemail.feature.shell.PlaceholderDetail
 import tech.elephantclock.privatemail.feature.shell.ShellDestination
 import tech.elephantclock.privatemail.feature.shell.ShellDetailPane
+import tech.elephantclock.privatemail.notify.SuppressedAlerts
 
 /*
  * T4A wiring, as extensions so MailGraph and ReadingGraph stay untouched while other lanes work.
  * The coordinator swaps `graph.readingDetailPane()` for `graph.flexReadingDetailPane()` in
- * MainActivity.
+ * MainActivity, and passes `suppressedAlerts()` to the Priority list (see InboxRoute).
  */
 
 /**
@@ -36,5 +41,18 @@ fun MailGraph.flexReadingDetailPane(other: ShellDetailPane = { _, _ -> Placehold
             else -> {
                 other(destination, key)
             }
+        }
+    }
+
+/** The messages behind the suppressed-alert badge (unread, failed sender checks), newest first. */
+fun MailGraph.suppressedAlerts(times: TimeLabels = TimeLabels()): Flow<List<SuppressedItem>> =
+    SuppressedAlerts(database).items().map { rows ->
+        rows.map { r ->
+            SuppressedItem(
+                id = r.id,
+                sender = r.fromName?.takeIf { it.isNotBlank() } ?: r.fromEmail.orEmpty(),
+                subject = r.subject,
+                time = times.short(r.receivedAtMillis),
+            )
         }
     }

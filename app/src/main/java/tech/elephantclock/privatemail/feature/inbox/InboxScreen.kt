@@ -27,6 +27,10 @@ fun InboxRoute(
     onOpen: (Long) -> Unit,
     onReviewDiscarded: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Unread mail that didn't alert because sender checks failed: `graph.suppressedAlertCount()`. */
+    suppressedCount: Int = 0,
+    /** Those messages, listed when the badge is tapped: `graph.suppressedAlerts()`. */
+    suppressed: List<SuppressedItem> = emptyList(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val items = viewModel.messages.collectAsLazyPagingItems()
@@ -47,6 +51,8 @@ fun InboxRoute(
                 onReviewDiscarded = onReviewDiscarded,
             ),
         modifier = modifier,
+        suppressedCount = suppressedCount,
+        suppressed = suppressed,
     )
 }
 
@@ -70,6 +76,8 @@ fun InboxScreen(
     selectedId: Long?,
     actions: ListActions,
     modifier: Modifier = Modifier,
+    suppressedCount: Int = 0,
+    suppressed: List<SuppressedItem> = emptyList(),
 ) {
     val selected = state.accounts.firstOrNull { it.id == state.selectedAccount }
     ListBackground {
@@ -91,7 +99,7 @@ fun InboxScreen(
                     onCloseSearch = actions.onCloseSearch,
                 ) { AccountChips(state, actions) }
             },
-            notices = {},
+            notices = { SuppressedBadge(suppressedCount, suppressed, actions.onOpen) },
             today = state.today?.let { today -> { TodayCard(today, actions.onReviewDiscarded) } },
         ) { showToday ->
             ListBody(

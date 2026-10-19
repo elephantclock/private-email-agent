@@ -2,4 +2,10 @@
 <!-- T4A Flex mode and the suppressed-alert badge. Separate file so parallel lanes don't collide. -->
 <resources>
     <string name="reply_flex_close">Close</string>
+    <plurals name="inbox_suppressed_badge">
+        <item quantity="one">%1$d message didn’t alert: sender checks failed</item>
+        <item quantity="other">%1$d messages didn’t alert: sender checks failed</item>
+    </plurals>
+    <string name="inbox_suppressed_show">Show</string>
+    <string name="inbox_suppressed_hide">Hide</string>
 </resources>
