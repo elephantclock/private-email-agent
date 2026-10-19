@@ -29,6 +29,17 @@
             android:name=".notify.ArchiveReceiver"
             android:exported="false" />
 
+        <!-- Opens downloaded attachments in other apps, read-only, one grant per tap (T45). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.attachments"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/attachment_paths" />
+        </provider>
+
         <!-- PrivateMailApp configures WorkManager itself (its worker factory), so the default initializer goes. -->
         <provider
             android:name="androidx.startup.InitializationProvider"
