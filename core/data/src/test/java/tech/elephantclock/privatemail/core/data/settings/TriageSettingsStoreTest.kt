@@ -114,7 +114,7 @@ class TriageSettingsStoreTest {
             tech.elephantclock.privatemail.core.data.triage.AutoFile(
                 enabled = true,
                 disabledRoles = setOf(FolderRole.MONEY),
-                disabledCustom = setOf("Partners"),
+                allowedCustom = setOf("Support"),
             )
         val money = Verdict.file(FolderTarget(FolderRole.MONEY), Importance.NORMAL, VerdictSource.RULE, "r")
         val work = Verdict.file(FolderTarget(FolderRole.WORK), Importance.NORMAL, VerdictSource.RULE, "r")
@@ -122,6 +122,9 @@ class TriageSettingsStoreTest {
         assertEquals(false, auto.allows(money))
         assertEquals(true, auto.allows(work))
         assertEquals(false, auto.allows(partners))
+        val support = Verdict.file(FolderTarget.custom("SUPPORT"), Importance.NORMAL, VerdictSource.RULE, "r")
+        assertEquals(true, auto.allows(support))
+        assertEquals("no list: any custom folder", true, auto.copy(allowedCustom = null).allows(partners))
         assertEquals(true, auto.allows(Verdict.discard(VerdictSource.RULE, "r")))
         assertEquals(true, auto.allows(Verdict.junk(VerdictSource.RULE, "r")))
         assertEquals(false, auto.copy(enabled = false).allows(work))

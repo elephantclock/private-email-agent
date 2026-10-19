@@ -2,6 +2,7 @@ package tech.elephantclock.privatemail.core.data.settings
 
 import kotlinx.serialization.Serializable
 import tech.elephantclock.privatemail.core.model.FolderRole
+import tech.elephantclock.privatemail.core.model.FolderTarget
 
 /** What happens to discarded mail (screen 02). */
 @Serializable
@@ -73,6 +74,14 @@ data class AccountPrefs(
     val backfill: Map<String, FolderBackfill> = emptyMap(),
 ) {
     fun folderEnabled(role: FolderRole): Boolean = role !in disabledFolders
+
+    /** Whether mail may be filed into [target]: a value folder that is on, or an existing custom folder that is on. */
+    fun filingEnabled(target: FolderTarget): Boolean =
+        if (target.role == FolderRole.CUSTOM) {
+            customFolders.any { it.enabled && it.name.equals(target.customName, ignoreCase = true) }
+        } else {
+            folderEnabled(target.role)
+        }
 }
 
 /**

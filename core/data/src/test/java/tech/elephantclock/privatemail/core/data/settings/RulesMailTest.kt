@@ -137,6 +137,23 @@ class RulesMailTest {
         }
 
     @Test
+    fun `a rule into a removed custom folder files nothing and never re-creates the folder`() =
+        runBlocking {
+            env.readyForAutoFile()
+            env.rule("bd@acme.example", FolderTarget.custom("Partners"))
+            env.deliver("bd@acme.example", "Integration")
+            env.repo.syncAccount(env.accountId, listOf("INBOX"))
+
+            env.orchestrator.drain()
+
+            assertEquals(listOf("Integration"), env.serverSubjects("INBOX"))
+            assertFalse(env.hasFolder("Partners"))
+            assertFalse(
+                env.store.get(env.accountId).filingEnabled(FolderTarget.custom("Partners")),
+            )
+        }
+
+    @Test
     fun `a Sent UIDVALIDITY reset closes the gate and the re-run opens it again`() =
         runBlocking {
             env.readyForAutoFile()

@@ -88,6 +88,17 @@ class RulesImportTest {
         }
 
     @Test
+    fun `an export leaves out rules into custom folders the account no longer has, so it imports`() =
+        runBlocking {
+            env.readyForAutoFile()
+            env.rule("bd@acme.example", FolderTarget.custom("Gone"))
+            env.rule("billing@bank.example", FolderTarget(FolderRole.MONEY))
+            val bytes = RulesExport.encode(RulesExport.build(env.db, env.store, env.accountId))
+            val plan = (RulesImport.parse(bytes, env.accountId) as ImportResult.Ok).plan
+            assertEquals(listOf("billing@bank.example"), plan.rules.map { (it.matcher as RuleMatcher.Sender).email })
+        }
+
+    @Test
     fun `authserv-ids are applied only when the user confirms them`() =
         runBlocking {
             env.readyForAutoFile()

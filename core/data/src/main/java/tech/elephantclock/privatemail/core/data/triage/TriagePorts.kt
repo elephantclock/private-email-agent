@@ -32,8 +32,10 @@ fun interface TriageAi {
  * The user's auto-file switches. Until the user has applied the first run ([enabled] false,
  * the default) triage only labels: verdicts are stored, nothing moves on the server.
  *
- * Filing is switched per folder (T48): [disabledRoles] and [disabledCustom] (custom folder
- * names, case-insensitive) keep their mail in the Inbox while every other folder still files.
+ * Filing is switched per folder (T48): [disabledRoles] keep their mail in the Inbox while every
+ * other folder still files. Custom folders are an allow-list: with [allowedCustom] set, only those
+ * names (case-insensitive) are filed into, so a rule pointing at a removed or switched-off custom
+ * folder never files (nor re-creates the folder on the server); null = any custom folder.
  * [file] false switches all filing off. Discard and junk have their own switches and are not
  * affected by the folder switches.
  */
@@ -43,7 +45,7 @@ data class AutoFile(
     val discard: Boolean = true,
     val junk: Boolean = true,
     val disabledRoles: Set<FolderRole> = emptySet(),
-    val disabledCustom: Set<String> = emptySet(),
+    val allowedCustom: Set<String>? = null,
 ) {
     /** Whether triage may move a message for [action] to some folder (KEEP never moves). */
     fun allows(action: VerdictAction): Boolean =
@@ -61,7 +63,7 @@ data class AutoFile(
 
     fun allowsFolder(target: FolderTarget): Boolean =
         when (target.role) {
-            FolderRole.CUSTOM -> disabledCustom.none { it.equals(target.customName, ignoreCase = true) }
+            FolderRole.CUSTOM -> allowedCustom?.any { it.equals(target.customName, ignoreCase = true) } ?: true
             else -> target.role !in disabledRoles
         }
 

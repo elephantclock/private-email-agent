@@ -195,7 +195,7 @@ class FirstRun(
         val moves =
             db.firstRun().movable(id.value, MailRepository.INBOX).mapNotNull { mv ->
                 val verdict = mv.verdict?.toModel() ?: return@mapNotNull null
-                if (verdict.action == VerdictAction.FILE && !prefs.folderEnabled(verdict.target.role)) {
+                if (verdict.action == VerdictAction.FILE && !prefs.filingEnabled(verdict.target)) {
                     return@mapNotNull null
                 }
                 if (verdict.action == VerdictAction.DISCARD || verdict.action == VerdictAction.JUNK) {

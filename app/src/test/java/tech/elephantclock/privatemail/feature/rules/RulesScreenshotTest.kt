@@ -83,6 +83,20 @@ class RulesScreenshotTest {
         }
     }
 
+    @Test
+    fun importConfirmation() {
+        val plan =
+            tech.elephantclock.privatemail.core.data.settings.ImportPlan(
+                tech.elephantclock.privatemail.core.data.settings
+                    .RulesFile(discardMode = DiscardMode.STRAIGHT_TO_TRASH),
+                rules = emptyList(),
+                authservIds = setOf("mx.izi.example"),
+            )
+        captureScreen("rules_import", ScreenSize.Cover, dark = false) {
+            RulesScreen(sample().copy(dialog = RulesDialog.ConfirmImport(plan)), RulesActions.NoActions, {}, {})
+        }
+    }
+
     private companion object {
         fun sample() =
             RulesUiState(

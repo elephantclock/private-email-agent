@@ -67,9 +67,9 @@ class StoredTriageSettings(
                     AutoFile(
                         enabled = true,
                         disabledRoles = prefs.disabledFolders,
-                        disabledCustom =
+                        allowedCustom =
                             prefs.customFolders
-                                .filterNot { it.enabled }
+                                .filter { it.enabled }
                                 .map { it.name }
                                 .toSet(),
                     )

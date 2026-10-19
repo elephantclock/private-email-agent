@@ -76,7 +76,15 @@ object RulesExport {
         val prefs = store.get(account)
         val digest = store.digest()
         val rules =
-            db.learnedRules().forAccount(account.value).mapNotNull { runCatching { it.toModel() }.getOrNull() }
+            db
+                .learnedRules()
+                .forAccount(account.value)
+                .mapNotNull { runCatching { it.toModel() }.getOrNull() }
+                // A rule into a custom folder this account doesn't have couldn't be imported: left out.
+                .filter { r ->
+                    r.target.role != FolderRole.CUSTOM ||
+                        prefs.customFolders.any { it.name == r.target.customName }
+                }
         return RulesFile(
             folders =
                 DESCRIBED_FOLDERS.map { role ->
