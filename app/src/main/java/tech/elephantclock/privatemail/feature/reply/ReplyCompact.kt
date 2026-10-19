@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import tech.elephantclock.privatemail.R
+import tech.elephantclock.privatemail.core.mail.smtp.OutgoingMessage
 import tech.elephantclock.privatemail.ui.components.SectionLabel
 import tech.elephantclock.privatemail.ui.theme.BrandTheme
 
@@ -38,6 +39,8 @@ import tech.elephantclock.privatemail.ui.theme.BrandTheme
  * the space, then the rewrite chips (disabled until on-device AI, T33), Close, Save draft and
  * Send. Send only opens the same confirmation as the full editor. To and Subject are edited in
  * the full editor (open the device flat); here they are shown so the user knows where it goes.
+ * The confirmation is shown here too, below the hinge, instead of a centred dialog that would
+ * sit on the fold.
  */
 @Composable
 internal fun CompactReplyEditor(
@@ -56,6 +59,11 @@ internal fun CompactReplyEditor(
     ) {
         if (state.missing) {
             Text(stringResource(R.string.reply_missing), style = MaterialTheme.typography.bodyLarge)
+            return@Column
+        }
+        val pending = state.pending
+        if (pending != null) {
+            InlineSendConfirm(pending, actions)
             return@Column
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -100,7 +108,46 @@ internal fun CompactReplyEditor(
         )
         CompactActions(state, actions)
     }
-    SendConfirmDialog(state, actions)
+}
+
+/** "Send this reply?" in place of the editor; Send now is the confirmed tap (the only path to sending). */
+@Composable
+private fun InlineSendConfirm(
+    message: OutgoingMessage,
+    actions: ReplyActions,
+) {
+    Column(
+        Modifier.fillMaxWidth().testTag("inline_confirm"),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            stringResource(R.string.reply_confirm_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(stringResource(R.string.reply_confirm_to, message.to.joinToString(", ") { it.email }))
+        Text(stringResource(R.string.reply_confirm_subject, message.subject))
+        Row(
+            Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+        ) {
+            OutlinedButton(
+                onClick = actions.onCancelSend,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("cancel_send"),
+            ) { Text(stringResource(R.string.reply_confirm_cancel), fontWeight = FontWeight.Bold) }
+            Button(
+                onClick = actions.onConfirmSend,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("confirm_send"),
+            ) { Text(stringResource(R.string.reply_confirm_send), fontWeight = FontWeight.ExtraBold) }
+        }
+    }
 }
 
 @Composable

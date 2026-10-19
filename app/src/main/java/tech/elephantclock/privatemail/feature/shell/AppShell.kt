@@ -102,42 +102,46 @@ fun AppShell(
     initialDestination: ShellDestination = ShellDestination.Priority,
 ) {
     var destination by rememberSaveable { mutableStateOf(initialDestination) }
-    // Flex mode with an email open: the bottom half is for the reply (mockup 10), so no bar.
-    var itemOpenAlone by remember { mutableStateOf(false) }
-    val navigationType =
-        if (windowInfo.isTabletop && itemOpenAlone) NavigationSuiteType.None else windowInfo.navigationType
-    NavigationSuiteScaffold(
-        modifier = modifier,
-        navigationSuiteType = navigationType,
-        navigationSuiteColors = shellNavigationColors(),
-        containerColor = MaterialTheme.colorScheme.background,
-        navigationItems = {
-            ShellDestination.entries.forEach { item ->
-                NavigationSuiteItem(
-                    selected = item == destination,
-                    onClick = { destination = item },
-                    icon = { Icon(item.icon, contentDescription = null) },
-                    label = { Text(stringResource(item.label)) },
-                    navigationSuiteType = navigationType,
-                    colors = shellItemColors(navigationType),
-                )
-            }
-        },
-    ) {
-        CompositionLocalProvider(LocalFoldPosture provides windowInfo.posture) {
-            Column {
-                banner()
-                // A fresh navigator per destination: switching tabs closes the open item.
-                key(destination) {
-                    DestinationPanes(
-                        { destination = it },
-                        { itemOpenAlone = it },
-                        destination,
-                        windowInfo,
-                        listPane,
-                        detailPane,
-                        initialOpenKey.takeIf { destination == initialDestination },
+    val directive = shellDirective(windowInfo, LocalDensity.current.density)
+    // A fresh navigator per destination: switching tabs closes the open item.
+    key(destination) {
+        val openAtStart = initialOpenKey.takeIf { destination == initialDestination }
+        val navigator =
+            rememberListDetailPaneScaffoldNavigator(
+                scaffoldDirective = directive,
+                initialDestinationHistory =
+                    listOfNotNull(
+                        ThreePaneScaffoldDestinationItem<String>(ListDetailPaneScaffoldRole.List),
+                        openAtStart?.let { ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.Detail, it) },
+                    ),
+            )
+        val singlePane = directive.maxHorizontalPartitions == 1
+        // Flex mode with an email open on its own: the bottom half is for the reply (mockup 10).
+        val openAlone = singlePane && navigator.currentDestination?.pane == ListDetailPaneScaffoldRole.Detail
+        val navigationType =
+            if (windowInfo.isTabletop && openAlone) NavigationSuiteType.None else windowInfo.navigationType
+        NavigationSuiteScaffold(
+            modifier = modifier,
+            navigationSuiteType = navigationType,
+            navigationSuiteColors = shellNavigationColors(),
+            containerColor = MaterialTheme.colorScheme.background,
+            navigationItems = {
+                ShellDestination.entries.forEach { item ->
+                    NavigationSuiteItem(
+                        selected = item == destination,
+                        onClick = { destination = item },
+                        icon = { Icon(item.icon, contentDescription = null) },
+                        label = { Text(stringResource(item.label)) },
+                        navigationSuiteType = navigationType,
+                        colors = shellItemColors(navigationType),
                     )
+                }
+            },
+        ) {
+            CompositionLocalProvider(LocalFoldPosture provides windowInfo.posture) {
+                Column {
+                    banner()
+                    DestinationPanes({ destination = it }, navigator, directive, destination, listPane, detailPane)
                 }
             }
         }
@@ -148,24 +152,12 @@ fun AppShell(
 @Composable
 private fun DestinationPanes(
     select: (ShellDestination) -> Unit,
-    onItemOpenAlone: (Boolean) -> Unit,
+    navigator: ThreePaneScaffoldNavigator<String>,
+    directive: PaneScaffoldDirective,
     destination: ShellDestination,
-    windowInfo: WindowInfo,
     listPane: ShellListPane,
     detailPane: ShellDetailPane,
-    initialOpenKey: String?,
 ) {
-    val density = LocalDensity.current.density
-    val directive = shellDirective(windowInfo, density)
-    val navigator =
-        rememberListDetailPaneScaffoldNavigator(
-            scaffoldDirective = directive,
-            initialDestinationHistory =
-                listOfNotNull(
-                    ThreePaneScaffoldDestinationItem<String>(ListDetailPaneScaffoldRole.List),
-                    initialOpenKey?.let { ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.Detail, it) },
-                ),
-        )
     // The navigator only re-lays out on navigation; a resize without recreation (multi-window,
     // DeX, a test) must apply the new directive too, e.g. one pane → two on unfolding.
     LaunchedEffect(directive) {
@@ -174,8 +166,6 @@ private fun DestinationPanes(
     val scope = rememberCoroutineScope()
     val openKey = navigator.currentDestination?.contentKey
     val singlePane = directive.maxHorizontalPartitions == 1
-    val openAlone = singlePane && navigator.currentDestination?.pane == ListDetailPaneScaffoldRole.Detail
-    LaunchedEffect(openAlone) { onItemOpenAlone(openAlone) }
     val navigation =
         remember(navigator, singlePane) {
             ShellNavigation(

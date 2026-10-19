@@ -192,7 +192,7 @@ private fun ReplyHeader(
 
 /** "Send this reply?" for [ReplyUiState.pending]; its Send button is the only path to sending. */
 @Composable
-internal fun SendConfirmDialog(
+private fun SendConfirmDialog(
     state: ReplyUiState,
     actions: ReplyActions,
 ) {
