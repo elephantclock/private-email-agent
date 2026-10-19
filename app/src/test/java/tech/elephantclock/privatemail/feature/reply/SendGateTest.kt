@@ -58,16 +58,22 @@ class SendGateTest {
         compose.onNodeWithTag("notice").assertExists()
     }
 
+    /**
+     * Every place that may create a [SendApproval] is a confirmed-tap handler, listed here on
+     * purpose: Reply's confirm button (T46) and the unsubscribe-by-email dialog's confirm (T47).
+     * A new entry needs a review of its confirmation flow.
+     */
     @Test
-    fun `the app opts in to UserInitiatedSend once, in the confirmed Send handler, and nowhere else`() {
+    fun `the app opts in to UserInitiatedSend only in confirmed-tap handlers`() {
+        val allowed = listOf("DiscardedCards.kt", "ReplyScreen.kt")
         val main = File("src/main/java")
         val sources = main.walkTopDown().filter { it.extension == "kt" }.toList()
         val optIns = sources.flatMap { f -> f.readLines().filter { "OptIn(UserInitiatedSend" in it }.map { f.name } }
-        assertEquals(listOf("ReplyScreen.kt"), optIns)
+        assertEquals(allowed, optIns.sorted())
         val approvals =
             sources.flatMap { f ->
                 f.readLines().filter { "SendApproval(" in it && "import" !in it }.map { f.name }
             }
-        assertEquals(listOf("ReplyScreen.kt"), approvals)
+        assertEquals(allowed, approvals.sorted())
     }
 }
