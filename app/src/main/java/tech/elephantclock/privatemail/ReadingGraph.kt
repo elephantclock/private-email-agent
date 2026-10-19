@@ -2,6 +2,7 @@ package tech.elephantclock.privatemail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -130,9 +131,17 @@ private fun ReadingDetail(
     messageId: Long,
 ) {
     var replying by rememberSaveable(messageId) { mutableStateOf(false) }
+    // A new editor after each sent reply; backing out without sending keeps the draft.
+    var session by rememberSaveable(messageId) { mutableIntStateOf(0) }
     if (replying) {
-        val vm = viewModel(key = "reply:$messageId") { graph.replyViewModel(messageId) }
-        ReplyRoute(vm, onClose = { replying = false })
+        val vm = viewModel(key = "reply:$messageId:$session") { graph.replyViewModel(messageId) }
+        ReplyRoute(
+            vm,
+            onClose = {
+                if (vm.state.value.sent) session++
+                replying = false
+            },
+        )
     } else {
         val cacheDir = LocalContext.current.cacheDir
         val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(messageId, cacheDir) }

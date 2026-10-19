@@ -102,7 +102,7 @@
     <string name="reply_sent_no_copy">Sent. No copy was saved in Sent.</string>
     <string name="reply_sent_copy_failed">Sent, but the copy couldn’t be saved in your Sent folder.</string>
     <string name="reply_maybe_not_sent">Your reply may not have been sent: the connection to the mail server failed. Check your Sent folder or with the recipient before sending it again.</string>
-    <string name="reply_not_approved">Not sent: the reply changed after you confirmed. Tap Send to confirm it again.</string>
+    <string name="reply_not_approved">Not sent: the confirmation expired or the reply changed after it. Tap Send to confirm again.</string>
     <string name="reply_no_recipient">Add at least one recipient.</string>
     <string name="reply_bad_address">Check the addresses in To: one isn’t a valid email address.</string>
     <string name="reply_recipients_rejected">Not sent: the server refused these recipients, so nobody got it.</string>

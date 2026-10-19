@@ -35,6 +35,9 @@ class DetailViewModel(
     private val times: TimeLabels = TimeLabels(),
 ) : ViewModel() {
     private val local = MutableStateFlow(DetailUiState())
+
+    /** Parts this ViewModel downloaded completely; any other file on disk may be a cut-off leftover. */
+    private val finished = mutableSetOf<String>()
     val state: StateFlow<DetailUiState> = local.asStateFlow()
 
     init {
@@ -124,16 +127,11 @@ class DetailViewModel(
         viewModelScope.launch {
             val dir = File(source.attachmentDir(messageId), partId).apply { mkdirs() }
             val target = File(dir, item.name)
-            val result =
-                if (target.isFile) {
-                    ContentResult.Ok(
-                        target.length(),
-                    )
-                } else {
-                    source.attachment(messageId, partId, target)
-                }
+            val reuse = partId in finished && target.isFile
+            val result = if (reuse) ContentResult.Ok(target.length()) else source.attachment(messageId, partId, target)
             when (result) {
                 is ContentResult.Ok -> {
+                    finished += partId
                     updateAttachment(partId) { it.copy(downloading = false) }
                     local.update { it.copy(open = OpenRequest(target, item.mimeType)) }
                 }

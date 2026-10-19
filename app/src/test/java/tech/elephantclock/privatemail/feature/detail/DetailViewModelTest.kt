@@ -154,6 +154,22 @@ class DetailViewModelTest {
         }
 
     @Test
+    fun `a file left over from an interrupted download is fetched again, never opened as is`() =
+        runTest {
+            File(temp.root, "attachments/4/2").mkdirs()
+            File(temp.root, "attachments/4/2/brief.pdf").writeText("%PD") // cut short by a killed process
+            val vm = vm()
+            vm.openAttachment("2")
+            assertEquals(listOf("2"), source.attachmentCalls)
+            assertEquals(
+                "%PDF",
+                vm.state.value.open!!
+                    .file
+                    .readText(),
+            )
+        }
+
+    @Test
     fun `no app for the type, or a failed download, is explained on the attachment`() =
         runTest {
             val vm = vm()

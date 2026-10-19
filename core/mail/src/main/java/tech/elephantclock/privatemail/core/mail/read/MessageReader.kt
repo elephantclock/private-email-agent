@@ -80,8 +80,9 @@ object MessageReader {
         }
 
     /**
-     * Downloads attachment [partId] and writes its decoded bytes to [target] (replaced). The
-     * encoded bytes are staged in a sibling temporary file, which is always removed.
+     * Downloads attachment [partId] and writes its decoded bytes to [target] (replaced). Encoded
+     * and decoded bytes are staged in sibling temporary files, always removed; [target] appears
+     * only once the whole part was decoded.
      * @return the decoded size.
      */
     fun attachment(
@@ -104,16 +105,25 @@ object MessageReader {
             try {
                 val fetched = staged.outputStream().use { out -> download(folder, seq, partId, out, maxBytes) }
                 if (fetched > maxBytes) return@withMessage ReadResult.TooLarge(fetched)
-                val decoded =
-                    staged.inputStream().use { raw ->
-                        val stream =
-                            when (part.encoding?.lowercase()) {
-                                "base64", "quoted-printable" -> MimeUtility.decode(raw, part.encoding!!.lowercase())
-                                else -> raw
-                            }
-                        target.outputStream().use { stream.copyTo(it) }
-                    }
-                ReadResult.Found(decoded)
+                // Decode next to the target and rename only when complete: an interrupted
+                // download never leaves a cut-off file under the attachment's name.
+                val decoding = File.createTempFile("part", ".tmp", target.parentFile)
+                try {
+                    val decoded =
+                        staged.inputStream().use { raw ->
+                            val stream =
+                                when (part.encoding?.lowercase()) {
+                                    "base64", "quoted-printable" -> MimeUtility.decode(raw, part.encoding!!.lowercase())
+                                    else -> raw
+                                }
+                            decoding.outputStream().use { stream.copyTo(it) }
+                        }
+                    target.delete()
+                    if (!decoding.renameTo(target)) throw java.io.IOException("could not store the attachment")
+                    ReadResult.Found(decoded)
+                } finally {
+                    decoding.delete()
+                }
             } finally {
                 staged.delete()
             }
