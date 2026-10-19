@@ -1,7 +1,9 @@
 package tech.elephantclock.privatemail.core.mail.ops
 
+import tech.elephantclock.privatemail.core.mail.imap.FolderPaths
 import tech.elephantclock.privatemail.core.mail.imap.SelectedFolder
 import tech.elephantclock.privatemail.core.mail.imap.UidCommands
+import tech.elephantclock.privatemail.core.model.SpecialUse
 
 /** A message back in its original folder; [uid] is its UID there now, when known. */
 data class RestoredMessage(
@@ -40,6 +42,9 @@ data class UndoReport(
  *    copy we made (same UIDVALIDITY and Message-ID): an unverified match may be the user's own;
  * 2. every other copy is found (its UID if UIDVALIDITY and Message-ID still match, else the one
  *    message with that Message-ID) and moved back; a copy we can't pin down is left alone.
+ *
+ * A Gmail archive (Inbox → All Mail) is undone by adding `\Inbox` back: moving or expunging
+ * anything out of All Mail would delete it on Gmail, so neither is ever sent there.
  */
 internal class Undoer(
     private val mailbox: Mailbox,
@@ -55,6 +60,7 @@ internal class Undoer(
         val from = group.first().fromFolder
         val to = group.first().toFolder
         require(group.all { it.fromFolder == from && it.toFolder == to }) { "one folder pair per call" }
+        if (isGmailArchive(from, to)) return relabel(group)
 
         val inPlace = unmarkOriginals(from, group)
         val (located, destValidity) =
@@ -79,6 +85,45 @@ internal class Undoer(
             notFound += report.missing.map { entryByUid.getValue(it) }
         }
         return UndoReport(restored, notFound, emptyList(), failure, leftCopies)
+    }
+
+    private fun isGmailArchive(
+        from: String,
+        to: String,
+    ): Boolean =
+        mailbox.capabilities.gmail &&
+            from.equals(FolderProvisioner.INBOX, ignoreCase = true) &&
+            FolderPaths.findSpecial(mailbox.folders(), SpecialUse.ALL)?.path == to
+
+    /** Gmail: `+X-GM-LABELS (\Inbox)` on the All Mail copies we can find; then their Inbox UIDs. */
+    private fun relabel(group: List<UndoEntry>): UndoReport {
+        val to = group.first().toFolder
+        val located =
+            try {
+                mailbox.open(to, readWrite = true).use { dst ->
+                    group.map { locate(dst, it) }.also { found ->
+                        UidCommands.batches(found.mapNotNull { it.uid }).forEach {
+                            dst.storeGmailLabels(it, listOf(Transfer.GMAIL_INBOX), add = true)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                return UndoReport(
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    TransferFailure.Server(e.message ?: e.javaClass.simpleName),
+                )
+            }
+        val back = located.filter { it.uid != null }
+        val restored =
+            mailbox.open(FolderProvisioner.INBOX, readWrite = false).use { inbox ->
+                back.map { l ->
+                    val id = l.entry.messageIdHeader?.takeIf { UidCommands.messageId(it) == it }
+                    RestoredMessage(l.entry, id?.let { inbox.searchMessageId(it).singleOrNull() })
+                }
+            }
+        return UndoReport(restored, located.filter { it.uid == null }.map { it.entry }, emptyList(), null)
     }
 
     /** Originals that never left the source (marked only): unmark them. Returns their entries. */

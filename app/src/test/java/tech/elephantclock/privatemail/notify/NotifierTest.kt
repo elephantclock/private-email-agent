@@ -18,11 +18,14 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import tech.elephantclock.privatemail.MailGraph
 import tech.elephantclock.privatemail.MainActivity
 import tech.elephantclock.privatemail.core.data.triage.TriageAlert
 import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.Address
 import tech.elephantclock.privatemail.core.model.Importance
+import tech.elephantclock.privatemail.notificationArchiver
+import tech.elephantclock.privatemail.triageNotifier
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class)
@@ -132,5 +135,14 @@ class NotifierTest {
         assertTrue(archive.isBroadcastIntent)
         assertEquals(ComponentName(app, ArchiveReceiver::class.java), archive.savedIntent.component)
         assertEquals(ArchiveReceiver.ACTION, archive.savedIntent.action)
+    }
+
+    @Test
+    fun `the app's notifier offers Archive now that core mail can archive`() {
+        grant()
+        val graph = MailGraph(app)
+        assertNotNull(graph.notificationArchiver())
+        graph.triageNotifier(app).notify(alert())
+        assertEquals(listOf("Open", "Draft reply", "Archive"), posted().single().actions.map { it.title.toString() })
     }
 }

@@ -131,7 +131,9 @@ internal class FakeMailbox(
             for (label in labels) {
                 when {
                     add -> {
-                        val target = folders.getOrPut(label) { Folder(200L + folders.size) }
+                        // Gmail's \Inbox label is the INBOX folder.
+                        val name = if (label == "\\Inbox") "INBOX" else label
+                        val target = folders.getOrPut(name) { Folder(200L + folders.size) }
                         uids.forEach { uid ->
                             val id = f.messages.getValue(uid)
                             if (id !in target.messages.values) target.add(id)

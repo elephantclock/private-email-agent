@@ -100,7 +100,7 @@ class MoveEngine internal constructor(
                     destination = destination,
                     allowGmailLabels = gmailLabels,
                 ) { batch, destinationUidValidity ->
-                    undoLog.record(batch.map { it.toUndo(request, destination, destinationUidValidity, now) })
+                    undoLog.record(batch.map { it.toUndo(request.origin(), destination, destinationUidValidity, now) })
                 }
             MoveReport(
                 request.batchId,
@@ -113,18 +113,76 @@ class MoveEngine internal constructor(
             )
         }
 
+    /**
+     * Moves [ArchiveRequest.items] out of the Inbox into the server's existing special-use
+     * Archive folder, logged for undo like [move] (as [VerdictAction.FILE]). Never creates a
+     * folder. On Gmail it only removes the `\Inbox` label (the message stays in All Mail and its
+     * other labels), with the same UIDVALIDITY and exact-UID checks.
+     */
+    suspend fun archive(request: ArchiveRequest): ArchiveResult =
+        withContext(io) {
+            val folders = provisioner
+            val gmail = mailbox.capabilities.gmail
+            val destination =
+                (if (gmail) folders.special(SpecialUse.ALL) else folders.special(SpecialUse.ARCHIVE))
+                    ?.takeUnless { it.equals(FolderProvisioner.INBOX, ignoreCase = true) }
+                    ?: return@withContext ArchiveResult.NoArchiveFolder
+            val now = clock()
+            val origin =
+                Origin(
+                    request.accountId,
+                    request.batchId,
+                    VerdictAction.FILE,
+                    FolderProvisioner.INBOX,
+                    request.inboxUidValidity,
+                )
+            val report =
+                Transfer(mailbox).run(
+                    source = FolderProvisioner.INBOX,
+                    expectedUidValidity = request.inboxUidValidity,
+                    items = request.items,
+                    destination = destination,
+                    allowGmailLabels = false,
+                    gmailArchive = gmail,
+                ) { batch, destinationUidValidity ->
+                    undoLog.record(batch.map { it.toUndo(origin, destination, destinationUidValidity, now) })
+                }
+            ArchiveResult.Archived(
+                MoveReport(
+                    request.batchId,
+                    destination,
+                    report.moved,
+                    report.missing,
+                    report.markedOnly,
+                    report.failure,
+                    report.destinationUidValidity,
+                ),
+            )
+        }
+
+    /** Where a batch came from, for its undo entries. */
+    private data class Origin(
+        val accountId: AccountId,
+        val batchId: String,
+        val action: VerdictAction,
+        val fromFolder: String,
+        val fromUidValidity: Long,
+    )
+
+    private fun MoveRequest.origin() = Origin(accountId, batchId, action, fromFolder, fromUidValidity)
+
     private fun MovedMessage.toUndo(
-        request: MoveRequest,
+        origin: Origin,
         destination: String,
         destinationUidValidity: Long,
         now: Long,
     ) = UndoEntry(
-        accountId = request.accountId,
-        batchId = request.batchId,
+        accountId = origin.accountId,
+        batchId = origin.batchId,
         localId = item.localId,
-        action = request.action,
-        fromFolder = request.fromFolder,
-        fromUidValidity = request.fromUidValidity,
+        action = origin.action,
+        fromFolder = origin.fromFolder,
+        fromUidValidity = origin.fromUidValidity,
         fromUid = item.uid,
         toFolder = destination,
         toUidValidity = destinationUidValidity,

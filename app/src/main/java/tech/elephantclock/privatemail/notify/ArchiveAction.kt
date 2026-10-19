@@ -80,7 +80,7 @@ class ArchiveWorker(
     params: WorkerParameters,
     private val archiver: NotificationArchiver?,
 ) : CoroutineWorker(context, params) {
-    /** For WorkManager's default factory: the archiver comes from the app's graph (none yet). */
+    /** For WorkManager's default factory: the archiver comes from the app's graph. */
     constructor(context: Context, params: WorkerParameters) : this(
         context,
         params,

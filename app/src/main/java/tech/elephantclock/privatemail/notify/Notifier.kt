@@ -15,8 +15,8 @@ import tech.elephantclock.privatemail.core.model.AccountId
 
 /**
  * Moves one message out of the Inbox to the account's special-use Archive folder (creating
- * nothing; Gmail: drop `\Inbox`). Not available yet: `core:mail` can only move to triage
- * targets, see the T49 Log line. The Archive action is shown only when one is given.
+ * nothing; Gmail: drop `\Inbox`); see `MailGraph.notificationArchiver`. The Archive action is
+ * shown only when one is given.
  */
 fun interface NotificationArchiver {
     /** True when the message left the Inbox. */

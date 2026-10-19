@@ -58,13 +58,20 @@ internal class Transfer(
         items: List<MoveItem>,
         destination: String,
         allowGmailLabels: Boolean,
+        /**
+         * Gmail archive: only drop `\Inbox` ([destination] is All Mail, where the message already
+         * is). Ignored unless the server is Gmail and [source] is the Inbox.
+         */
+        gmailArchive: Boolean = false,
         onBatch: suspend (batch: List<MovedMessage>, destinationUidValidity: Long) -> Unit,
     ): TransferReport {
         require(source != destination) { "source and destination are the same folder" }
         expungeSkipped = false
         val destStatus = mailbox.status(destination)
         val byUid = items.associateBy { it.uid }
-        val gmailLabels = allowGmailLabels && caps.gmail && source.equals(FolderProvisioner.INBOX, ignoreCase = true)
+        val fromInbox = caps.gmail && source.equals(FolderProvisioner.INBOX, ignoreCase = true)
+        val dropInboxOnly = gmailArchive && fromInbox
+        val gmailLabels = (allowGmailLabels || dropInboxOnly) && fromInbox
         val moved = mutableListOf<MovedMessage>()
         var missing = emptyList<Long>()
         var failure: TransferFailure? = null
@@ -83,7 +90,7 @@ internal class Transfer(
             for (batch in UidCommands.batches(present)) {
                 val done =
                     try {
-                        val copyUid = moveBatch(src, batch, destination, gmailLabels)
+                        val copyUid = moveBatch(src, batch, destination, gmailLabels, dropInboxOnly)
                         val known =
                             copyUid?.takeIf { it.uidValidity == destStatus.uidValidity }?.newUids.orEmpty()
                         val unresolved = batch.filter { known[it] == null }.map { byUid.getValue(it) }
@@ -94,6 +101,8 @@ internal class Transfer(
                                     destination,
                                     destStatus,
                                     unresolved,
+                                    // Already in All Mail: its UID there predates this run.
+                                    sinceUid = if (dropInboxOnly) 1 else destStatus.uidNext,
                                 )
                             }.getOrDefault(emptyMap())
                         batch.map { uid -> MovedMessage(byUid.getValue(uid), known[uid] ?: found[uid]) }
@@ -114,7 +123,13 @@ internal class Transfer(
         batch: List<Long>,
         destination: String,
         gmailLabels: Boolean,
+        dropInboxOnly: Boolean,
     ) = when {
+        dropInboxOnly -> {
+            src.storeGmailLabels(batch, listOf(GMAIL_INBOX), add = false)
+            null
+        }
+
         gmailLabels -> {
             // Label first, then drop \Inbox: if the second step fails the mail is in both, never in neither.
             src.storeGmailLabels(batch, listOf(destination), add = true)
@@ -136,23 +151,24 @@ internal class Transfer(
     }
 
     /**
-     * Without COPYUID: each copy is the one message with its Message-ID among the UIDs the
-     * destination gave out since [before]. Ambiguous (shared or missing Message-ID) stays null.
+     * Without COPYUID: each copy is the one message with its Message-ID among the destination's
+     * UIDs from [sinceUid] (normally UIDNEXT before the move). Ambiguous (shared or missing Message-ID) stays null.
      */
     private fun resolve(
         destination: String,
         before: FolderStatus,
         items: List<MoveItem>,
+        sinceUid: Long,
     ): Map<Long, Long> {
         val counts = items.groupingBy { it.messageIdHeader }.eachCount()
         val searchable = items.filter { it.messageIdHeader?.let(UidCommands::messageId) == it.messageIdHeader }
         val unique = searchable.filter { it.messageIdHeader != null && counts[it.messageIdHeader] == 1 }
-        if (unique.isEmpty() || before.uidNext <= 0) return emptyMap()
+        if (unique.isEmpty() || sinceUid <= 0) return emptyMap()
         return mailbox.open(destination, readWrite = false).use { dst ->
             if (dst.uidValidity != before.uidValidity) return@use emptyMap()
             unique
                 .mapNotNull { item ->
-                    dst.searchMessageId(item.messageIdHeader!!, before.uidNext).singleOrNull()?.let { item.uid to it }
+                    dst.searchMessageId(item.messageIdHeader!!, sinceUid).singleOrNull()?.let { item.uid to it }
                 }.toMap()
         }
     }
