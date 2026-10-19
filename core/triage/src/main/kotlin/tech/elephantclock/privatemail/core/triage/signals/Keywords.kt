@@ -9,10 +9,45 @@ package tech.elephantclock.privatemail.core.triage.signals
  * specific: "code" alone would match every code-review notification.
  */
 object Keywords {
-    /** A security-code phrase and a 4–8 digit code (spaces or one dash allowed: `123 456`, `123-456`). */
+    /**
+     * A security-code phrase with a 4–8 digit code close to it (spaces or one dash allowed:
+     * `123 456`, `123-456`). Short phrases (`otp`, `2fa`) must be whole words, and a phrase right
+     * after `%` is URL encoding, not text: on a real mailbox, Jira links ("%2Fatlassian") paired
+     * "2fa" with an unrelated ticket number and flagged ~190 notifications (T25).
+     */
     fun securityCode(text: String): Boolean {
         val t = prepare(text)
-        return KeywordLists.SECURITY_PHRASES.any { Text.containsWord(t, it, wholeWord = false) } && hasCode(t)
+        return KeywordLists.SECURITY_PHRASES.any { phraseNearCode(t, it) }
+    }
+
+    private fun phraseNearCode(
+        t: String,
+        phrase: String,
+    ): Boolean {
+        val whole = phrase.length <= SHORT_PHRASE
+        var from = 0
+        while (true) {
+            val i = t.indexOf(phrase, from)
+            if (i < 0) return false
+            val end = i + phrase.length
+            val beforeOk = i == 0 || (!t[i - 1].isLetterOrDigit() && t[i - 1] != '%')
+            val afterOk = !whole || end >= t.length || !t[end].isLetterOrDigit()
+            if (beforeOk && afterOk && hasCode(window(t, i - CODE_BEFORE, end + CODE_AFTER))) return true
+            from = i + 1
+        }
+    }
+
+    /** `t[start, end)` widened so it never cuts through a word or number. */
+    private fun window(
+        t: String,
+        start: Int,
+        end: Int,
+    ): String {
+        var s = start.coerceAtLeast(0)
+        var e = end.coerceAtMost(t.length)
+        while (s > 0 && t[s - 1].isLetterOrDigit()) s--
+        while (e < t.length && t[e].isLetterOrDigit()) e++
+        return t.substring(s, e)
     }
 
     /** A money phrase: invoices, receipts, payments, refunds, transfers. */
@@ -115,6 +150,9 @@ object Keywords {
         return before && after
     }
 
+    private const val SHORT_PHRASE = 4
+    private const val CODE_BEFORE = 40
+    private const val CODE_AFTER = 100
     private const val MIN_CODE = 4
     private const val MAX_CODE = 8
 }

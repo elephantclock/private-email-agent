@@ -156,6 +156,23 @@ class KeywordsTest {
                 Arguments.of("Your code is ready to deploy", false),
                 Arguments.of("Weekly report 2026", false),
                 Arguments.of("Promo code SAVE20 — 20% off", false),
+                // T25 (real mailbox): Jira links carry URL-encoded slashes, so "%2Fatlassian" lowercases to "%2fa…",
+                // and the detector paired that "2fa" with any number anywhere in the notification.
+                Arguments.of(
+                    "Anna updated KEY-512. View: https://tracker.example/login?dest=https%3A%2F%2Fatlassian.example%2Fbrowse ticket 10045",
+                    false,
+                ),
+                Arguments.of("Footprint report: 2 locations, 48213 visitors", false),
+                // The phrase and the code must be close together.
+                Arguments.of(
+                    "Turn on 2FA for your workspace. " + "Lorem ipsum dolor sit amet. ".repeat(10) +
+                        "Order 482193 shipped.",
+                    false,
+                ),
+                // Still codes: whole-word short phrases, and a code just before the phrase.
+                Arguments.of("Your 2FA code: 482193", true),
+                Arguments.of("482193 is your login code", true),
+                Arguments.of("OTP 7741 for your payment", true),
                 Arguments.of("", false),
             )
 

@@ -41,6 +41,25 @@ class RuleContext(
         Keywords.ordersOrTravel(subject) && !Keywords.money(subject)
     }
     val workTool: Boolean get() = senderRegistrable in BuiltInRules.WORK_TOOLS
+
+    /**
+     * A person writing through a form or helpdesk relay: a Reply-To at another domain that isn't a
+     * no-reply address. Machine mail that merely mentions money or orders doesn't do this.
+     */
+    val personBehindRelay: Boolean
+        get() {
+            val sender = message.header.from?.domain ?: return false
+            return message.header.replyTo.any { r ->
+                !r.domain.equals(sender, ignoreCase = true) && !BuiltInRules.NO_REPLY.containsMatchIn(r.localPart)
+            }
+        }
+
+    /** A billing-type sender address (`billing@`, `invoice@`, `receipts@`, `payments@`). */
+    val billingSender: Boolean
+        get() =
+            message.header.from
+                ?.localPart
+                ?.let { local -> BuiltInRules.BILLING_LOCAL_PARTS.any { local.contains(it) } } ?: false
 }
 
 /** One built-in rule: a stable [id] and a check that returns a verdict when the rule is sure. */
@@ -140,6 +159,18 @@ object BuiltInRules {
                         Verdict.file(FolderTarget(FolderRole.MONEY), Importance.HIGH, src, "Possible duplicate charge")
                     }
 
+                    // A developer tool's pull request or ticket about a payment feature is work (T25: ~50
+                    // Bitbucket/Jira notifications were filed to Money); its own billing mail is still money.
+                    c.workTool && !c.billingSender -> {
+                        null
+                    }
+
+                    // A person writing through a form relay (Reply-To is a real person elsewhere): keep it
+                    // in front of the user (T25: ~28 customer-support requests were filed to Money).
+                    c.personBehindRelay -> {
+                        null
+                    }
+
                     // An order confirmation that mentions the total is an order (role.orders below).
                     c.orderSubject && c.ordersOrTravel -> {
                         null
@@ -156,7 +187,8 @@ object BuiltInRules {
                 }
             },
             Rule("role.orders") { c ->
-                if (c.automated && c.ordersOrTravel) {
+                // Developer tools' tickets about bookings are work; a person behind a relay needs the user (T25).
+                if (c.automated && c.ordersOrTravel && !c.workTool && !c.personBehindRelay) {
                     Verdict.file(FolderTarget(FolderRole.ORDERS), Importance.NORMAL, src, "Order, delivery or booking")
                 } else {
                     null
@@ -193,6 +225,10 @@ object BuiltInRules {
     private val SPF_FAILED = setOf(AuthResult.FAIL, AuthResult.SOFTFAIL)
 
     /** Developer and work tools whose notifications go to Work updates. */
+    internal val BILLING_LOCAL_PARTS = listOf("billing", "invoice", "receipt", "payment")
+
+    internal val NO_REPLY = Regex("no[-_.]?reply|do[-_.]?not[-_.]?reply|bounce|mailer-daemon", RegexOption.IGNORE_CASE)
+
     val WORK_TOOLS: Set<String> =
         setOf(
             "github.com",

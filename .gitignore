@@ -23,3 +23,7 @@ google-services.json
 
 # Kotlin
 .kotlin/
+
+# T25: real-mailbox evaluation output (never commit real mail)
+/eval/
+/core/data/eval/

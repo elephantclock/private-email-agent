@@ -336,6 +336,50 @@ object RuleCases {
                 FILE,
                 "Notification from github.com",
             ),
+            // T25 (real mailbox): pull requests and tickets about payment features were filed to Money.
+            case(
+                "work tool about a payment feature",
+                mail(
+                    from = "notifications-noreply@bitbucket.org",
+                    subject = "[team/billing] Pull request #214: Fix refund on failed payment",
+                ),
+                "role.work",
+                FILE,
+                "Notification from bitbucket.org",
+            ),
+            case(
+                "customer writing through a contact form about a refund",
+                mail(
+                    from = "noreply@help.ourco.example",
+                    subject = "Refund: tour bought but not showing in the app",
+                    replyTo = listOf(Address.of("traveller@gmail.com")),
+                ),
+                "needs-ai",
+                null,
+                "No rule matched; protected (payment or invoice)",
+            ),
+            case(
+                "work tool ticket about a booking widget",
+                mail(
+                    from = "jira@team.atlassian.net",
+                    subject = "[KEY-88] Booking widget shows the wrong date",
+                    headers = h("Auto-Submitted" to "auto-generated"),
+                ),
+                "role.work",
+                FILE,
+                "Notification from atlassian.net",
+            ),
+            case(
+                "work tool's own invoice",
+                mail(
+                    from = "billing@github.com",
+                    subject = "Your GitHub receipt for October",
+                    headers = h("Auto-Submitted" to "auto-generated"),
+                ),
+                "role.money",
+                FILE,
+                "Payment, invoice or receipt",
+            ),
             case(
                 "report",
                 mail(from = "noreply@monitor.example", subject = "Daily report"),

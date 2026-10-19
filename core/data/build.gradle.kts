@@ -43,6 +43,9 @@ android {
                 it.systemProperty("greenmail.tls.key.password", "changeit")
                 it.systemProperty("pea.test.keystore", keystore)
                 // Robolectric's FileDescriptor interceptor reads JDK internals.
+                // T25 real-mailbox evaluation; skipped unless PEA_LIVE_EVAL=1 (never on CI).
+                System.getenv("PEA_LIVE_EVAL")?.let { value -> it.systemProperty("pea.liveEval", value) }
+                it.systemProperty("pea.repoRoot", rootDir.absolutePath)
                 it.jvmArgs(
                     "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
                     "--add-opens=java.base/java.io=ALL-UNNAMED",

@@ -22,6 +22,7 @@ object TestMail {
         references: List<String> = emptyList(),
         messageId: String? = "<m$uid@example.org>",
         to: List<Address> = listOf(me),
+        replyTo: List<Address> = emptyList(),
     ): MailItem {
         val ref = MessageRef(account, "INBOX", uidValidity = 1, uid = uid++)
         val header =
@@ -33,6 +34,7 @@ object TestMail {
                 sentAtMillis = 1_760_000_000_000,
                 receivedAtMillis = 1_760_000_000_000,
                 to = to,
+                replyTo = replyTo,
                 inReplyTo = inReplyTo,
                 references = references,
                 headers = headers.mapKeys { it.key.lowercase() },
