@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import org.junit.Assert.assertEquals
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -29,6 +30,9 @@ class StableCaptureTest {
 
     @Test
     fun waitsForALateFirstPageBeforeCapturing() {
+        // Roborazzi only renders while recording, verifying or comparing (CI always verifies);
+        // a plain testDebugUnitTest run never composes the content, so there is nothing to check.
+        assumeTrue(listOf("record", "verify", "compare").any { System.getProperty("roborazzi.test.$it") == "true" })
         val shown = AtomicInteger(-1)
         captureScreen("paged_list_late_first_page", ScreenSize.Cover, dark = false) {
             val late =
