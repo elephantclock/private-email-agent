@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 02 What matters to you (T42) -->
+    <string name="personalise_step">Step 2 of 3</string>
+    <string name="personalise_title">What matters to you</string>
+    <string name="personalise_intro">Found from your Sent folder. Change anything now or later.</string>
+    <string name="personalise_people_label">People you write to · never discarded</string>
+    <plurals name="personalise_people_count">
+        <item quantity="one">%1$s person</item>
+        <item quantity="other">%1$s people</item>
+    </plurals>
+    <string name="personalise_people_hint">Mark VIPs to always alert</string>
+    <string name="personalise_people_review">Review</string>
+    <string name="personalise_people_done">Done</string>
+    <string name="personalise_people_reading">Looking through your Sent folder…</string>
+    <string name="personalise_people_reading_count">Reading your Sent folder: %1$s of %2$s</string>
+    <string name="personalise_people_none">No sent mail found yet. People you write to are protected as soon as they appear.</string>
+    <plurals name="personalise_person_sent">
+        <item quantity="one">%1$s email</item>
+        <item quantity="other">%1$s emails</item>
+    </plurals>
+    <string name="personalise_vip">VIP</string>
+    <string name="personalise_more_people">and %1$s more, protected the same way</string>
+    <string name="personalise_folders_label">Value folders</string>
+    <string name="folder_people">People</string>
+    <string name="folder_people_hint">Real conversations</string>
+    <string name="folder_money">Money</string>
+    <string name="folder_money_hint">Invoices, payments, receipts</string>
+    <string name="folder_work">Work updates</string>
+    <string name="folder_work_hint">Code, tickets, calendars</string>
+    <string name="folder_orders">Orders &amp; travel</string>
+    <string name="folder_orders_hint">Bookings, deliveries</string>
+    <string name="folder_reports">Reports &amp; alerts</string>
+    <string name="folder_reports_hint">Automated but useful</string>
+    <string name="personalise_custom_label">Add your own folder, in plain words</string>
+    <string name="personalise_custom_placeholder">Partners: anyone asking to integrate or resell our product</string>
+    <string name="personalise_custom_add">Add</string>
+    <string name="personalise_custom_remove">Remove %1$s</string>
+    <string name="personalise_custom_empty">Describe the folder first, for example “Partners: anyone asking to resell”.</string>
+    <string name="personalise_custom_duplicate">There is already a folder with that name.</string>
+    <string name="personalise_custom_too_long">Keep the name before the colon short.</string>
+    <string name="personalise_discard_label">Discarded mail</string>
+    <string name="personalise_discard_hold">Hold 30 days</string>
+    <string name="personalise_discard_hold_rest">, then Trash (recommended)</string>
+    <string name="personalise_discard_trash">Move straight to Trash</string>
+    <string name="personalise_discard_trash_note">For now discarded mail is still held 30 days, so you can restore it.</string>
+    <string name="personalise_sort">Sort my last 30 days</string>
+
+    <!-- 03 First run (T43) -->
+    <string name="first_run_step">Step 3 of 3 · last 30 days</string>
+    <string name="first_run_busy_title">Sorting your last 30 days</string>
+    <string name="first_run_stage_sync">Fetching your mail</string>
+    <string name="first_run_stage_sent">Reading who you write to</string>
+    <string name="first_run_stage_sort">Sorting, nothing moves yet</string>
+    <string name="first_run_stage_apply">Filing and discarding</string>
+    <string name="first_run_nothing_moves">Nothing is moved on your server while this runs. You will see what would be kept and discarded, and choose Apply or Label only.</string>
+    <string name="first_run_progress">%1$s of %2$s</string>
+    <plurals name="first_run_title_sorted">
+        <item quantity="one">%1$s email sorted. Keep %2$s, discard %3$s.</item>
+        <item quantity="other">%1$s emails sorted. Keep %2$s, discard %3$s.</item>
+    </plurals>
+    <string name="first_run_title_empty">Nothing to sort from the last 30 days.</string>
+    <string name="first_run_keep_share">Keep %1$s%%</string>
+    <string name="first_run_discard_share">Discard %1$s%%</string>
+    <string name="first_run_keep_label">Keep · into folders</string>
+    <string name="first_run_discard_label">Discard</string>
+    <string name="first_run_group_priority">Priority (stays in Inbox)</string>
+    <string name="first_run_group_discarded">Low-value and marketing</string>
+    <string name="first_run_group_discarded_dest">e.g. sign-up confirmations → Discarded</string>
+    <string name="first_run_group_junk">Spam &amp; phishing</string>
+    <string name="first_run_group_junk_dest">→ Junk</string>
+    <string name="first_run_hint_hold">Tap any group to check it. Discarded mail is held 30 days.</string>
+    <string name="first_run_apply">Apply: file %1$s, discard %2$s</string>
+    <string name="first_run_label_only">Label only, move nothing</string>
+    <string name="first_run_gate_pending">Still reading your Sent folder, so people you wrote to months ago are protected. Apply opens when it is done.</string>
+    <string name="first_run_gate_no_sent">No Sent folder was found, so we can’t tell who you write to. Nothing will be moved; use Label only for now.</string>
+    <string name="first_run_failed_title">Sorting stopped</string>
+    <string name="first_run_failed_body">Check your connection. It picks up where it stopped.</string>
+    <string name="first_run_blocked_body">Signing in stopped working. Choose Label only, then enter your password again.</string>
+    <string name="first_run_retry">Try again</string>
+    <string name="first_run_back">Back to the summary</string>
+    <string name="first_run_keep_item">Keep</string>
+    <string name="first_run_keep_item_description">Keep %1$s in the Inbox</string>
+    <string name="first_run_items_loading">Loading…</string>
+    <string name="first_run_items_empty">Nothing left in this group.</string>
+    <string name="first_run_items_more">Showing the newest %1$s.</string>
+
+    <!-- First-run worker notification -->
+    <string name="first_run_channel">First sort</string>
+    <string name="first_run_notification_title">Sorting your last 30 days</string>
+    <string name="first_run_notification_apply">Filing your mail</string>
+</resources>

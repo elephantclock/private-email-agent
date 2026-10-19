@@ -37,6 +37,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun reading(): ReadingDao
 
+    abstract fun firstRun(): FirstRunDao
+
     companion object {
         /** Excluded from backups by the app's data-extraction rules (database domain). */
         const val NAME = "mail.db"

@@ -6,6 +6,10 @@
     <!-- T49: triage alerts and the daily digest (asked for after the first account is added). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- The first-run worker (T43) runs as a data-sync foreground service while it syncs and sorts. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
     <application
         android:name=".PrivateMailApp"
         android:allowBackup="false"
@@ -39,6 +43,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/attachment_paths" />
         </provider>
+
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
 
         <!-- PrivateMailApp configures WorkManager itself (its worker factory), so the default initializer goes. -->
         <provider

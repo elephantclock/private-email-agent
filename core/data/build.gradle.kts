@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    // Triage settings (T42/T43) are stored as JSON in DataStore.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 room {
@@ -70,6 +72,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
+    api(libs.androidx.datastore)
     api(libs.paging.common)
     ksp(libs.room.compiler)
 
