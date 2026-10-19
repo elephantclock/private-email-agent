@@ -9,7 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** Schema v1 → v2 against the exported `1.json`, with data in every changed table. */
+/** Schema migrations against the exported schemas, with data in every changed table. */
 @RunWith(RobolectricTestRunner::class)
 class MigrationTest {
     @get:Rule
@@ -74,6 +74,27 @@ class MigrationTest {
                     "toFolder, toUidValidity, toUid, messageIdHeader, createdAtMillis) VALUES ('acc-1', 'b2', NULL, " +
                     "'FILE', 'INBOX', 7, 43, 'Money', 11, 2, NULL, 400)",
             )
+        }
+    }
+
+    @Test
+    fun `v2 to v3 gives existing accounts the colour the inbox showed them`() {
+        helper.createDatabase(DB, 2).use { db ->
+            // Inserted out of order; the inbox numbered them by creation time.
+            listOf("c" to 30, "a" to 10, "b" to 20, "f" to 60, "e" to 50, "d" to 40).forEach { (id, created) ->
+                db.execSQL(
+                    "INSERT INTO accounts (id, email, emailName, displayName, username, imap_host, imap_port, " +
+                        "imap_security, smtp_host, smtp_port, smtp_security, authType, providerId, createdAtMillis, " +
+                        "authProblem) VALUES ('$id', '$id@example.com', NULL, '$id', '$id', 'imap.example.com', 993, " +
+                        "'SSL_TLS', 'smtp.example.com', 587, 'STARTTLS', 'PASSWORD', NULL, $created, NULL)",
+                )
+            }
+        }
+        helper.runMigrationsAndValidate(DB, 3, true, Migrations.MIGRATION_2_3).use { db ->
+            db.query("SELECT id, colorIndex FROM accounts ORDER BY id").use {
+                val colours = buildMap { while (it.moveToNext()) put(it.getString(0), it.getInt(1)) }
+                assertEquals(mapOf("a" to 0, "b" to 1, "c" to 2, "d" to 3, "e" to 4, "f" to 0), colours)
+            }
         }
     }
 

@@ -47,5 +47,23 @@ object Migrations {
             }
         }
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2)
+    /**
+     * v2 → v3 (T52): `accounts.colorIndex`, the account's colour. Existing accounts get the
+     * colour the inbox showed them until now (their position in creation order), so nothing
+     * changes on screen; from now on it is stored and never shifts when an account is removed.
+     */
+    val MIGRATION_2_3 =
+        object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `accounts` ADD COLUMN `colorIndex` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL(
+                    "UPDATE `accounts` SET `colorIndex` = (SELECT COUNT(*) FROM `accounts` AS o " +
+                        "WHERE o.`createdAtMillis` < `accounts`.`createdAtMillis` OR " +
+                        "(o.`createdAtMillis` = `accounts`.`createdAtMillis` AND o.`id` < `accounts`.`id`)) " +
+                        "% ${AccountEntity.COLOR_COUNT}",
+                )
+            }
+        }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 }

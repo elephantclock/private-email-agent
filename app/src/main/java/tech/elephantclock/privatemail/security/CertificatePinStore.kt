@@ -38,6 +38,17 @@ class CertificatePinStore(
         pins[key] = certificate.sha256
     }
 
+    /** Stops trusting the certificate pinned for [host] and [port] (an account using them was removed). */
+    @SuppressLint("UseKtx") // see trust()
+    fun forget(
+        host: String,
+        port: Int,
+    ) {
+        val key = key(host, port)
+        check(prefs.edit().remove(key).commit()) { "could not remove the certificate" }
+        pins.remove(key)
+    }
+
     private fun key(
         host: String,
         port: Int,

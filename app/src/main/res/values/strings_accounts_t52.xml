@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T52: the Accounts screen and account colours. -->
+<resources>
+    <string name="accounts_title">Accounts</string>
+    <string name="accounts_subtitle">On this phone. Nothing here changes your mailbox on the server.</string>
+    <string name="accounts_add">Add another account</string>
+    <string name="accounts_status_synced">Last synced %1$s</string>
+    <string name="accounts_status_never">Not synced yet</string>
+    <string name="accounts_status_password">Needs your password: sync and alerts are paused</string>
+    <string name="accounts_status_removing">Removing from this phone…</string>
+    <string name="accounts_colour">Colour</string>
+    <string name="accounts_colour_cognac">Cognac</string>
+    <string name="accounts_colour_gold">Gold</string>
+    <string name="accounts_colour_sand">Sand</string>
+    <string name="accounts_colour_wine">Wine</string>
+    <string name="accounts_colour_sage">Sage</string>
+    <string name="accounts_sign_in_again">Sign in again</string>
+    <string name="accounts_rename">Rename</string>
+    <string name="accounts_remove">Remove</string>
+    <string name="accounts_rename_title">Rename account</string>
+    <string name="accounts_rename_hint">The name shown for %1$s in this app. Leave it empty to use the address.</string>
+    <string name="accounts_save">Save</string>
+    <string name="accounts_cancel">Cancel</string>
+    <string name="accounts_remove_title">Remove %1$s?</string>
+    <string name="accounts_remove_body">This deletes the account\'s mail, settings, password and trusted certificates from this phone. Nothing changes in your mailbox on the server, and you can add the account again later.</string>
+    <string name="accounts_remove_confirm">Remove from this phone</string>
+    <string name="accounts_removed">Account removed from this phone</string>
+    <string name="accounts_remove_failed">Couldn\'t remove the account. Try again.</string>
+</resources>

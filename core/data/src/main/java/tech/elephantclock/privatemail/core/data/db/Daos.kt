@@ -9,35 +9,12 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
-import kotlinx.coroutines.flow.Flow
 
 /** A message with its verdict, if it has been triaged. */
 data class MessageWithVerdict(
     @Embedded val message: MessageEntity,
     @Relation(parentColumn = "id", entityColumn = "messageId") val verdict: VerdictEntity?,
 )
-
-@Dao
-interface AccountDao {
-    @Upsert suspend fun upsert(account: AccountEntity)
-
-    @Query("SELECT * FROM accounts WHERE id = :id")
-    suspend fun get(id: String): AccountEntity?
-
-    @Query("SELECT * FROM accounts ORDER BY createdAtMillis")
-    fun all(): Flow<List<AccountEntity>>
-
-    /** See [AccountEntity.authProblem]; null clears it. */
-    @Query("UPDATE accounts SET authProblem = :problem WHERE id = :id")
-    suspend fun setAuthProblem(
-        id: String,
-        problem: String?,
-    )
-
-    /** Cascades to folders, messages, verdicts, learned rules and undo entries of the account. */
-    @Query("DELETE FROM accounts WHERE id = :id")
-    suspend fun delete(id: String)
-}
 
 @Dao
 interface FolderDao {

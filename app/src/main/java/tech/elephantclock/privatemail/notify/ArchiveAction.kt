@@ -104,12 +104,16 @@ class ArchiveWorker(
         const val KEY_ACCOUNT = "account"
         const val KEY_LOCAL_ID = "localId"
 
+        /** On every archive request of an account, so removing the account can cancel them. */
+        fun accountTag(id: AccountId) = "archive-account:${id.value}"
+
         fun request(
             account: String,
             localId: Long,
         ): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<ArchiveWorker>()
                 .setInputData(workDataOf(KEY_ACCOUNT to account, KEY_LOCAL_ID to localId))
+                .addTag(accountTag(AccountId(account)))
                 .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
