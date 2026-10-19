@@ -72,6 +72,7 @@ androidx-window = { module = "androidx.window:window", version.ref = "window" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 work-testing = { module = "androidx.work:work-testing", version.ref = "work" }
 angus-mail = { module = "org.eclipse.angus:angus-mail", version.ref = "angusMail" }
+mlkit-genai-common = { module = "com.google.mlkit:genai-common", version.ref = "mlkitGenaiPrompt" }
 mlkit-genai-prompt = { module = "com.google.mlkit:genai-prompt", version.ref = "mlkitGenaiPrompt" }
 mlkit-genai-summarization = { module = "com.google.mlkit:genai-summarization", version.ref = "mlkitGenai" }
 mlkit-genai-rewriting = { module = "com.google.mlkit:genai-rewriting", version.ref = "mlkitGenai" }
