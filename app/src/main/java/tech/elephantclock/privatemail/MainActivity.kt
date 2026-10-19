@@ -1,5 +1,6 @@
 package tech.elephantclock.privatemail
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,23 +23,40 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.elephantclock.privatemail.core.data.settings.OnboardingStep
 import tech.elephantclock.privatemail.core.model.AccountId
+import tech.elephantclock.privatemail.feature.discarded.DiscardedRoute
 import tech.elephantclock.privatemail.feature.onboarding.AddAccountRoute
 import tech.elephantclock.privatemail.feature.onboarding.FirstRunRoute
 import tech.elephantclock.privatemail.feature.onboarding.PersonaliseRoute
 import tech.elephantclock.privatemail.feature.shell.AppShell
 import tech.elephantclock.privatemail.feature.shell.AuthProblemBanner
+import tech.elephantclock.privatemail.feature.shell.PlaceholderList
+import tech.elephantclock.privatemail.feature.shell.ShellDestination
+import tech.elephantclock.privatemail.feature.shell.ShellListPane
+import tech.elephantclock.privatemail.notify.NotificationLink
+import tech.elephantclock.privatemail.notify.NotificationLinks
+import tech.elephantclock.privatemail.notify.RequestNotificationPermission
 import tech.elephantclock.privatemail.ui.theme.PrivateMailTheme
 
 class MainActivity : ComponentActivity() {
+    /** The notification the app was opened from; a new one replaces it (single-top launches). */
+    private var link by mutableStateOf<NotificationLink?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (savedInstanceState == null) link = NotificationLinks.parse(intent)
         val graph = (application as PrivateMailApp).graph
         setContent {
             PrivateMailTheme {
-                MailApp(graph)
+                MailApp(graph, link)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        NotificationLinks.parse(intent)?.let { link = it }
     }
 }
 
@@ -47,7 +66,10 @@ class MainActivity : ComponentActivity() {
  * password stopped working gets a banner that reopens the add-account screen for that address.
  */
 @Composable
-private fun MailApp(graph: MailGraph) {
+private fun MailApp(
+    graph: MailGraph,
+    link: NotificationLink?,
+) {
     val context = LocalContext.current
     val onboarding = remember(graph) { graph.onboarding(context) }
     val accounts by graph.database
@@ -90,11 +112,36 @@ private fun MailApp(graph: MailGraph) {
 
         else -> {
             val needsPassword = list.firstOrNull { it.authProblem != null }
-            AppShell(
-                banner = {
-                    if (needsPassword != null) AuthProblemBanner(needsPassword.email) { adding = needsPassword.email }
-                },
-            )
+            RequestNotificationPermission(enabled = true)
+            val discarded: ShellListPane = { destination, _, _ ->
+                if (destination == ShellDestination.Discarded) {
+                    DiscardedRoute(viewModel(key = "discarded") { graph.discardedViewModel() })
+                } else {
+                    PlaceholderList(destination)
+                }
+            }
+            // A notification tap restarts the shell at its target (Draft reply opens the email; the
+            // reply editor is one tap away in its detail pane).
+            val banner: @Composable () -> Unit = {
+                if (needsPassword != null) AuthProblemBanner(needsPassword.email) { adding = needsPassword.email }
+            }
+            val startAt =
+                if (link is NotificationLink.Discarded) ShellDestination.Discarded else ShellDestination.Priority
+            val openKey =
+                when (link) {
+                    is NotificationLink.Open -> link.localId.toString()
+                    is NotificationLink.DraftReply -> link.localId.toString()
+                    else -> null
+                }
+            key(link) {
+                AppShell(
+                    listPane = remember(graph) { graph.readingListPane(other = discarded) },
+                    detailPane = remember(graph) { graph.readingDetailPane() },
+                    banner = banner,
+                    initialDestination = startAt,
+                    initialOpenKey = openKey,
+                )
+            }
         }
     }
 }

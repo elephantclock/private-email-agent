@@ -43,11 +43,20 @@ class MailGraph(
     val mover: TriageMover by lazy { TriageMover(database, repository, connector) }
 
     /**
-     * Triage with today's defaults: rules only (the on-device model arrives in T31), label-only
-     * (nothing moves on the server until the user applies the first run, T43), no notifications
-     * yet (T49) and no contacts (needs the permission flow).
+     * Triage: rules only until the on-device model arrives (T31); the stored settings, which keep
+     * every account label-only until the user applies the first run and the Sent backfill is
+     * complete (T43); alerts through the notification channels (T49); no contacts yet (needs a
+     * permission flow).
      */
-    val orchestrator: TriageOrchestrator by lazy { TriageOrchestrator(database, repository, mover) }
+    val orchestrator: TriageOrchestrator by lazy {
+        TriageOrchestrator(
+            database,
+            repository,
+            mover,
+            settings = onboarding(appContext).triageSettings,
+            notifier = triageNotifier(appContext),
+        )
+    }
 
     fun addAccountViewModel(initialEmail: String = "") =
         AddAccountViewModel(
