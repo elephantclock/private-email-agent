@@ -51,6 +51,9 @@ private val accountColors = listOf(Brand.Cognac, Brand.Gold, Brand.Beige, Brand.
 
 fun accountColor(index: Int): Color = accountColors[index.mod(accountColors.size)]
 
+/** Tags the "Loading…" row while the first page is on its way; screenshots wait until it's gone. */
+const val PAGED_LOADING_TAG = "paged_loading"
+
 /**
  * A pull-to-refresh list of paged messages, followed by [footer] (the "today" card). Shows
  * [emptyText] once loading finished with nothing to show.
@@ -78,7 +81,11 @@ fun PagedMessageList(
             val loaded = items.loadState.refresh is LoadState.NotLoading
             if (items.itemCount == 0) {
                 item(key = "empty") {
-                    EmptyText(if (loaded) emptyText else stringResource(R.string.inbox_loading))
+                    if (loaded) {
+                        EmptyText(emptyText)
+                    } else {
+                        EmptyText(stringResource(R.string.inbox_loading), Modifier.testTag(PAGED_LOADING_TAG))
+                    }
                 }
             }
             footer?.invoke(this)
