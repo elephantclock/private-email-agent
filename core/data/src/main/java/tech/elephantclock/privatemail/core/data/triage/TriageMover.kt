@@ -12,6 +12,7 @@ import tech.elephantclock.privatemail.core.data.db.RoomUndoLog
 import tech.elephantclock.privatemail.core.data.db.toEntity
 import tech.elephantclock.privatemail.core.data.repo.ImapConnector
 import tech.elephantclock.privatemail.core.data.repo.MailRepository
+import tech.elephantclock.privatemail.core.data.settings.DiscardMode
 import tech.elephantclock.privatemail.core.mail.MailResult
 import tech.elephantclock.privatemail.core.mail.auth.needsUserAction
 import tech.elephantclock.privatemail.core.mail.imap.ImapConnection
@@ -36,16 +37,30 @@ data class PlannedMove(
     val action: VerdictAction,
 )
 
-/** What a run of moves did. Messages that [failed] keep their pending flag and are retried. */
+/**
+ * What a run of moves did. Messages that [failed] keep their pending flag and are retried.
+ * In "straight to Trash" mode, [trashed] of the discarded messages went on to the server's
+ * Trash; [heldNoTrash] stayed in Discarded because the server has no Trash folder.
+ */
 data class MoveOutcome(
     val moved: Int = 0,
     val missing: Int = 0,
     val failed: Int = 0,
     val batchIds: List<String> = emptyList(),
     val errors: List<Throwable> = emptyList(),
+    val trashed: Int = 0,
+    val heldNoTrash: Int = 0,
 ) {
     operator fun plus(o: MoveOutcome) =
-        MoveOutcome(moved + o.moved, missing + o.missing, failed + o.failed, batchIds + o.batchIds, errors + o.errors)
+        MoveOutcome(
+            moved + o.moved,
+            missing + o.missing,
+            failed + o.failed,
+            batchIds + o.batchIds,
+            errors + o.errors,
+            trashed + o.trashed,
+            heldNoTrash + o.heldNoTrash,
+        )
 }
 
 /**
@@ -54,6 +69,11 @@ data class MoveOutcome(
  * destination while the rows are updated), so a sync never runs on a folder mid-move. Undo
  * entries go to [RoomUndoLog]. A lost connection (`MessagingException`) leaves the remaining
  * messages pending; batches already moved are logged, so the retry is safe.
+ *
+ * Every folder it moves mail into gets its `FolderRole` in the database, so the sync keeps it
+ * current and reconciles the moved rows. With [discardMode] "straight to Trash" for the
+ * account, discarded mail goes on from Discarded to the server's special-use Trash at once
+ * ([StraightToTrash]); Trash is never created, so without one the mail is held in Discarded.
  */
 class TriageMover(
     private val db: AppDatabase,
@@ -61,6 +81,7 @@ class TriageMover(
     private val connector: ImapConnector,
     private val clock: () -> Long = System::currentTimeMillis,
     private val io: CoroutineDispatcher = Dispatchers.IO,
+    private val discardMode: suspend (AccountId) -> DiscardMode = { DiscardMode.HOLD_30_DAYS },
 ) {
     private val undoLog = RoomUndoLog(db)
 
@@ -157,7 +178,15 @@ class TriageMover(
             if (destination == null || destination == from) {
                 record(accountId, group, report)
             } else {
-                repo.withFolderLock(accountId, destination) { record(accountId, group, report) }
+                repo.withFolderLock(accountId, destination) {
+                    val outcome = record(accountId, group, report)
+                    FolderRoles.assign(db, accountId, destination, target)
+                    if (action == VerdictAction.DISCARD && discardMode(accountId) == DiscardMode.STRAIGHT_TO_TRASH) {
+                        outcome + StraightToTrash.run(db, engine, report)
+                    } else {
+                        outcome
+                    }
+                }
             }
         }
 

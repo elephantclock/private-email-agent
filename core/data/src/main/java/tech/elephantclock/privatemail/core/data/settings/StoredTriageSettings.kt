@@ -5,6 +5,7 @@ import tech.elephantclock.privatemail.core.data.triage.AccountTriageSettings
 import tech.elephantclock.privatemail.core.data.triage.AutoFile
 import tech.elephantclock.privatemail.core.data.triage.TriageSettings
 import tech.elephantclock.privatemail.core.model.AccountId
+import tech.elephantclock.privatemail.core.model.Importance
 
 /** Whether the Sent history is stored deeply enough for auto-file to be safe. */
 enum class BackfillStatus {
@@ -50,9 +51,8 @@ class SentBackfillGate(
  * [TriageSettings] from the [store], for the orchestrator. Auto-file is on only when the user
  * asked for it **and** the [gate] is open; anything else is label only, whatever was stored.
  *
- * The orchestrator's [AutoFile] has no per-folder switch, so while any value folder is switched
- * off, filing is off altogether (discard and junk still apply): mail the user didn't want filed
- * stays in the Inbox rather than going somewhere unexpected.
+ * Folder switches apply per folder (T48): a switched-off value or custom folder keeps its own
+ * mail in the Inbox while the others still file; discard and junk are not affected by them.
  */
 class StoredTriageSettings(
     private val store: TriageSettingsStore,
@@ -66,7 +66,12 @@ class StoredTriageSettings(
                 if (on) {
                     AutoFile(
                         enabled = true,
-                        file = prefs.disabledFolders.isEmpty(),
+                        disabledRoles = prefs.disabledFolders,
+                        disabledCustom =
+                            prefs.customFolders
+                                .filterNot { it.enabled }
+                                .map { it.name }
+                                .toSet(),
                     )
                 } else {
                     AutoFile.LABEL_ONLY
@@ -74,7 +79,13 @@ class StoredTriageSettings(
             trustedAuthservIds = prefs.trustedAuthservIds,
             vips = prefs.vips,
             ownAddresses = prefs.ownAddresses,
-            notifications = prefs.notifications,
+            notifications = prefs.notifications && (prefs.alertUrgent || prefs.alertHigh),
+            alertLevels =
+                buildSet {
+                    if (prefs.alertUrgent) add(Importance.URGENT)
+                    if (prefs.alertHigh) add(Importance.HIGH)
+                },
+            folders = prefs.folderGuides(),
         )
     }
 

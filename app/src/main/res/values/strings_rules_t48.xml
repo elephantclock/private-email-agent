@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen 07: Folders and rules (T48) -->
+    <string name="rules_title">Folders and rules</string>
+    <string name="rules_no_accounts">Add an account to set up its folders and rules.</string>
+    <string name="rules_section_folders">Your folders · the AI reads these descriptions</string>
+    <string name="rules_section_learned">Learned from your corrections</string>
+    <string name="rules_section_alerts">Alerts</string>
+    <string name="rules_section_discard">Discarded mail</string>
+    <string name="rules_section_auto_file">Auto-file</string>
+    <string name="rules_section_advanced">Advanced</string>
+    <string name="rules_section_backup">Back up your rules</string>
+
+    <string name="rules_folder_priority">Priority</string>
+    <string name="rules_folder_priority_desc">Money at risk, outages, security, deadlines, anyone waiting on me.</string>
+    <string name="rules_folder_people_desc">Real conversations with people, not automated mail.</string>
+    <string name="rules_folder_money_desc">Invoices, payments, receipts and bank mail.</string>
+    <string name="rules_folder_work_desc">Code reviews, tickets, builds, calendars and other work tools.</string>
+    <string name="rules_folder_orders_desc">Bookings, orders, deliveries and travel.</string>
+    <string name="rules_folder_reports_desc">Automated reports and alerts that are still useful.</string>
+    <string name="rules_folder_off">Off: its mail stays in Priority</string>
+    <string name="rules_folder_edit">Edit the description of %1$s</string>
+    <string name="rules_folder_switch">File mail into %1$s</string>
+    <string name="rules_add_folder">Add a folder</string>
+
+    <string name="rules_learned_empty">Nothing learned yet. When you move or restore mail, the rule shows up here.</string>
+    <string name="rules_learned_vip">%1$s · VIP</string>
+    <string name="rules_learned_all_accounts">All accounts</string>
+    <string name="rules_learned_discard">Discard</string>
+    <string name="rules_learned_junk">Junk</string>
+    <string name="rules_rule_from">Mail from %1$s</string>
+    <string name="rules_rule_change">Send it to</string>
+    <string name="rules_rule_vip_note">A VIP rule always keeps mail in Priority. Delete it to change where this sender\'s mail goes.</string>
+    <string name="rules_rule_all_note">This rule applies to every account.</string>
+    <string name="rules_rule_protected_note">People you write to are never discarded or junked, whatever a rule says.</string>
+    <string name="rules_rule_delete">Delete rule</string>
+
+    <string name="rules_alert_urgent">Urgent</string>
+    <string name="rules_alert_urgent_hint">Sound + pop-up</string>
+    <string name="rules_alert_high">High</string>
+    <string name="rules_alert_high_hint">Silent pop-up</string>
+    <string name="rules_alert_else">Everything else</string>
+    <string name="rules_alert_else_hint">No notification</string>
+    <string name="rules_digest">Daily digest at 18:00</string>
+    <string name="rules_digest_hint">What was filed and discarded today, for all accounts</string>
+
+    <string name="rules_discard_hold">Hold 30 days in Discarded, then Trash</string>
+    <string name="rules_discard_trash">Move straight to Trash</string>
+    <string name="rules_discard_no_trash">Your server has no Trash folder, so discarded mail is held in Discarded for 30 days instead. The app never creates a Trash folder.</string>
+
+    <string name="rules_auto_on">On. Mail is filed and discarded as it arrives.</string>
+    <string name="rules_auto_not_requested">Label only. Finish the first run to file mail automatically.</string>
+    <string name="rules_auto_rereading">Label only for now: your Sent folder changed, so the app is reading its history again to protect the people you write to. Filing resumes when that\'s done.</string>
+    <string name="rules_auto_no_sent">Label only: no Sent folder was found, so the app can\'t tell who you write to.</string>
+
+    <string name="rules_advanced_show">Show advanced settings</string>
+    <string name="rules_advanced_hide">Hide advanced settings</string>
+    <string name="rules_authserv_title">Trusted mail servers (authserv-id)</string>
+    <string name="rules_authserv_explain">Your mail server adds an Authentication-Results line to each message, saying whether the sender passed SPF, DKIM and DMARC. Anyone can forge such a line, so the app only believes the ones from the servers listed here. Add your provider\'s id (for example mx.example.com) only if you know it. Without one, the app trusts the topmost line only.</string>
+    <string name="rules_authserv_hint">authserv-id</string>
+    <string name="rules_authserv_add">Add</string>
+    <string name="rules_authserv_remove">Remove %1$s</string>
+    <string name="rules_authserv_none">None yet</string>
+
+    <string name="rules_export">Export rules</string>
+    <string name="rules_import">Import rules</string>
+    <string name="rules_backup_hint">A JSON file with this account\'s folders, learned rules, VIPs and alert settings. Your password and mail are never in it.</string>
+    <string name="rules_export_file_name">private-mail-rules.json</string>
+
+    <string name="rules_dialog_save">Save</string>
+    <string name="rules_dialog_cancel">Cancel</string>
+    <string name="rules_dialog_remove">Remove folder</string>
+    <string name="rules_dialog_description">Description</string>
+    <string name="rules_dialog_description_hint">Leave empty for the default description.</string>
+    <string name="rules_dialog_add_title">New folder</string>
+    <string name="rules_dialog_name">Name</string>
+    <string name="rules_dialog_add_hint">Describe in plain words what belongs here. The folder is created on your server the first time mail is filed into it.</string>
+
+    <string name="rules_problem_empty">Please fill this in.</string>
+    <string name="rules_problem_too_long">That\'s too long.</string>
+    <string name="rules_problem_bad_character" formatted="false">Folder names can\'t contain / . % * \\ \" &amp; or control characters.</string>
+    <string name="rules_problem_duplicate">You already have a folder with that name.</string>
+    <string name="rules_problem_reserved">That name is already used by the app or your server.</string>
+
+    <string name="rules_import_title">Import these rules?</string>
+    <string name="rules_import_summary">This replaces this account\'s folders, VIPs, alert levels and discard setting.</string>
+    <plurals name="rules_import_rules">
+        <item quantity="one">It adds %1$d learned rule.</item>
+        <item quantity="other">It adds %1$d learned rules.</item>
+    </plurals>
+    <string name="rules_import_trash_warning">The file sets discarded mail to go straight to Trash.</string>
+    <string name="rules_import_authserv">Also trust these mail servers: %1$s</string>
+    <string name="rules_import_authserv_warning">Only tick this if the file is your own: a wrong server id can make forged mail look genuine.</string>
+    <string name="rules_import_confirm">Import</string>
+
+    <string name="rules_notice_exported">Rules exported</string>
+    <string name="rules_notice_export_failed">Couldn\'t write the file</string>
+    <string name="rules_notice_imported">Rules imported</string>
+    <string name="rules_notice_import_unreadable">Couldn\'t read the file</string>
+    <string name="rules_notice_import_too_large">That file is too large to be a rules file</string>
+    <string name="rules_notice_import_invalid">That isn\'t a rules file from this app</string>
+    <string name="rules_notice_import_newer">That file is from a newer version of the app</string>
+    <string name="rules_notice_import_bad_content">The file has entries that aren\'t allowed, so nothing was imported</string>
+    <string name="rules_notice_vip">VIP rules always keep mail in Priority</string>
+    <string name="rules_notice_rule_gone">That rule no longer exists</string>
+</resources>

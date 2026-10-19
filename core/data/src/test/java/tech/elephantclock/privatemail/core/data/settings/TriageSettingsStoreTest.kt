@@ -11,6 +11,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.FolderRole
+import tech.elephantclock.privatemail.core.model.FolderTarget
+import tech.elephantclock.privatemail.core.model.Importance
+import tech.elephantclock.privatemail.core.model.Verdict
+import tech.elephantclock.privatemail.core.model.VerdictSource
 import java.nio.file.Files
 
 class TriageSettingsStoreTest {
@@ -80,4 +84,46 @@ class TriageSettingsStoreTest {
             s.remove(b)
             assertEquals(AccountPrefs(), s.get(b))
         }
+
+    @Test
+    fun `a file written before T48 still decodes, keeping its backfill cursors`() =
+        runBlocking {
+            file.writeText(
+                """{"accounts":{"a":{"step":"DONE","disabledFolders":["WORK"],""" +
+                    """"customFolders":[{"name":"Partners","description":"resellers"}],"autoFileRequested":true,""" +
+                    """"backfill":{"Sent":{"uidValidity":7,"done":true,"total":3,"stored":3}}}}}""",
+            )
+            val prefs = store().get(a)
+            assertEquals(true, prefs.autoFileRequested)
+            assertEquals(FolderBackfill(uidValidity = 7, done = true, total = 3, stored = 3), prefs.backfill["Sent"])
+            assertEquals(listOf(CustomFolder("Partners", "resellers", enabled = true)), prefs.customFolders)
+            assertEquals(true, prefs.alertUrgent && prefs.alertHigh)
+            assertEquals(true, reopen().digest())
+        }
+
+    @Test
+    fun `the digest switch is app-wide and survives a restart`() =
+        runBlocking {
+            store().setDigest(false)
+            assertEquals(false, reopen().digest())
+        }
+
+    @Test
+    fun `stored folder switches become per-folder auto-file switches`() {
+        val auto =
+            tech.elephantclock.privatemail.core.data.triage.AutoFile(
+                enabled = true,
+                disabledRoles = setOf(FolderRole.MONEY),
+                disabledCustom = setOf("Partners"),
+            )
+        val money = Verdict.file(FolderTarget(FolderRole.MONEY), Importance.NORMAL, VerdictSource.RULE, "r")
+        val work = Verdict.file(FolderTarget(FolderRole.WORK), Importance.NORMAL, VerdictSource.RULE, "r")
+        val partners = Verdict.file(FolderTarget.custom("partners"), Importance.NORMAL, VerdictSource.RULE, "r")
+        assertEquals(false, auto.allows(money))
+        assertEquals(true, auto.allows(work))
+        assertEquals(false, auto.allows(partners))
+        assertEquals(true, auto.allows(Verdict.discard(VerdictSource.RULE, "r")))
+        assertEquals(true, auto.allows(Verdict.junk(VerdictSource.RULE, "r")))
+        assertEquals(false, auto.copy(enabled = false).allows(work))
+    }
 }

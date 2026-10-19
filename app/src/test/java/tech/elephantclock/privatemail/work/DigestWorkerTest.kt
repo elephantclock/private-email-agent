@@ -76,6 +76,7 @@ class DigestWorkerTest {
         now: ZonedDateTime,
         posts: MutableList<DigestSummary>,
         windows: MutableList<Pair<Long, Long>> = mutableListOf(),
+        enabled: Boolean = true,
     ): DigestWorker =
         TestListenableWorkerBuilder<DigestWorker>(context)
             .setWorkerFactory(
@@ -98,6 +99,7 @@ class DigestWorkerTest {
                             clock = { now.toInstant().toEpochMilli() },
                             zone = { now.zone },
                             post = { _, s -> posts += s },
+                            enabled = { enabled },
                         )
                 },
             ).build()
@@ -123,6 +125,24 @@ class DigestWorkerTest {
             assertEquals(
                 Duration.ofHours(24).minusSeconds(5).toMillis(),
                 next.single().initialDelayMillis,
+            )
+        }
+
+    @Test
+    fun `with the digest switched off nothing is read or posted, but tomorrow's run is still scheduled`() =
+        runBlocking {
+            val posts = mutableListOf<DigestSummary>()
+            val windows = mutableListOf<Pair<Long, Long>>()
+            worker(DigestSummary(filed = 3), at("2026-10-18T18:00"), posts, windows, enabled = false).doWork()
+            assertTrue(posts.isEmpty())
+            assertTrue(windows.isEmpty())
+            assertEquals(
+                1,
+                WorkManager
+                    .getInstance(context)
+                    .getWorkInfosForUniqueWork(DigestWorker.UNIQUE_NAME)
+                    .get()
+                    .size,
             )
         }
 

@@ -49,6 +49,15 @@ class TriageSettingsStore(
         return result
     }
 
+    /** The app-wide daily digest switch (screen 07). */
+    val digestEnabled: Flow<Boolean> = data.data.map { it.digest }.distinctUntilChanged()
+
+    suspend fun digest(): Boolean = data.data.first().digest
+
+    suspend fun setDigest(on: Boolean) {
+        data.updateData { it.copy(digest = on) }
+    }
+
     /** For an account that is removed. */
     suspend fun remove(id: AccountId) {
         data.updateData { it.copy(accounts = it.accounts - id.value) }

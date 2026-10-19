@@ -49,7 +49,7 @@ data class TriageReport(
  * One pipeline from new message to action (T24): for each untriaged Inbox message, signals →
  * rules → [TriageAi] when the rules can't decide ([Decision.NeedsAi.accept]) → the protections
  * on every verdict → verdict stored → move per the account's [AutoFile] switches ([TriageMover])
- * → alert for URGENT/HIGH ([TriageNotifier]).
+ * → alert for URGENT/HIGH, as the account's alert levels allow ([TriageNotifier]).
  *
  * - **Durable:** the work list is the database (messages in INBOX without a verdict), not the
  *   [MailRepository.newMessages] nudges, which are lost when nobody listens. Every message
@@ -134,7 +134,7 @@ class TriageOrchestrator(
         val now = clock()
         val results = rows.map { classify(triage, it) }
         val autoFile = triage.settings.autoFile
-        val planned = results.filter { autoFile.allows(it.verdict.action) }
+        val planned = results.filter { autoFile.allows(it.verdict) }
         val plannedIds = planned.map { it.row.id }.toSet()
         db.withTransaction {
             db.verdicts().upsertAll(
@@ -218,7 +218,8 @@ class TriageOrchestrator(
         val row = c.row
         val fresh = row.receivedAtMillis >= maxOf(triage.createdAtMillis, clock() - ALERT_WINDOW_MILLIS)
         val alert =
-            triage.settings.notifications && c.verdict.importance.notifies && fresh &&
+            triage.settings.notifications && c.verdict.importance.notifies &&
+                c.verdict.importance in triage.settings.alertLevels && fresh &&
                 row.folderPath == MailRepository.INBOX && MessageFlag.SEEN !in row.flags.toFlags()
         if (!alert) return null
         val from = runCatching { row.toHeader().from }.getOrNull()
@@ -232,7 +233,7 @@ class TriageOrchestrator(
             val triage = factory.prepare(accountId) ?: continue
             val pending = db.triage().pendingMoves(accountId, MailRepository.INBOX, BATCH)
             val (allowed, notAllowed) =
-                pending.partition { p -> p.verdict?.let { triage.settings.autoFile.allows(it.action) } == true }
+                pending.partition { p -> p.verdict?.let { triage.settings.autoFile.allows(it.toModel()) } == true }
             // The user turned auto-file off since: forget the move rather than surprise them later.
             notAllowed.forEach { db.triage().setPendingMove(it.message.id, false) }
             val moves =

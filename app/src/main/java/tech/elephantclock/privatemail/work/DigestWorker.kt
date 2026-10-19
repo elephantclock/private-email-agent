@@ -11,6 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import tech.elephantclock.privatemail.PrivateMailApp
 import tech.elephantclock.privatemail.core.data.db.AppDatabase
+import tech.elephantclock.privatemail.core.data.settings.TriageSettingsStore
 import tech.elephantclock.privatemail.core.model.VerdictAction
 import tech.elephantclock.privatemail.notify.DigestNotification
 import java.time.Duration
@@ -77,18 +78,21 @@ class DigestWorker(
     private val clock: () -> Long = System::currentTimeMillis,
     private val zone: () -> ZoneId = ZoneId::systemDefault,
     private val post: (Context, DigestSummary) -> Unit = DigestNotification::post,
+    /** The digest switch of screen 07 (T48); off: nothing is posted, but tomorrow's run is still scheduled. */
+    private val enabled: suspend () -> Boolean = { true },
 ) : CoroutineWorker(context, params) {
-    /** For WorkManager's default factory: the database comes from the app's graph. */
+    /** For WorkManager's default factory: the database comes from the app's graph, the switch from the settings store. */
     constructor(context: Context, params: WorkerParameters) : this(
         context,
         params,
         (context.applicationContext as? PrivateMailApp)?.graph?.database?.let(::RoomDigestSource),
+        enabled = { TriageSettingsStore.get(context).digest() },
     )
 
     override suspend fun doWork(): Result {
         val now = Instant.ofEpochMilli(clock()).atZone(zone())
         try {
-            val summary = source?.summary(startOfDay(now), now.toInstant().toEpochMilli())
+            val summary = if (enabled()) source?.summary(startOfDay(now), now.toInstant().toEpochMilli()) else null
             if (summary != null && !summary.isEmpty) post(applicationContext, summary)
         } catch (e: CancellationException) {
             throw e
