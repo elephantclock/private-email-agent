@@ -1,13 +1,20 @@
 package tech.elephantclock.privatemail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.NoAiAvailability
 import tech.elephantclock.privatemail.core.data.repo.MessageContentRepository
+import tech.elephantclock.privatemail.core.data.repo.OutgoingMailRepository
 import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
+import tech.elephantclock.privatemail.core.data.secure.StoredSecret
 import tech.elephantclock.privatemail.core.mail.imap.ImapClient
+import tech.elephantclock.privatemail.core.mail.smtp.SmtpSender
 import tech.elephantclock.privatemail.feature.detail.AttachmentFiles
 import tech.elephantclock.privatemail.feature.detail.DetailRoute
 import tech.elephantclock.privatemail.feature.detail.DetailViewModel
@@ -17,6 +24,9 @@ import tech.elephantclock.privatemail.feature.inbox.InboxMode
 import tech.elephantclock.privatemail.feature.inbox.InboxRoute
 import tech.elephantclock.privatemail.feature.inbox.InboxViewModel
 import tech.elephantclock.privatemail.feature.inbox.RoomInboxSource
+import tech.elephantclock.privatemail.feature.reply.ReplyRoute
+import tech.elephantclock.privatemail.feature.reply.ReplyViewModel
+import tech.elephantclock.privatemail.feature.reply.RoomReplySource
 import tech.elephantclock.privatemail.feature.shell.LocalShellNavigation
 import tech.elephantclock.privatemail.feature.shell.PlaceholderDetail
 import tech.elephantclock.privatemail.feature.shell.PlaceholderList
@@ -98,12 +108,34 @@ private fun ReadingList(
     }
 }
 
+fun MailGraph.replyViewModel(parentId: Long): ReplyViewModel {
+    val outgoing =
+        OutgoingMailRepository(
+            db = database,
+            connector = readingConnector(),
+            passwords = { id -> (secrets.get(id) as? StoredSecret.Found)?.password },
+            sender = SmtpSender(certificatePins),
+        )
+    return ReplyViewModel(parentId, RoomReplySource(database, outgoing), readingAi)
+}
+
+/**
+ * The open email, or its reply editor in the same pane (so list, email and reply fit the
+ * shell's two panes). Whether the editor is open survives fold, unfold and rotation; so do the
+ * draft's contents, which live in the ViewModel.
+ */
 @Composable
 private fun ReadingDetail(
     graph: MailGraph,
     messageId: Long,
 ) {
-    val cacheDir = LocalContext.current.cacheDir
-    val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(messageId, cacheDir) }
-    DetailRoute(vm, onReply = null)
+    var replying by rememberSaveable(messageId) { mutableStateOf(false) }
+    if (replying) {
+        val vm = viewModel(key = "reply:$messageId") { graph.replyViewModel(messageId) }
+        ReplyRoute(vm, onClose = { replying = false })
+    } else {
+        val cacheDir = LocalContext.current.cacheDir
+        val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(messageId, cacheDir) }
+        DetailRoute(vm, onReply = { replying = true })
+    }
 }
