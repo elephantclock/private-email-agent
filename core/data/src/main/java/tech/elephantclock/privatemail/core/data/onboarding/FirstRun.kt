@@ -217,6 +217,13 @@ class FirstRun(
             outcome += mover.apply(account, chunk)
             progress(FirstRunProgress.Applying(outcome.moved + outcome.missing + outcome.failed, moves.size))
         }
+        // A label-only drain running meanwhile clears pending flags; mark what is still in the Inbox again.
+        db.withTransaction {
+            for (m in moves) {
+                val row = db.messages().get(m.message.id) ?: continue
+                if (row.folderPath == MailRepository.INBOX) db.triage().setPendingMove(row.id, true)
+            }
+        }
         store.update(id) { it.copy(autoFileRequested = true, step = OnboardingStep.DONE) }
         return FirstRunResult.Applied(outcome, skipped)
     }
