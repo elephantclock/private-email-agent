@@ -21,8 +21,13 @@ class PrivateMailApp :
         get() =
             Configuration
                 .Builder()
-                .setWorkerFactory(SyncWorkerFactory({ graph.repository }, afterSync = { graph.orchestrator.drain() }))
-                .build()
+                .setWorkerFactory(
+                    SyncWorkerFactory({ graph.repository }) {
+                        // Re-open a closed auto-file gate first, so this pass can already file (T48).
+                        graph.sentBackfillRerun(this).run()
+                        graph.orchestrator.drain()
+                    },
+                ).build()
 
     override fun onCreate() {
         super.onCreate()

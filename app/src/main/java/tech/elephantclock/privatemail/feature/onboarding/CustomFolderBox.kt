@@ -103,6 +103,7 @@ internal fun CustomFolderBox(
                         CustomFolderProblem.EMPTY -> R.string.personalise_custom_empty
                         CustomFolderProblem.DUPLICATE -> R.string.personalise_custom_duplicate
                         CustomFolderProblem.TOO_LONG -> R.string.personalise_custom_too_long
+                        CustomFolderProblem.BAD_CHARACTER -> R.string.personalise_custom_bad_character
                     },
                 ),
                 style = MaterialTheme.typography.bodySmall,

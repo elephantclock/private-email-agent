@@ -40,7 +40,15 @@ class MailGraph(
 
     val repository: MailRepository by lazy { MailRepository(database, connector) }
 
-    val mover: TriageMover by lazy { TriageMover(database, repository, connector) }
+    /** Honours the stored discard mode (hold 30 days, or straight to an existing Trash; T48). */
+    val mover: TriageMover by lazy {
+        TriageMover(
+            database,
+            repository,
+            connector,
+            discardMode = discardModeOf(appContext),
+        )
+    }
 
     /**
      * Triage: rules only until the on-device model arrives (T31); the stored settings, which keep

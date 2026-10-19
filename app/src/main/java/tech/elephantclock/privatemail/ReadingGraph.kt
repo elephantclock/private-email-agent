@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.NoAiAvailability
@@ -102,7 +103,15 @@ private fun ReadingList(
     val navigation = LocalShellNavigation.current
     if (destination == ShellDestination.Priority) {
         val vm = viewModel(key = "inbox:priority") { graph.inboxViewModel(InboxMode.PRIORITY) }
-        InboxRoute(vm, selectedId, onOpen, onReviewDiscarded = { navigation.select(ShellDestination.Discarded) })
+        val suppressed by graph.suppressedAlerts().collectAsStateWithLifecycle(emptyList())
+        InboxRoute(
+            vm,
+            selectedId,
+            onOpen,
+            onReviewDiscarded = { navigation.select(ShellDestination.Discarded) },
+            suppressedCount = suppressed.size,
+            suppressed = suppressed,
+        )
     } else {
         val vm = viewModel(key = "inbox:folders") { graph.inboxViewModel(InboxMode.FOLDERS) }
         FolderListRoute(vm, selectedId, onOpen)

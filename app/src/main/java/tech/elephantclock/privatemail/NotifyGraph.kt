@@ -2,6 +2,7 @@ package tech.elephantclock.privatemail
 
 import android.content.Context
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
 import tech.elephantclock.privatemail.core.data.triage.ArchiveOutcome
 import tech.elephantclock.privatemail.core.data.triage.InboxArchiver
@@ -33,8 +34,18 @@ fun MailGraph.notificationArchiver(): NotificationArchiver? {
     }
 }
 
+/**
+ * Archive is offered only for accounts that can archive: an existing special-use Archive folder,
+ * or Gmail (which archives by dropping the Inbox label). Elsewhere a tap would do nothing.
+ * Alerts are posted from triage, off the main thread, so the lookup may block briefly.
+ */
 fun MailGraph.triageNotifier(context: Context): TriageNotifier =
-    AndroidTriageNotifier(context, archiveAvailable = notificationArchiver() != null)
+    AndroidTriageNotifier(context) { account ->
+        runBlocking {
+            database.discarded().archiveFolder(account.value) != null ||
+                database.accounts().get(account.value)?.providerId == "gmail"
+        }
+    }
 
 /** Unread mail whose alert was held back because it failed sender authentication: the inbox badge. */
 fun MailGraph.suppressedAlertCount(): Flow<Int> = SuppressedAlerts(database).count()

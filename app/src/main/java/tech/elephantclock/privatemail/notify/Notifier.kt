@@ -36,7 +36,8 @@ fun interface NotificationArchiver {
  */
 class AndroidTriageNotifier(
     context: Context,
-    private val archiveAvailable: Boolean = false,
+    /** Whether [accountId] can archive (an existing Archive folder, or Gmail); Archive is offered only then. */
+    private val canArchive: (AccountId) -> Boolean = { false },
 ) : TriageNotifier {
     private val context = context.applicationContext
 
@@ -93,7 +94,7 @@ class AndroidTriageNotifier(
             .addAction(0, context.getString(R.string.notify_action_open), open)
             .addAction(0, context.getString(R.string.notify_action_reply), reply)
             .apply {
-                if (archiveAvailable) {
+                if (canArchive(alert.accountId)) {
                     addAction(
                         0,
                         context.getString(R.string.notify_action_archive),

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_tab_rules">Rules</string>
+    <string name="settings_tab_accounts">Accounts</string>
+</resources>

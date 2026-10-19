@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,10 +24,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.elephantclock.privatemail.core.data.settings.OnboardingStep
 import tech.elephantclock.privatemail.core.model.AccountId
+import tech.elephantclock.privatemail.feature.accounts.AccountsRoute
 import tech.elephantclock.privatemail.feature.discarded.DiscardedRoute
 import tech.elephantclock.privatemail.feature.onboarding.AddAccountRoute
 import tech.elephantclock.privatemail.feature.onboarding.FirstRunRoute
 import tech.elephantclock.privatemail.feature.onboarding.PersonaliseRoute
+import tech.elephantclock.privatemail.feature.rules.RulesRoute
+import tech.elephantclock.privatemail.feature.settings.SettingsTab
 import tech.elephantclock.privatemail.feature.shell.AppShell
 import tech.elephantclock.privatemail.feature.shell.AuthProblemBanner
 import tech.elephantclock.privatemail.feature.shell.PlaceholderList
@@ -79,6 +83,8 @@ private fun MailApp(
     val prefs by onboarding.store.all.collectAsStateWithLifecycle(initialValue = null)
     // null: not adding; "": a new account; an address: signing in again to that account.
     var adding by rememberSaveable { mutableStateOf<String?>(null) }
+    // A fresh add-account form each time: a finished form's ViewModel stays "saved" (T52).
+    var addSession by rememberSaveable { mutableIntStateOf(0) }
     val list = accounts
     val stored = prefs
     if (list == null || stored == null) {
@@ -90,9 +96,16 @@ private fun MailApp(
         list.firstOrNull { (stored.accounts[it.id]?.step ?: OnboardingStep.PERSONALISE) != OnboardingStep.DONE }
     when {
         target != null -> {
-            val viewModel = viewModel(key = "add-account:$target") { graph.addAccountViewModel(target) }
+            val viewModel = viewModel(key = "add-account:$target:$addSession") { graph.addAccountViewModel(target) }
             BackHandler(enabled = list.isNotEmpty()) { adding = null }
-            AddAccountRoute(viewModel, onAdded = { adding = null }, reentry = target.isNotEmpty())
+            AddAccountRoute(
+                viewModel,
+                onAdded = {
+                    adding = null
+                    addSession++
+                },
+                reentry = target.isNotEmpty(),
+            )
         }
 
         onboardingAccount != null -> {
@@ -115,7 +128,21 @@ private fun MailApp(
             RequestNotificationPermission(enabled = true)
             val discarded: ShellListPane = { destination, _, _ ->
                 if (destination == ShellDestination.Discarded) {
-                    DiscardedRoute(viewModel(key = "discarded") { graph.discardedViewModel() })
+                    DiscardedRoute(viewModel(key = "discarded") { graph.storedDiscardedViewModel(context) })
+                } else if (destination == ShellDestination.Rules) {
+                    SettingsTab(
+                        rules = { RulesRoute(viewModel(key = "rules") { graph.rulesViewModel(context) }) },
+                        accounts = {
+                            AccountsRoute(
+                                viewModel(key = "accounts") { graph.accountsViewModel(context) },
+                                onAddAccount = {
+                                    addSession++
+                                    adding = ""
+                                },
+                                onSignInAgain = { adding = it },
+                            )
+                        },
+                    )
                 } else {
                     PlaceholderList(destination)
                 }
@@ -136,7 +163,7 @@ private fun MailApp(
             key(link) {
                 AppShell(
                     listPane = remember(graph) { graph.readingListPane(other = discarded) },
-                    detailPane = remember(graph) { graph.readingDetailPane() },
+                    detailPane = remember(graph) { graph.flexReadingDetailPane() },
                     banner = banner,
                     initialDestination = startAt,
                     initialOpenKey = openKey,

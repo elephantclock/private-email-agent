@@ -43,7 +43,8 @@ object ReadingFixtures {
         Account(
             id = AccountId(id),
             email = Address.of(email, "Sam Tester"),
-            displayName = id,
+            // As the add-account screen saves it: the address, until the user renames it (T52).
+            displayName = email,
             username = email,
             imap = ServerConfig("imap.example.com", 993, ConnectionSecurity.SSL_TLS),
             smtp = ServerConfig("smtp.example.com", 465, ConnectionSecurity.SSL_TLS),
@@ -51,7 +52,7 @@ object ReadingFixtures {
 
     val work = account("acc-work", "sam@work.example")
     val home = account("acc-home", "sam@home.example")
-    val accounts: List<AccountEntity> = listOf(work.toEntity(1), home.toEntity(2))
+    val accounts: List<AccountEntity> = listOf(work.toEntity(1), home.toEntity(2).copy(colorIndex = 1))
 
     fun header(
         uid: Long,

@@ -108,6 +108,18 @@ class PersonaliseViewModelTest {
             ParsedFolder.Problem(CustomFolderProblem.TOO_LONG),
             parseCustomFolder("x".repeat(41) + ": y", emptyList()),
         )
+        // Same name rules as the Rules screen: no separators or wildcards (would nest or break on the server).
+        listOf("Work/Secret: private", "Clients.EU: eu", "50%: sale", "Star*: x").forEach { text ->
+            assertEquals(
+                text,
+                ParsedFolder.Problem(CustomFolderProblem.BAD_CHARACTER),
+                parseCustomFolder(text, emptyList()),
+            )
+        }
+        assertEquals(
+            ParsedFolder.Problem(CustomFolderProblem.DUPLICATE),
+            parseCustomFolder("Archive: old", emptyList()),
+        )
     }
 
     @Test

@@ -67,8 +67,12 @@ class InboxViewModel(
 
     private val accountChips: Flow<List<AccountChip>> =
         combine(source.accounts(), source.priorityCounts()) { accounts, counts ->
-            accounts.mapIndexed { i, a ->
-                AccountChip(a.id, a.email.substringAfter('@').ifBlank { a.email }, i, counts[a.id] ?: 0)
+            accounts.map { a ->
+                // The user's own name for the account (T52), else the address's domain.
+                val label =
+                    a.displayName.takeIf { it.isNotBlank() && it != a.email }
+                        ?: a.email.substringAfter('@').ifBlank { a.email }
+                AccountChip(a.id, label, a.colorIndex, counts[a.id] ?: 0)
             }
         }
 

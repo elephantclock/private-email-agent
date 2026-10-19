@@ -42,14 +42,14 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import tech.elephantclock.privatemail.R
+import tech.elephantclock.privatemail.feature.accounts.accountColour
 import tech.elephantclock.privatemail.ui.components.ImportancePill
 import tech.elephantclock.privatemail.ui.theme.Brand
 import tech.elephantclock.privatemail.ui.theme.BrandTheme
 
-/** Dot and stripe colours per account, in the order accounts were added (mockup 04). */
-private val accountColors = listOf(Brand.Cognac, Brand.Gold, Brand.Beige, Brand.DarkRed, Color(0xFF6F8F6A))
-
-fun accountColor(index: Int): Color = accountColors[index.mod(accountColors.size)]
+/** The account colour the user picked on the Accounts screen (T52 palette, 3:1 in both themes). */
+@Composable
+fun accountColor(index: Int): Color = accountColour(index)
 
 /** Tags the "Loading…" row while the first page is on its way; screenshots wait until it's gone. */
 const val PAGED_LOADING_TAG = "paged_loading"

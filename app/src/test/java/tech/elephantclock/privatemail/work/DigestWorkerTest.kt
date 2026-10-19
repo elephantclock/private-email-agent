@@ -236,7 +236,7 @@ class DigestWorkerTest {
         shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
         val alert =
             TriageAlert(AccountId("acc"), 42, null, "Hi", Importance.URGENT, "VIP sender")
-        AndroidTriageNotifier(context, archiveAvailable = true).notify(alert)
+        AndroidTriageNotifier(context, canArchive = { true }).notify(alert)
         val manager = shadowOf(context.getSystemService(NotificationManager::class.java))
         val archive =
             shadowOf(

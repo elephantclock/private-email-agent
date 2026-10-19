@@ -12,6 +12,8 @@ import tech.elephantclock.privatemail.core.data.onboarding.SentPerson
 import tech.elephantclock.privatemail.core.data.settings.AccountPrefs
 import tech.elephantclock.privatemail.core.data.settings.CustomFolder
 import tech.elephantclock.privatemail.core.data.settings.DiscardMode
+import tech.elephantclock.privatemail.core.data.settings.FolderNameProblem
+import tech.elephantclock.privatemail.core.data.settings.FolderNames
 import tech.elephantclock.privatemail.core.data.settings.OnboardingStep
 import tech.elephantclock.privatemail.core.model.AccountId
 import tech.elephantclock.privatemail.core.model.FolderRole
@@ -30,7 +32,7 @@ data class PersonaliseUiState(
     fun isVip(person: SentPerson): Boolean = SentPeople.key(person.email) in prefs.vips
 }
 
-enum class CustomFolderProblem { EMPTY, DUPLICATE, TOO_LONG }
+enum class CustomFolderProblem { EMPTY, DUPLICATE, TOO_LONG, BAD_CHARACTER }
 
 interface PersonaliseActions {
     fun onReviewPeople()
@@ -190,6 +192,21 @@ internal fun parseCustomFolder(
     if (name.length > PersonaliseViewModel.MAX_NAME) return ParsedFolder.Problem(CustomFolderProblem.TOO_LONG)
     val taken = existing + RESERVED
     if (taken.any { it.equals(name, ignoreCase = true) }) return ParsedFolder.Problem(CustomFolderProblem.DUPLICATE)
+    // Same rules as the Rules screen (T48): no hierarchy separators or wildcards, which would
+    // create nested or unreachable folders on the server.
+    when (FolderNames.checkName(name, existing)) {
+        FolderNameProblem.BAD_CHARACTER -> return ParsedFolder.Problem(CustomFolderProblem.BAD_CHARACTER)
+
+        FolderNameProblem.DUPLICATE, FolderNameProblem.RESERVED -> return ParsedFolder.Problem(
+            CustomFolderProblem.DUPLICATE,
+        )
+
+        FolderNameProblem.TOO_LONG -> return ParsedFolder.Problem(CustomFolderProblem.TOO_LONG)
+
+        FolderNameProblem.EMPTY -> return ParsedFolder.Problem(CustomFolderProblem.EMPTY)
+
+        null -> Unit
+    }
     return ParsedFolder.Ok(CustomFolder(name, description))
 }
 

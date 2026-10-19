@@ -38,12 +38,13 @@
     <string name="personalise_custom_remove">Remove %1$s</string>
     <string name="personalise_custom_empty">Describe the folder first, for example “Partners: anyone asking to resell”.</string>
     <string name="personalise_custom_duplicate">There is already a folder with that name.</string>
+    <string name="personalise_custom_bad_character">Folder names can’t contain / . % * \\ " &amp; or invisible characters.</string>
     <string name="personalise_custom_too_long">Keep the name before the colon short.</string>
     <string name="personalise_discard_label">Discarded mail</string>
     <string name="personalise_discard_hold">Hold 30 days</string>
     <string name="personalise_discard_hold_rest">, then Trash (recommended)</string>
     <string name="personalise_discard_trash">Move straight to Trash</string>
-    <string name="personalise_discard_trash_note">For now discarded mail is still held 30 days, so you can restore it.</string>
+    <string name="personalise_discard_trash_note">Discarded mail goes straight to your Trash folder (if the server has one) and won’t appear under Discarded.</string>
     <string name="personalise_sort">Sort my last 30 days</string>
 
     <!-- 03 First run (T43) -->
