@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder envelope mark; replaced by the real icon in T02. -->
+<!-- PEA: an envelope sealed with a pea (master: docs/brand/pea-icon.svg). Inside the 66 dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#E8C26A"
-        android:pathData="M34,40h40a4,4 0,0 1,4 4v20a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-20a4,4 0,0 1,4 -4zM34,44v1.5l20,12.5l20,-12.5v-1.5z" />
+        android:pathData="M34,37h40a5,5 0,0 1,5 5v26a5,5 0,0 1,-5 5h-40a5,5 0,0 1,-5 -5v-26a5,5 0,0 1,5 -5z"
+        android:strokeWidth="3.6"
+        android:strokeColor="#C29B40"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M31,40L46.4,51.4M77,40L61.6,51.4"
+        android:strokeWidth="3.6"
+        android:strokeColor="#C29B40"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#C29B40"
+        android:pathData="M54,49.5a7.5,7.5 0,1 1,0 15a7.5,7.5 0,1 1,0 -15z" />
+    <path
+        android:fillColor="#D9F5F0E8"
+        android:pathData="M51.4,52.2a2.2,2.2 0,1 1,0 4.4a2.2,2.2 0,1 1,0 -4.4z" />
 </vector>

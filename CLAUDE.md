@@ -1,4 +1,4 @@
-# Private Email Agent
+# PEA: Private Email Agent
 
 Read `docs/DEV_PLAN.md` § 0 and the Status table at the start of every session.
 

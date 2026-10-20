@@ -1,4 +1,4 @@
-# Private Email Agent: design plan (v0.2, 16 Oct 2026)
+# PEA (Private Email Agent): design plan (v0.2, 16 Oct 2026)
 
 ## Goals
 

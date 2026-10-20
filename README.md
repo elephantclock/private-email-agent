@@ -1,8 +1,10 @@
-# Private Email Agent
+<img src="docs/brand/pea-logo.svg" alt="PEA: Private Email Agent" width="360">
+
+# PEA: Private Email Agent
 
 **An on-device AI email agent for Android. Keep what matters, discard the rest.**
 
-Private Email Agent classifies, summarises and drafts replies to your email on your phone. It runs on the phone's own AI chip, so your email isn't sent to an AI server. It sorts valuable mail into folders, holds marketing and low-value mail for review before it's binned, and only interrupts you for email that needs you.
+PEA (Private Email Agent) classifies, summarises and drafts replies to your email on your phone. It runs on the phone's own AI chip, so your email isn't sent to an AI server. It sorts valuable mail into folders, holds marketing and low-value mail for review before it's binned, and only interrupts you for email that needs you.
 
 > **Status:** design / pre-alpha. The features below describe the target app; nothing is downloadable yet.
 >
@@ -63,7 +65,7 @@ Gemini Nano is available on recent flagship phones only (for example the Galaxy 
 
 ## Privacy
 
-- Your email is processed on the phone. There's no Private Email Agent server.
+- Your email is processed on the phone. There's no PEA server.
 - The AI model has no tools: it can only return a label, a summary or a draft. Instructions inside emails are treated as text, never followed.
 - Nothing is deleted outright; discarded mail is held for 30 days.
 

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <!-- PEA app icon: an envelope sealed with a pea. Same geometry as the Android adaptive icon. -->
+  <rect width="108" height="108" rx="24" fill="#2D3628"/>
+  <rect x="29" y="37" width="50" height="36" rx="5" fill="none" stroke="#C29B40" stroke-width="3.6" stroke-linejoin="round"/>
+  <path d="M31 40 L46.4 51.4 M77 40 L61.6 51.4" fill="none" stroke="#C29B40" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="54" cy="57" r="7.5" fill="#C29B40"/>
+  <circle cx="51.4" cy="54.4" r="2.2" fill="#F5F0E8" fill-opacity="0.85"/>
+</svg>

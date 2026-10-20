@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Private Email Agent</string>
+    <string name="app_name">PEA</string>
+    <!-- The full name, wherever there is room for a description. -->
+    <string name="app_description">Private Email Agent</string>
     <string name="importance_urgent">Urgent</string>
     <string name="importance_high">High</string>
     <string name="importance_normal">Normal</string>
