@@ -6,10 +6,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.AiFeature
+import tech.elephantclock.privatemail.core.ai.LanguageTag
 import tech.elephantclock.privatemail.core.data.repo.DraftOutcome
 import tech.elephantclock.privatemail.core.data.repo.SendOutcome
 import tech.elephantclock.privatemail.core.mail.smtp.OutgoingMessage
@@ -27,10 +29,8 @@ data class ReplyUiState(
     val to: String = "",
     val subject: String = "",
     val body: String = "",
-    /** Rewrite chips (T33) need the on-device model; shown disabled without it. */
-    val rewriteAvailable: Boolean = false,
-    /** Translation preview (T33), likewise. */
-    val translateAvailable: Boolean = false,
+    /** Draft, rewrite, proofread, undo and the translation preview (T33). */
+    val ai: ReplyAiUi = ReplyAiUi(),
     val savingDraft: Boolean = false,
     val draft: StoredMessage? = null,
     /** The message the confirmation dialog shows; null = no dialog. Sending needs it. */
@@ -40,6 +40,14 @@ data class ReplyUiState(
     val notice: ReplyNotice? = null,
 ) {
     val busy: Boolean get() = sending || savingDraft
+
+    /** Rewrite chips need the on-device model; shown disabled without it. */
+    val rewriteAvailable: Boolean get() = ai.rewriteAvailable
+
+    val translateAvailable: Boolean get() = ai.translateAvailable
+
+    /** AI may change the body only while the user could: not behind the send confirmation. */
+    val aiMayEdit: Boolean get() = !loading && !missing && pending == null && !sending && !sent
 }
 
 /**
@@ -47,20 +55,25 @@ data class ReplyUiState(
  * the confirmation; [send] needs the [SendApproval] that the confirmed tap handler creates for
  * exactly [ReplyUiState.pending], and it is `@UserInitiatedSend` itself, so nothing else can call
  * it without opting in. Every send attempt needs a fresh confirmation.
+ *
+ * AI (T33, [replyAi]) only edits the text in the editor, through [ReplyAiController]; it has no
+ * path to [send]. [userLanguage] is what the translation preview translates the draft into.
  */
 class ReplyViewModel(
     private val parentId: Long,
     private val source: ReplySource,
     ai: AiAvailability,
+    replyAi: ReplyAi = NoReplyAi,
+    aiSource: ReplyAiSource = NoReplyAiSource,
+    userLanguage: LanguageTag = LanguageTag.ENGLISH,
 ) : ViewModel() {
     private val local =
         MutableStateFlow(
-            ReplyUiState(
-                rewriteAvailable = ai.status(AiFeature.REWRITE).value.canRun,
-                translateAvailable = ai.status(AiFeature.TRANSLATE).value.canRun,
-            ),
+            ReplyUiState(ai = ReplyAiUi(translateAvailable = replyAi.canTranslate, userLanguage = userLanguage)),
         )
     val state: StateFlow<ReplyUiState> = local.asStateFlow()
+
+    private val aiTools = ReplyAiController(viewModelScope, local, replyAi) { aiSource.material(parentId) }
 
     private var account: Account? = null
     private var parent: ReplyParent? = null
@@ -69,6 +82,28 @@ class ReplyViewModel(
     private var messageId: String? = null
 
     init {
+        if (replyAi.canGenerate) {
+            viewModelScope.launch {
+                combine(
+                    ai.status(AiFeature.PROMPT),
+                    ai.status(AiFeature.REWRITE),
+                    ai.status(AiFeature.PROOFREAD),
+                ) { prompt, rewrite, proofread ->
+                    Triple(prompt.canRun, rewrite.canRun || prompt.canRun, proofread.canRun || prompt.canRun)
+                }.collect { (draft, rewrite, proofread) ->
+                    local.update {
+                        it.copy(
+                            ai =
+                                it.ai.copy(
+                                    draftAvailable = draft,
+                                    rewriteAvailable = rewrite,
+                                    proofreadAvailable = proofread,
+                                ),
+                        )
+                    }
+                }
+            }
+        }
         viewModelScope.launch {
             val ctx = source.context(parentId)
             if (ctx == null) {
@@ -94,7 +129,22 @@ class ReplyViewModel(
 
     fun setSubject(text: String) = edit { it.copy(subject = text.replace(Regex("[\\r\\n]+"), " ")) }
 
-    fun setBody(text: String) = edit { it.copy(body = text) }
+    fun setBody(text: String) {
+        val before = local.value
+        edit { it.copy(body = text) }
+        if (local.value.body != before.body) aiTools.onUserEdit()
+    }
+
+    /** Draft a reply, or rewrite/proofread the current text. */
+    fun runAi(action: AiAction) = aiTools.run(action)
+
+    fun retryAi() = aiTools.retry()
+
+    fun undoAi() = aiTools.undo()
+
+    fun translatePreview() = aiTools.translate()
+
+    fun downloadTranslation() = aiTools.downloadTranslation()
 
     private fun edit(change: (ReplyUiState) -> ReplyUiState) =
         local.update { if (it.sending || it.sent) it else change(it).copy(notice = null) }

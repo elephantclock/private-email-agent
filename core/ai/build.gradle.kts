@@ -29,6 +29,11 @@ dependencies {
     implementation(libs.mlkit.genai.prompt)
     implementation(libs.mlkit.genai.common)
     implementation(libs.mlkit.genai.summarization)
+    // T33: rewriting and proofreading (Gemini Nano), language ID and translation (own small models).
+    implementation(libs.mlkit.genai.rewriting)
+    implementation(libs.mlkit.genai.proofreading)
+    implementation(libs.mlkit.language.id)
+    implementation(libs.mlkit.translate)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)

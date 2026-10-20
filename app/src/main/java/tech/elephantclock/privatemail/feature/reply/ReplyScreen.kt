@@ -56,6 +56,8 @@ data class ReplyActions(
     val onConfirmSend: () -> Unit = {},
     val onSaveDraft: () -> Unit = {},
     val onClose: () -> Unit = {},
+    /** Draft, rewrite, undo, translation (T33): they change the editor's text only. */
+    val ai: ReplyAiActions = ReplyAiActions(),
 )
 
 @Composable
@@ -78,6 +80,14 @@ fun ReplyRoute(
             onConfirmSend = { sendConfirmed(viewModel) },
             onSaveDraft = viewModel::saveDraft,
             onClose = onClose,
+            ai =
+                ReplyAiActions(
+                    onAction = viewModel::runAi,
+                    onRetry = viewModel::retryAi,
+                    onUndo = viewModel::undoAi,
+                    onTranslate = viewModel::translatePreview,
+                    onDownloadTranslation = viewModel::downloadTranslation,
+                ),
         )
     if (compact) {
         CompactReplyEditor(state, actions, modifier)
@@ -123,7 +133,7 @@ fun ReplyScreen(
             AddressFields(state, actions)
             state.notice?.let { NoticeCard(it, if (it.sent) actions.onClose else null) }
             DraftEditor(state, actions)
-            AiTools(state)
+            AiTools(state, actions.ai)
             Column(
                 Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),

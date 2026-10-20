@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +35,7 @@ import tech.elephantclock.privatemail.ui.theme.BrandTheme
 
 /**
  * The reply editor below the hinge in Flex mode (mockup 10): who it goes to, the draft filling
- * the space, then the rewrite chips (disabled until on-device AI, T33), Close, Save draft and
+ * the space, then the AI chips (disabled without on-device AI, T33), Close, Save draft and
  * Send. Send only opens the same confirmation as the full editor. To and Subject are edited in
  * the full editor (open the device flat); here they are shown so the user knows where it goes.
  * The confirmation is shown here too, below the hinge, instead of a centred dialog that would
@@ -160,19 +159,7 @@ private fun CompactActions(
             Modifier.weight(1f).horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            listOf(
-                R.string.reply_rewrite_shorter,
-                R.string.reply_rewrite_formal,
-                R.string.reply_rewrite_proofread,
-            ).forEach { label ->
-                // No rewrite engine is wired yet (T33), so the chips stay disabled even with AI.
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    label = { Text(stringResource(label)) },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                )
-            }
+            CompactAiChips(state, actions.ai)
         }
         TextButton(onClick = actions.onClose, modifier = Modifier.heightIn(min = 48.dp).testTag("compact_close")) {
             Text(stringResource(R.string.reply_flex_close))

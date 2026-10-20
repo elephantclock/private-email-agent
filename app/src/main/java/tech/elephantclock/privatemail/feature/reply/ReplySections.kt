@@ -3,8 +3,6 @@ package tech.elephantclock.privatemail.feature.reply
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -127,50 +125,6 @@ internal fun DraftEditor(
                 ),
             modifier = Modifier.fillMaxWidth().heightIn(min = 220.dp).testTag("field_body"),
         )
-    }
-}
-
-/** Rewrite chips and the translation preview (T33): visible, but disabled until the model is available. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-internal fun AiTools(state: ReplyUiState) {
-    Column(Modifier.padding(horizontal = 18.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.reply_rewrite_label))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(
-                R.string.reply_rewrite_shorter,
-                R.string.reply_rewrite_formal,
-                R.string.reply_rewrite_friendlier,
-                R.string.reply_rewrite_proofread,
-            ).forEach { label ->
-                // No rewrite engine is wired yet (T33), so the chips stay disabled even with AI.
-                androidx.compose.material3.AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    label = { Text(stringResource(label)) },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                )
-            }
-        }
-        if (!state.rewriteAvailable || !state.translateAvailable) {
-            Text(
-                stringResource(R.string.reply_ai_unavailable),
-                style = MaterialTheme.typography.bodySmall,
-                color = BrandTheme.colors.textMuted,
-                modifier = Modifier.testTag("reply_ai_unavailable"),
-            )
-        }
-        Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.medium) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
-                SectionLabel(stringResource(R.string.reply_translation_label))
-                Text(
-                    stringResource(R.string.reply_translation_unavailable),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            }
-        }
     }
 }
 
