@@ -86,7 +86,6 @@ fun ReplyRoute(
                     onRetry = viewModel::retryAi,
                     onUndo = viewModel::undoAi,
                     onTranslate = viewModel::translatePreview,
-                    onDownloadTranslation = viewModel::downloadTranslation,
                 ),
         )
     if (compact) {

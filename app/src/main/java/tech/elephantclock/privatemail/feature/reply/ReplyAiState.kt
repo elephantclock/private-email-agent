@@ -38,18 +38,6 @@ sealed interface TranslationUi {
         val from: LanguageTag,
     ) : TranslationUi
 
-    /** A model must be downloaded once, on Wi-Fi; nothing downloads before the user asks. */
-    data class NeedsDownload(
-        val from: LanguageTag,
-        val languages: List<LanguageTag>,
-    ) : TranslationUi
-
-    /** Asked for: ML Kit downloads it as soon as the phone is on Wi-Fi. */
-    data class Downloading(
-        val from: LanguageTag,
-        val languages: List<LanguageTag>,
-    ) : TranslationUi
-
     data object Failed : TranslationUi
 }
 

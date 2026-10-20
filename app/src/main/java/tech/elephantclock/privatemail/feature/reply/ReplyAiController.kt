@@ -10,7 +10,6 @@ import tech.elephantclock.privatemail.core.ai.AiFailure
 import tech.elephantclock.privatemail.core.ai.AiResult
 import tech.elephantclock.privatemail.core.ai.LanguageTag
 import tech.elephantclock.privatemail.core.ai.map
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationReadiness
 
 /**
  * The reply editor's AI tools (T33): draft, rewrite, proofread, one-step undo and the
@@ -108,7 +107,7 @@ internal class ReplyAiController(
             )
         }
 
-    /** Shows what the draft says in the user's language. Never downloads anything by itself. */
+    /** Shows what the draft says in the user's language (Gemini Nano, through the queue). */
     fun translate() {
         if (!state.value.ai.translateAvailable) return
         val text = state.value.body
@@ -126,20 +125,6 @@ internal class ReplyAiController(
                         TranslationUi.Failed
                     },
                 )
-            }
-    }
-
-    /** The user agreed to download the missing model(s); ML Kit waits for Wi-Fi. */
-    fun downloadTranslation() {
-        val needed = state.value.ai.translation as? TranslationUi.NeedsDownload ?: return
-        translation?.cancel()
-        setTranslation(TranslationUi.Downloading(needed.from, needed.languages))
-        translation =
-            scope.launch {
-                when (ai.downloadTranslation(needed.from, user)) {
-                    is AiResult.Ok -> translate()
-                    is AiResult.Failed -> setTranslation(TranslationUi.Failed)
-                }
             }
     }
 
@@ -177,19 +162,18 @@ internal class ReplyAiController(
                 ?.takeIf { it != LanguageTag.UNDETERMINED }
                 ?: return TranslationUi.Undetermined
         if (from.primary == user.primary) return TranslationUi.SameLanguage
-        return when (val ready = ai.translationReadiness(from, user)) {
-            TranslationReadiness.Unsupported -> {
-                TranslationUi.Unsupported(from)
+        return when (val r = ai.translate(text, from, user)) {
+            is AiResult.Ok -> {
+                TranslationUi.Ready(r.value.text, from, stale = state.value.body != text)
             }
 
-            is TranslationReadiness.NeedsDownload -> {
-                TranslationUi.NeedsDownload(from, ready.languages)
-            }
-
-            TranslationReadiness.Ready -> {
-                when (val r = ai.translate(text, from, user)) {
-                    is AiResult.Ok -> TranslationUi.Ready(r.value.text, from, stale = state.value.body != text)
-                    is AiResult.Failed -> TranslationUi.Failed
+            is AiResult.Failed -> {
+                if (r.failure is AiFailure.Refused) {
+                    TranslationUi.Unsupported(
+                        from,
+                    )
+                } else {
+                    TranslationUi.Failed
                 }
             }
         }

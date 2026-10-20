@@ -10,7 +10,6 @@
     <string name="reply_ai_changed">Changed on device: %1$s</string>
     <string name="reply_ai_drafted">Drafted on device. Check it before sending.</string>
     <string name="reply_ai_undo">Undo</string>
-    <string name="reply_ai_rewrite_unavailable">Rewriting needs on-device AI, which isn’t available on this phone yet.</string>
 
     <string name="reply_translation_label_in">What it says in %1$s</string>
     <string name="reply_translation_idle">See your reply in %1$s before you send it.</string>
@@ -20,9 +19,6 @@
     <string name="reply_translation_stale">You changed the reply since this translation.</string>
     <string name="reply_translation_same">Your reply is already in %1$s.</string>
     <string name="reply_translation_undetermined">Couldn’t tell which language the reply is in. Write a little more and try again.</string>
-    <string name="reply_translation_unsupported">On-device translation doesn’t cover %1$s.</string>
-    <string name="reply_translation_needs_wifi">Translation needs Wi-Fi to download the %1$s model once (about 30 MB). It stays on this phone.</string>
-    <string name="reply_translation_download">Download on Wi-Fi</string>
-    <string name="reply_translation_waiting">Waiting for Wi-Fi to download the %1$s model. You can keep writing.</string>
+    <string name="reply_translation_unsupported">Can’t translate from %1$s on this phone.</string>
     <string name="reply_translation_failed">Couldn’t translate this time.</string>
 </resources>

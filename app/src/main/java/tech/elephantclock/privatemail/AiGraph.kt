@@ -27,7 +27,7 @@ import tech.elephantclock.privatemail.core.ai.mlkit.MlKitReplyDrafter
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriteBackend
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriter
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitSummarizer
-import tech.elephantclock.privatemail.core.ai.mlkit.MlKitTranslator
+import tech.elephantclock.privatemail.core.ai.mlkit.NanoTranslator
 import tech.elephantclock.privatemail.core.ai.mlkit.PromptModel
 import tech.elephantclock.privatemail.core.ai.mlkit.TextGenerator
 import tech.elephantclock.privatemail.core.ai.queue.AiPriority
@@ -69,23 +69,28 @@ class AiGraph internal constructor(
     /** Thread briefs (T32): Summarization API for English gists, the Prompt API for the rest. */
     private val summarization by lazy { MlKitSummarizer.create(appContext) }
 
-    /** Translation models (T33): never downloaded implicitly, only on Wi-Fi when the user asks. */
-    val translator: MlKitTranslator by lazy { MlKitTranslator() }
+    /**
+     * The shared Prompt API path for drafts, translation, and the rewrites/proofreads ML Kit's own
+     * APIs can't do (T33): one `PromptModel` client for the process.
+     */
+    private val generator: TextGenerator by lazy {
+        TextGenerator { prompt, maxTokens ->
+            model
+                .generate(
+                    prompt,
+                    GenerationSettings(temperature = 0.3f, topK = 16, maxOutputTokens = maxTokens),
+                ).text
+        }
+    }
+
+    /** Translation with Gemini Nano (T33): no translation models to download. */
+    val translator: NanoTranslator by lazy { NanoTranslator(generator) }
 
     private val languageId by lazy { MlKitLanguageId() }
 
     /** Redacting, injection-guarding engine over every ML Kit component. */
     val engine: AiEngine by lazy {
         val (summarizer, _) = summarization
-        // The shared Prompt API client, for drafts and for rewrites/proofreads ML Kit's own APIs can't do.
-        val generator =
-            TextGenerator { prompt, maxTokens ->
-                model
-                    .generate(
-                        prompt,
-                        GenerationSettings(temperature = 0.3f, topK = 16, maxOutputTokens = maxTokens),
-                    ).text
-            }
         // Called from inside a queue entry: going through the (single-flight) queue again would wait forever.
         val languageOf: suspend (String) -> LanguageTag = {
             languageId.detectLanguage(it).getOrNull()?.language ?: LanguageTag.UNDETERMINED

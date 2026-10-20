@@ -69,7 +69,7 @@ class ReplyViewModel(
 ) : ViewModel() {
     private val local =
         MutableStateFlow(
-            ReplyUiState(ai = ReplyAiUi(translateAvailable = replyAi.canTranslate, userLanguage = userLanguage)),
+            ReplyUiState(ai = ReplyAiUi(userLanguage = userLanguage)),
         )
     val state: StateFlow<ReplyUiState> = local.asStateFlow()
 
@@ -98,6 +98,8 @@ class ReplyViewModel(
                                     draftAvailable = draft,
                                     rewriteAvailable = rewrite,
                                     proofreadAvailable = proofread,
+                                    // Translation is Gemini Nano too (Prompt API).
+                                    translateAvailable = draft,
                                 ),
                         )
                     }
@@ -143,8 +145,6 @@ class ReplyViewModel(
     fun undoAi() = aiTools.undo()
 
     fun translatePreview() = aiTools.translate()
-
-    fun downloadTranslation() = aiTools.downloadTranslation()
 
     private fun edit(change: (ReplyUiState) -> ReplyUiState) =
         local.update { if (it.sending || it.sent) it else change(it).copy(notice = null) }

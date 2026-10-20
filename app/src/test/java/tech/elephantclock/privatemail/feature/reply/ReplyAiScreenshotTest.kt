@@ -64,21 +64,6 @@ class ReplyAiScreenshotTest {
     @Test
     fun undoAndTranslation() = full("reply_ai_ready", russian)
 
-    // Not the "working" state: its indeterminate spinner never settles, so the capture isn't
-    // deterministic (and the endless animation exhausted the test JVM's heap).
-    @Test
-    fun needsWifi() =
-        full(
-            "reply_ai_needs_wifi",
-            russian.copy(
-                ai =
-                    available.copy(
-                        translation = TranslationUi.NeedsDownload(LanguageTag.RUSSIAN, listOf(LanguageTag.RUSSIAN)),
-                    ),
-            ),
-            darkToo = false,
-        )
-
     @Test
     fun failedWithRetry() =
         full(

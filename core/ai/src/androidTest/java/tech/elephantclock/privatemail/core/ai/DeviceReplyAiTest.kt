@@ -20,9 +20,8 @@ import tech.elephantclock.privatemail.core.ai.mlkit.MlKitProofreader
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitReplyDrafter
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriteBackend
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriter
-import tech.elephantclock.privatemail.core.ai.mlkit.MlKitTranslator
+import tech.elephantclock.privatemail.core.ai.mlkit.NanoTranslator
 import tech.elephantclock.privatemail.core.ai.mlkit.PromptTextGenerator
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationReadiness
 import tech.elephantclock.privatemail.core.ai.mlkit.awaitResult
 import tech.elephantclock.privatemail.core.model.Address
 
@@ -30,8 +29,8 @@ import tech.elephantclock.privatemail.core.model.Address
  * T33 on the device (tag PEA-AI): Language ID, Russian ↔ English translation, English rewrite and
  * proofread (their own APIs), a Russian rewrite (Prompt API fallback) and a Russian reply draft.
  * Synthetic text only. Logs results and latency; model problems are logged, not failed.
- * Opt-in: `-Pandroid.testInstrumentationRunnerArguments.peaReply=1`. The Russian translation model
- * (~30 MB) is downloaded only with `peaReplyDownload=1`, and only on Wi-Fi (waits up to 5 min).
+ * Opt-in: `-Pandroid.testInstrumentationRunnerArguments.peaReply=1`. Translation is Gemini Nano
+ * (Prompt API): nothing to download.
  */
 @RunWith(AndroidJUnit4::class)
 class DeviceReplyAiTest {
@@ -50,25 +49,14 @@ class DeviceReplyAiTest {
                 timed("language ID (ru)") { languageId.detectLanguage(RUSSIAN) }
                 timed("language ID (en)") { languageId.detectLanguage(ENGLISH) }
 
-                val translator = MlKitTranslator()
+                val generator = PromptTextGenerator()
+                // Translation is Gemini Nano (Prompt API) on the same generator as drafts and rewrites.
+                val translator = NanoTranslator(generator)
                 val ru = LanguageTag.RUSSIAN
                 val en = LanguageTag.ENGLISH
-                var ready = translator.readiness(ru, en)
-                Log.i(TAG, "translation readiness ru->en: $ready")
-                if (ready is TranslationReadiness.NeedsDownload && args.getString("peaReplyDownload") == "1") {
-                    Log.i(TAG, "downloading ${ready.languages} on Wi-Fi only …")
-                    val r = withTimeoutOrNull(DOWNLOAD_WAIT_MS) { translator.download(ru, en) }
-                    Log.i(TAG, "download: ${r ?: "still waiting for Wi-Fi after ${DOWNLOAD_WAIT_MS / 1000} s"}")
-                    ready = translator.readiness(ru, en)
-                }
-                if (ready == TranslationReadiness.Ready) {
-                    timed("translate ru->en") { translator.translate(RUSSIAN, ru, en) }
-                    timed("translate en->ru") { translator.translate(ENGLISH, en, ru) }
-                } else {
-                    Log.i(TAG, "translation needs Wi-Fi to download the model(s) once: $ready")
-                }
+                timed("translate ru->en (Nano)") { translator.translate(RUSSIAN_LINES, ru, en) }
+                timed("translate en->ru (Nano)") { translator.translate(ENGLISH_LINES, en, ru) }
 
-                val generator = PromptTextGenerator()
                 engineCheck()
                 MlKitRewriteBackend(context).use { backend ->
                     val rewriter = MlKitRewriter(backend, generator, languageOf)
@@ -169,9 +157,11 @@ class DeviceReplyAiTest {
 
     private companion object {
         const val TAG = "PEA-AI"
-        const val DOWNLOAD_WAIT_MS = 300_000L
         const val PROBE_TIMEOUT_MS = 20_000L
         const val RUSSIAN = "Здравствуйте, Иван! Спасибо за письмо. Вторник мне подходит."
+        const val RUSSIAN_LINES =
+            "Здравствуйте, Иван!\n\nСпасибо за письмо. Вторник в 15:00 мне подходит.\n\nС уважением,\nСэм"
+        const val ENGLISH_LINES = "Hi Ivan,\n\nThanks for your message. Tuesday at 3 pm works for me.\n\nBest,\nSam"
         const val ENGLISH = "Hi Ivan, thanks a lot for your message. Tuesday at 3 pm works well for me."
     }
 }

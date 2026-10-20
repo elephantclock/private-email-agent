@@ -2,7 +2,6 @@ package tech.elephantclock.privatemail
 
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.LanguageTag
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationModels
 import tech.elephantclock.privatemail.core.ai.queue.AiQueue
 import tech.elephantclock.privatemail.core.data.repo.OutgoingMailRepository
 import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
@@ -17,19 +16,12 @@ import tech.elephantclock.privatemail.feature.reply.RoomReplySource
 import java.util.Locale
 
 /*
- * The reply editor with on-device AI (T33), as MailGraph extensions so MailGraph and
- * ReadingGraph stay untouched while other lanes work on them. The coordinator wires it once the
- * app has an AiQueue over SafeAiEngine(MlKitAiEngine(...)) and an AiAvailability for it:
- *
- *   fun MailGraph.replyViewModel(parentId: Long) =
- *       replyViewModelWithAi(parentId, aiAvailability, replyAi(aiQueue, mlKitTranslator))
+ * The reply editor with on-device AI (T33), as MailGraph extensions. ReadingGraph's
+ * `replyViewModel` uses them: replyViewModelWithAi(parentId, ai.availability, replyAi(ai.queue)).
  */
 
-/** Every model call through [queue] (foreground priority); translation models via [translations]. */
-fun MailGraph.replyAi(
-    queue: AiQueue,
-    translations: TranslationModels?,
-): ReplyAi = QueuedReplyAi(queue, translations)
+/** Every model call, translation included, through [queue] (foreground priority). */
+fun MailGraph.replyAi(queue: AiQueue): ReplyAi = QueuedReplyAi(queue)
 
 /** The language the translation preview shows a draft in: the phone's. */
 fun deviceLanguage(): LanguageTag =

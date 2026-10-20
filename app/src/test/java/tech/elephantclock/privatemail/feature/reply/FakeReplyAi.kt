@@ -10,54 +10,16 @@ import tech.elephantclock.privatemail.core.ai.ReplyDraft
 import tech.elephantclock.privatemail.core.ai.RewriteStyle
 import tech.elephantclock.privatemail.core.ai.TextSuggestion
 import tech.elephantclock.privatemail.core.ai.Translation
-import tech.elephantclock.privatemail.core.ai.mlkit.MlKitTranslator
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationBackend
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationReadiness
-
-/** Russian ↔ English for two sentences; the Russian model must be downloaded first. */
-class FakeTranslationBackend : TranslationBackend {
-    val downloaded = mutableSetOf("en")
-    val downloads = mutableListOf<String>()
-    private val pairs = mapOf("Здравствуйте, Иван!" to "Hello, Ivan!", "Во вторник удобно." to "Tuesday works.")
-
-    override fun code(primary: String) = primary.takeIf { it == "en" || it == "ru" }
-
-    override suspend fun isDownloaded(code: String) = code in downloaded
-
-    override suspend fun downloadOnWifi(code: String) {
-        downloads += code
-        downloaded += code
-    }
-
-    override suspend fun translate(
-        lines: List<String>,
-        fromCode: String,
-        toCode: String,
-    ): List<String> = lines.map { translateLine(it, fromCode, toCode) }
-
-    private fun translateLine(
-        text: String,
-        fromCode: String,
-        toCode: String,
-    ): String =
-        if (fromCode == "ru") {
-            pairs[text] ?: "[$text]"
-        } else {
-            pairs.entries.firstOrNull { it.value == text }?.key ?: "[$text]"
-        }
-}
 
 /**
  * Scriptable [ReplyAi]: language by script (Cyrillic = Russian), answers per call, and an
- * optional [gate] that holds a generate call until the test completes it. Real [MlKitTranslator]
- * logic over [FakeTranslationBackend].
+ * optional [gate] that holds a generate call until the test completes it. Translation knows two
+ * Russian ↔ English sentences, line by line; anything else is `[text]`.
  */
 class FakeReplyAi(
     override val canGenerate: Boolean = true,
-    override val canTranslate: Boolean = true,
 ) : ReplyAi {
-    val translations = FakeTranslationBackend()
-    private val translator = MlKitTranslator(translations)
+    private val pairs = mapOf("Здравствуйте, Иван!" to "Hello, Ivan!", "Во вторник удобно." to "Tuesday works.")
     val calls = mutableListOf<String>()
     var draftArgs: Triple<AiThread, LanguageTag, String?>? = null
     var answer: (String) -> AiResult<String> = { AiResult.Ok("AI: $it") }
@@ -114,20 +76,15 @@ class FakeReplyAi(
         to: LanguageTag,
     ): AiResult<Translation> {
         calls += "translate"
-        return translator.translate(text, from, to)
-    }
-
-    override suspend fun translationReadiness(
-        from: LanguageTag,
-        to: LanguageTag,
-    ): TranslationReadiness = translator.readiness(from, to)
-
-    override suspend fun downloadTranslation(
-        from: LanguageTag,
-        to: LanguageTag,
-    ): AiResult<Unit> {
-        calls += "download"
-        return translator.download(from, to)
+        val out =
+            text.lines().joinToString("\n") { line ->
+                when {
+                    line.isBlank() -> line
+                    from == LanguageTag.RUSSIAN -> pairs[line] ?: "[$line]"
+                    else -> pairs.entries.firstOrNull { it.value == line }?.key ?: "[$line]"
+                }
+            }
+        return AiResult.Ok(Translation(out, from, to))
     }
 
     companion object {

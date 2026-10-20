@@ -12,8 +12,6 @@ import tech.elephantclock.privatemail.core.ai.RewriteStyle
 import tech.elephantclock.privatemail.core.ai.TextSuggestion
 import tech.elephantclock.privatemail.core.ai.Translation
 import tech.elephantclock.privatemail.core.ai.UnavailableReason
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationModels
-import tech.elephantclock.privatemail.core.ai.mlkit.TranslationReadiness
 import tech.elephantclock.privatemail.core.ai.queue.AiQueue
 
 /**
@@ -21,11 +19,11 @@ import tech.elephantclock.privatemail.core.ai.queue.AiQueue
  * there is no way to send, save or move anything through it.
  */
 interface ReplyAi {
-    /** Drafts and rewrites (Gemini Nano) can be offered at all; the per-feature status still applies. */
+    /**
+     * Drafts, rewrites and translation (all Gemini Nano) can be offered at all; the per-feature
+     * status still applies.
+     */
     val canGenerate: Boolean
-
-    /** On-device translation (ML Kit Translation: no Gemini Nano needed). */
-    val canTranslate: Boolean
 
     suspend fun detectLanguage(text: String): AiResult<DetectedLanguage>
 
@@ -47,17 +45,6 @@ interface ReplyAi {
         from: LanguageTag,
         to: LanguageTag,
     ): AiResult<Translation>
-
-    suspend fun translationReadiness(
-        from: LanguageTag,
-        to: LanguageTag,
-    ): TranslationReadiness
-
-    /** Downloads missing translation models on Wi-Fi only; suspends until then. */
-    suspend fun downloadTranslation(
-        from: LanguageTag,
-        to: LanguageTag,
-    ): AiResult<Unit>
 }
 
 /** No AI wired (rules-only phones, tests): every tool shows as unavailable. */
@@ -65,7 +52,6 @@ object NoReplyAi : ReplyAi {
     private val none = AiResult.Failed(AiFailure.Unavailable(ModelStatus.Unavailable(UnavailableReason.NOT_SUPPORTED)))
 
     override val canGenerate = false
-    override val canTranslate = false
 
     override suspend fun detectLanguage(text: String) = none
 
@@ -87,31 +73,17 @@ object NoReplyAi : ReplyAi {
         from: LanguageTag,
         to: LanguageTag,
     ) = none
-
-    override suspend fun translationReadiness(
-        from: LanguageTag,
-        to: LanguageTag,
-    ) = TranslationReadiness.Unsupported
-
-    override suspend fun downloadTranslation(
-        from: LanguageTag,
-        to: LanguageTag,
-    ) = none
 }
 
 /**
  * The app's [ReplyAi]: every model call goes through [AiQueue.foreground] (GenAI is
  * foreground-only and single-flight; the queue's engine is the app's `SafeAiEngine`, so text is
- * redacted on the way in and restored on the way out). Translation model checks and downloads go
- * straight to [models]: they aren't inference, and a download waiting for Wi-Fi must not hold
- * the queue.
+ * redacted on the way in and restored on the way out). Translation is Gemini Nano too.
  */
 class QueuedReplyAi(
     private val queue: AiQueue,
-    private val models: TranslationModels?,
 ) : ReplyAi {
     override val canGenerate = true
-    override val canTranslate = models != null
 
     override suspend fun detectLanguage(text: String) = queue.foreground { it.detectLanguage(text) }
 
@@ -133,14 +105,4 @@ class QueuedReplyAi(
         from: LanguageTag,
         to: LanguageTag,
     ) = queue.foreground { it.translate(text, from, to) }
-
-    override suspend fun translationReadiness(
-        from: LanguageTag,
-        to: LanguageTag,
-    ) = models?.readiness(from, to) ?: TranslationReadiness.Unsupported
-
-    override suspend fun downloadTranslation(
-        from: LanguageTag,
-        to: LanguageTag,
-    ) = models?.download(from, to) ?: NoReplyAi.downloadTranslation(from, to)
 }

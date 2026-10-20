@@ -107,7 +107,7 @@ fun MailGraph.replyViewModel(
     parentId: Long,
 ): ReplyViewModel {
     val ai = ai(context)
-    return replyViewModelWithAi(parentId, ai.availability, replyAi(ai.queue, ai.translator))
+    return replyViewModelWithAi(parentId, ai.availability, replyAi(ai.queue))
 }
 
 /**

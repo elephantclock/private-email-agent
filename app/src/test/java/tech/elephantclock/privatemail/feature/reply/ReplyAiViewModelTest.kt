@@ -1,9 +1,11 @@
 package tech.elephantclock.privatemail.feature.reply
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -14,15 +16,20 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import tech.elephantclock.privatemail.core.ai.AiCall
+import tech.elephantclock.privatemail.core.ai.AiFailure
 import tech.elephantclock.privatemail.core.ai.AiFeature
+import tech.elephantclock.privatemail.core.ai.AiResult
 import tech.elephantclock.privatemail.core.ai.AiThread
 import tech.elephantclock.privatemail.core.ai.FakeAiAvailability
+import tech.elephantclock.privatemail.core.ai.FakeAiEngine
 import tech.elephantclock.privatemail.core.ai.LanguageTag
 import tech.elephantclock.privatemail.core.ai.ModelStatus
 import tech.elephantclock.privatemail.core.ai.NoAiAvailability
 import tech.elephantclock.privatemail.core.ai.RewriteStyle
 import tech.elephantclock.privatemail.core.ai.ThreadMessage
 import tech.elephantclock.privatemail.core.ai.UnavailableReason
+import tech.elephantclock.privatemail.core.ai.queue.AiQueue
 import tech.elephantclock.privatemail.core.model.Address
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -59,13 +66,14 @@ class ReplyAiViewModelTest {
             availability.setAll(ModelStatus.Unavailable(UnavailableReason.NOT_SUPPORTED))
             val vm = vm()
             assertFalse(vm.ui.anyGenerate)
-            assertTrue(vm.ui.translateAvailable) // ML Kit Translation needs no Gemini Nano
+            assertFalse(vm.ui.translateAvailable) // translation is Gemini Nano too
             availability.set(AiFeature.PROMPT, ModelStatus.Available)
             assertTrue(vm.ui.draftAvailable && vm.ui.rewriteAvailable && vm.ui.proofreadAvailable)
+            assertTrue(vm.ui.translateAvailable)
             availability.set(AiFeature.PROMPT, ModelStatus.Downloading())
             availability.set(AiFeature.REWRITE, ModelStatus.Available)
             assertTrue(vm.ui.rewriteAvailable)
-            assertFalse(vm.ui.draftAvailable || vm.ui.proofreadAvailable)
+            assertFalse(vm.ui.draftAvailable || vm.ui.proofreadAvailable || vm.ui.translateAvailable)
         }
 
     @Test
@@ -159,18 +167,11 @@ class ReplyAiViewModelTest {
         }
 
     @Test
-    fun `Russian draft preview asks for the Wi-Fi download once, then shows the English text`() =
+    fun `a Russian draft's preview shows the English text, stale after an edit`() =
         runTest {
             val vm = vm()
             vm.setBody("Здравствуйте, Иван!\n\nВо вторник удобно.")
             vm.translatePreview()
-            assertEquals(
-                TranslationUi.NeedsDownload(LanguageTag.RUSSIAN, listOf(LanguageTag.RUSSIAN)),
-                vm.ui.translation,
-            )
-            assertTrue(ai.translations.downloads.isEmpty()) // nothing downloads without the user
-            vm.downloadTranslation()
-            assertEquals(listOf("ru"), ai.translations.downloads)
             assertEquals(
                 TranslationUi.Ready("Hello, Ivan!\n\nTuesday works.", LanguageTag.RUSSIAN),
                 vm.ui.translation,
@@ -184,7 +185,6 @@ class ReplyAiViewModelTest {
     @Test
     fun `undo refreshes a shown translation preview`() =
         runTest {
-            ai.translations.downloaded += "ru"
             ai.answer = {
                 tech.elephantclock.privatemail.core.ai.AiResult
                     .Ok("Во вторник удобно.")
@@ -197,6 +197,37 @@ class ReplyAiViewModelTest {
             vm.undoAi()
             assertEquals("Здравствуйте, Иван!", vm.state.value.body)
             assertEquals(TranslationUi.Ready("Hello, Ivan!", LanguageTag.RUSSIAN), vm.ui.translation)
+        }
+
+    @Test
+    fun `the preview goes through the AI queue, and is off while the Prompt API can't run`() =
+        runTest {
+            val engine = FakeAiEngine(availability)
+            val queued = QueuedReplyAi(AiQueue(engine, CoroutineScope(UnconfinedTestDispatcher(testScheduler))))
+            val vm = vm(queued)
+            vm.setBody("Во вторник удобно.")
+            vm.translatePreview()
+            advanceUntilIdle()
+            assertEquals(TranslationUi.Ready("[en] Во вторник удобно.", LanguageTag.RUSSIAN), vm.ui.translation)
+            assertEquals(listOf(AiCall.DETECT_LANGUAGE, AiCall.TRANSLATE), engine.calls)
+
+            availability.set(AiFeature.PROMPT, ModelStatus.Unavailable(UnavailableReason.NOT_READY))
+            assertFalse(vm.ui.translateAvailable)
+            vm.translatePreview() // ignored
+            advanceUntilIdle()
+            assertEquals(2, engine.calls.size)
+        }
+
+    @Test
+    fun `a refused language shows as unsupported`() =
+        runTest {
+            val engine = FakeAiEngine(availability)
+            engine.translator = { _, _, _ -> AiResult.Failed(AiFailure.Refused("language can't be translated")) }
+            val vm = vm(QueuedReplyAi(AiQueue(engine, CoroutineScope(UnconfinedTestDispatcher(testScheduler)))))
+            vm.setBody("Во вторник удобно.")
+            vm.translatePreview()
+            advanceUntilIdle()
+            assertEquals(TranslationUi.Unsupported(LanguageTag.RUSSIAN), vm.ui.translation)
         }
 
     @Test

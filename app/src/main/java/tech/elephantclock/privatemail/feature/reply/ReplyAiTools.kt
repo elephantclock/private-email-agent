@@ -34,7 +34,6 @@ data class ReplyAiActions(
     val onRetry: () -> Unit = {},
     val onUndo: () -> Unit = {},
     val onTranslate: () -> Unit = {},
-    val onDownloadTranslation: () -> Unit = {},
 )
 
 internal val AiAction.label: Int
@@ -90,18 +89,8 @@ internal fun AiTools(
                 AiChip(state, it, actions.onAction)
             }
         }
-        when {
-            !ai.rewriteAvailable && !ai.translateAvailable -> {
-                Muted(
-                    R.string.reply_ai_unavailable,
-                    "reply_ai_unavailable",
-                )
-            }
-
-            !ai.rewriteAvailable -> {
-                Muted(R.string.reply_ai_rewrite_unavailable, "reply_ai_unavailable")
-            }
-        }
+        // Everything here is Gemini Nano: without its Prompt API, rewriting and translation are off.
+        if (!ai.rewriteAvailable || !ai.translateAvailable) Muted(R.string.reply_ai_unavailable, "reply_ai_unavailable")
         AiStatus(ai, actions)
         TranslationCard(state, actions)
     }
@@ -218,26 +207,13 @@ private fun TranslationCard(
                     CardText(stringResource(R.string.reply_translation_unsupported, t.from.displayName()))
                 }
 
-                is TranslationUi.NeedsDownload -> {
-                    CardText(stringResource(R.string.reply_translation_needs_wifi, t.languages.names()))
-                }
-
-                is TranslationUi.Downloading -> {
-                    CardText(stringResource(R.string.reply_translation_waiting, t.languages.names()))
-                }
-
                 TranslationUi.Failed -> {
                     CardText(stringResource(R.string.reply_translation_failed))
                 }
             }
             val button =
                 when (t) {
-                    is TranslationUi.NeedsDownload -> {
-                        R.string.reply_translation_download to
-                            actions.onDownloadTranslation
-                    }
-
-                    TranslationUi.Working, is TranslationUi.Downloading, is TranslationUi.Unsupported -> {
+                    TranslationUi.Working, is TranslationUi.Unsupported -> {
                         null
                     }
 
@@ -256,15 +232,13 @@ private fun TranslationCard(
             button?.let { (label, onClick) ->
                 TextButton(
                     onClick = onClick,
-                    enabled = state.body.isNotBlank() || t is TranslationUi.NeedsDownload,
+                    enabled = state.body.isNotBlank(),
                     modifier = Modifier.heightIn(min = 48.dp).testTag("translation_button"),
                 ) { Text(stringResource(label), fontWeight = FontWeight.Bold) }
             }
         }
     }
 }
-
-private fun List<LanguageTag>.names() = joinToString(", ") { it.displayName() }
 
 @Composable
 private fun CardText(text: String) =
