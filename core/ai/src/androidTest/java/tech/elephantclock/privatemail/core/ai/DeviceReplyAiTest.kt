@@ -147,9 +147,10 @@ class DeviceReplyAiTest {
         }
     }
 
+    // A direct call to a feature AICore is still downloading hangs with no limit (Fold7).
     private suspend fun probe(block: suspend () -> Any?): String =
         try {
-            block().toString()
+            withTimeoutOrNull(PROBE_TIMEOUT_MS) { block().toString() } ?: "no answer in ${PROBE_TIMEOUT_MS / 1000} s"
         } catch (e: GenAiException) {
             "GenAiException ${e.errorCode}: ${e.message}"
         } catch (e: Exception) {
@@ -169,6 +170,7 @@ class DeviceReplyAiTest {
     private companion object {
         const val TAG = "PEA-AI"
         const val DOWNLOAD_WAIT_MS = 300_000L
+        const val PROBE_TIMEOUT_MS = 20_000L
         const val RUSSIAN = "Здравствуйте, Иван! Спасибо за письмо. Вторник мне подходит."
         const val ENGLISH = "Hi Ivan, thanks a lot for your message. Tuesday at 3 pm works well for me."
     }

@@ -133,10 +133,14 @@ class ReplyPrompts(
          * labels like "Reply:" dropped. Empty output, or output that contains our fence markers
          * (an echo of the prompt), is [AiFailure.InvalidOutput].
          */
+        private val OUTER_FENCE = Regex("^⟪([A-Z_]+)⟫\\s*(.*?)\\s*⟪/\\1⟫$", RegexOption.DOT_MATCHES_ALL)
+
         fun clean(output: String?): AiResult<String> {
             var text = output?.trim().orEmpty()
             if (text.startsWith("```")) text = text.removePrefix("```").substringAfter('\n', "").trimEnd()
             if (text.endsWith("```")) text = text.removeSuffix("```").trimEnd()
+            // Nano sometimes hands the text back inside the fence it came in (seen in Russian on the Fold7).
+            OUTER_FENCE.matchEntire(text)?.let { text = it.groupValues[2].trim() }
             val firstLine = text.substringBefore('\n')
             if (firstLine.startsWith("Subject:", ignoreCase = true)) text = text.substringAfter('\n', "").trim()
             LABELS

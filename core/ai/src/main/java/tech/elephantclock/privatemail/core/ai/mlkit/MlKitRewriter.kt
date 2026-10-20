@@ -1,6 +1,8 @@
 package tech.elephantclock.privatemail.core.ai.mlkit
 
 import android.content.Context
+import com.google.mlkit.genai.common.FeatureStatus
+import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.rewriting.Rewriter
 import com.google.mlkit.genai.rewriting.RewriterOptions
 import com.google.mlkit.genai.rewriting.Rewriting
@@ -20,6 +22,15 @@ fun interface RewriteBackend {
         outputType: Int,
         language: Int,
     ): List<String>
+
+    /**
+     * Whether the feature is downloaded. Asked before each direct call: on the Fold7 a call to a
+     * feature that isn't there hangs until the timeout (15 s) instead of failing.
+     */
+    suspend fun ready(
+        outputType: Int,
+        language: Int,
+    ): Boolean = true
 }
 
 /** ML Kit GenAI Rewriting; one client per (language, output type), closed by [close]. */
@@ -28,27 +39,48 @@ class MlKitRewriteBackend(
 ) : RewriteBackend,
     AutoCloseable {
     private val clients = HashMap<Pair<Int, Int>, Rewriter>()
+    private val available = HashSet<Pair<Int, Int>>()
+
+    override suspend fun ready(
+        outputType: Int,
+        language: Int,
+    ): Boolean {
+        val key = language to outputType
+        if (synchronized(available) { key in available }) return true
+        val ok =
+            try {
+                client(outputType, language).checkFeatureStatus().awaitResult() == FeatureStatus.AVAILABLE
+            } catch (e: GenAiException) {
+                false
+            }
+        if (ok) synchronized(available) { available += key }
+        return ok
+    }
 
     override suspend fun rewrite(
         text: String,
         outputType: Int,
         language: Int,
     ): List<String> {
-        val client =
-            synchronized(clients) {
-                clients.getOrPut(language to outputType) {
-                    Rewriting.getClient(
-                        RewriterOptions
-                            .builder(context.applicationContext)
-                            .setLanguage(language)
-                            .setOutputType(outputType)
-                            .build(),
-                    )
-                }
-            }
-        val result = client.runInference(RewritingRequest.builder(text).build()).awaitResult()
+        val result = client(outputType, language).runInference(RewritingRequest.builder(text).build()).awaitResult()
         return result.results.map { it.text }
     }
+
+    private fun client(
+        outputType: Int,
+        language: Int,
+    ): Rewriter =
+        synchronized(clients) {
+            clients.getOrPut(language to outputType) {
+                Rewriting.getClient(
+                    RewriterOptions
+                        .builder(context.applicationContext)
+                        .setLanguage(language)
+                        .setOutputType(outputType)
+                        .build(),
+                )
+            }
+        }
 
     override fun close() =
         synchronized(clients) {
@@ -76,7 +108,7 @@ class MlKitRewriter(
     ): AiResult<TextSuggestion> {
         val language = languageOf(text)
         val code = genAiTextLanguage(language)
-        if (code != null && text.length <= SHORT_INPUT_CHARS) {
+        if (code != null && text.length <= SHORT_INPUT_CHARS && backend.ready(outputType(style), code)) {
             val direct =
                 genAiCall(timeouts.generateMillis) {
                     suggestions(backend.rewrite(text, outputType(style), code))

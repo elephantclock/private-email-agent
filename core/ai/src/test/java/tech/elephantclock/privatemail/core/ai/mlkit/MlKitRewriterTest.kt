@@ -69,6 +69,50 @@ class MlKitRewriterTest {
         }
 
     @Test
+    fun `features that aren't downloaded are skipped, not called`() =
+        runTest {
+            // On the Fold7 a call to a missing feature hangs until the timeout instead of failing.
+            val notReadyRewriter =
+                MlKitRewriter(
+                    backend =
+                        object : RewriteBackend {
+                            override suspend fun rewrite(
+                                text: String,
+                                outputType: Int,
+                                language: Int,
+                            ): List<String> = error("must not be called")
+
+                            override suspend fun ready(
+                                outputType: Int,
+                                language: Int,
+                            ) = false
+                        },
+                    fallback = generator,
+                    languageOf = { language },
+                )
+            val notReadyProofreader =
+                MlKitProofreader(
+                    backend =
+                        object : ProofreadBackend {
+                            override suspend fun proofread(
+                                text: String,
+                                language: Int,
+                            ): List<String> = error("must not be called")
+
+                            override suspend fun ready(language: Int) = false
+                        },
+                    fallback = generator,
+                    languageOf = { language },
+                )
+            assertEquals(
+                AiResult.Ok(TextSuggestion("Prompt answer")),
+                notReadyRewriter.rewrite("Thanks a lot for your message.", RewriteStyle.SHORTER),
+            )
+            assertEquals(AiResult.Ok(TextSuggestion("Prompt answer")), notReadyProofreader.proofread("Thnks a lot."))
+            assertEquals(2, prompts.size)
+        }
+
+    @Test
     fun `long text and missing features fall back to the Prompt API`() =
         runTest {
             rewriter.rewrite("a".repeat(MlKitRewriter.SHORT_INPUT_CHARS + 1), RewriteStyle.FRIENDLIER)

@@ -93,6 +93,10 @@ class ReplyPromptsTest {
         assertTrue((ReplyPrompts.clean("   ") as AiResult.Failed).failure is AiFailure.InvalidOutput)
         assertTrue((ReplyPrompts.clean(null) as AiResult.Failed).failure is AiFailure.InvalidOutput)
         assertTrue((ReplyPrompts.clean("⟪THREAD⟫ hi") as AiResult.Failed).failure is AiFailure.InvalidOutput)
+        // The text handed back inside its own fence is unwrapped once; anything more is still rejected.
+        assertEquals(AiResult.Ok("Спасибо, вторник подходит."), ReplyPrompts.clean("⟪DRAFT⟫\nСпасибо, вторник подходит.\n⟪/DRAFT⟫"))
+        assertTrue((ReplyPrompts.clean("⟪DRAFT⟫\nhi ⟪THREAD⟫\n⟪/DRAFT⟫") as AiResult.Failed).failure is AiFailure.InvalidOutput)
+        assertTrue((ReplyPrompts.clean("⟪DRAFT⟫\nhi\n⟪/THREAD⟫") as AiResult.Failed).failure is AiFailure.InvalidOutput)
     }
 
     @Test
