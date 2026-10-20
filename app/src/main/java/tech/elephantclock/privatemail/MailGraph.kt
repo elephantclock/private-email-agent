@@ -61,6 +61,7 @@ class MailGraph(
             database,
             repository,
             mover,
+            ai = ai(appContext).triageAi,
             settings = onboarding(appContext).triageSettings,
             notifier = triageNotifier(appContext),
         )

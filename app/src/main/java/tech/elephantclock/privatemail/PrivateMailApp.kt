@@ -41,5 +41,7 @@ class PrivateMailApp :
                 graph.repository.watchInboxes()
             }
         }.start()
+        // The rules-only backlog gets Gemini Nano while an activity is resumed (GenAI is foreground-only).
+        graph.ai(this).foregroundDrain().start()
     }
 }
