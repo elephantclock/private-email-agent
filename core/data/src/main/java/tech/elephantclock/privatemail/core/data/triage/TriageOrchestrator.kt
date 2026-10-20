@@ -46,6 +46,26 @@ data class TriageReport(
 }
 
 /**
+ * Where a pass over rules-only verdicts got to: newest first, by (received, local id).
+ * [START] is before the newest message.
+ */
+data class BacklogCursor(
+    val receivedAtMillis: Long,
+    val id: Long,
+) {
+    companion object {
+        val START = BacklogCursor(Long.MAX_VALUE, Long.MAX_VALUE)
+    }
+}
+
+/** One [TriageOrchestrator.reclassifyRulesOnly] batch: rows looked at, what was done, where to go on. */
+data class BacklogPass(
+    val considered: Int,
+    val report: TriageReport,
+    val next: BacklogCursor,
+)
+
+/**
  * One pipeline from new message to action (T24): for each untriaged Inbox message, signals →
  * rules → [TriageAi] when the rules can't decide ([Decision.NeedsAi.accept]) → the protections
  * on every verdict → verdict stored → move per the account's [AutoFile] switches ([TriageMover])
@@ -63,8 +83,14 @@ data class TriageReport(
  * - **Contacts:** [contacts] returns the app's Android `ContactsSource` for an account (null
  *   without the permission); it joins the relationship protections.
  *
- * Entry points: [run] for a long-lived scope (drains at start and on every nudge) and [drain]
- * for one pass (the sync worker after a sync). Drains never overlap.
+ * - **Rules-only backlog:** when the AI can't run (background, model missing, busy) a NeedsAi
+ *   message is kept in Priority with a provisional verdict ([RULES_ONLY_MARK], confidence 0).
+ *   [reclassifyRulesOnly] asks the AI again for those, newest first, through the same steps
+ *   (accept, protections, alerts, auto-file); a verdict the user changed meanwhile is left alone.
+ *
+ * Entry points: [run] for a long-lived scope (drains at start and on every nudge), [drain]
+ * for one pass (the sync worker after a sync) and [reclassifyRulesOnly] for the foreground AI
+ * drain. They never overlap.
  */
 class TriageOrchestrator(
     private val db: AppDatabase,
@@ -111,6 +137,36 @@ class TriageOrchestrator(
             report
         }
 
+    /**
+     * Asks [ai] again about up to [limit] Inbox messages left with the rules-only fallback,
+     * newest first, older than [after]. Only verdicts the AI actually gave replace the fallback;
+     * the rest stay as they are (the next pass, or the next foreground, tries again).
+     */
+    suspend fun reclassifyRulesOnly(
+        after: BacklogCursor,
+        limit: Int,
+        ai: TriageAi = this.ai,
+    ): BacklogPass =
+        withContext(work) {
+            drainLock.withLock {
+                val rows =
+                    db.triage().rulesOnlyIn(
+                        MailRepository.INBOX,
+                        RULES_ONLY_MARK,
+                        after.receivedAtMillis,
+                        after.id,
+                        limit,
+                    )
+                var report = TriageReport()
+                for ((accountId, group) in rows.groupBy { it.accountId }) {
+                    val triage = factory.prepare(accountId) ?: continue
+                    report += triageAccount(triage, group, ai, revisit = true)
+                }
+                val next = rows.lastOrNull()?.let { BacklogCursor(it.receivedAtMillis, it.id) } ?: after
+                BacklogPass(rows.size, report, next)
+            }
+        }
+
     private suspend fun drainQuietly() {
         try {
             drain()
@@ -130,17 +186,34 @@ class TriageOrchestrator(
     private suspend fun triageAccount(
         triage: AccountTriage,
         rows: List<MessageEntity>,
+        ai: TriageAi = this.ai,
+        revisit: Boolean = false,
     ): TriageReport {
         val now = clock()
-        val results = rows.map { classify(triage, it) }
+        val classified = rows.map { classify(triage, it, ai) }.filter { !revisit || it.byAi }
+        if (classified.isEmpty()) return TriageReport()
         val autoFile = triage.settings.autoFile
+        val results =
+            db.withTransaction {
+                // Revisiting: the user (or an undo, or a move) may have changed it meanwhile; that wins.
+                val current =
+                    if (revisit) {
+                        val still =
+                            db
+                                .triage()
+                                .stillRulesOnly(classified.map { it.row.id }, MailRepository.INBOX, RULES_ONLY_MARK)
+                                .toSet()
+                        classified.filter { it.row.id in still }
+                    } else {
+                        classified
+                    }
+                val plannedIds = current.filter { autoFile.allows(it.verdict) }.map { it.row.id }.toSet()
+                db.verdicts().upsertAll(
+                    current.map { it.verdict.toEntity(it.row.id, now).copy(pendingMove = it.row.id in plannedIds) },
+                )
+                current
+            }
         val planned = results.filter { autoFile.allows(it.verdict) }
-        val plannedIds = planned.map { it.row.id }.toSet()
-        db.withTransaction {
-            db.verdicts().upsertAll(
-                results.map { it.verdict.toEntity(it.row.id, now).copy(pendingMove = it.row.id in plannedIds) },
-            )
-        }
         var alerts = 0
         for (c in results) {
             val alert = alertFor(triage, c) ?: continue
@@ -157,6 +230,7 @@ class TriageOrchestrator(
     private suspend fun classify(
         triage: AccountTriage,
         row: MessageEntity,
+        ai: TriageAi,
     ): Classified {
         val item =
             try {
@@ -174,7 +248,7 @@ class TriageOrchestrator(
                 }
 
                 is Decision.NeedsAi -> {
-                    askAi(item, decision)?.let { decision.accept(it) to true }
+                    askAi(ai, item, decision)?.let { decision.accept(it) to true }
                         ?: (rulesOnly(decision) to false)
                 }
             }
@@ -182,6 +256,7 @@ class TriageOrchestrator(
     }
 
     private suspend fun askAi(
+        ai: TriageAi,
         item: MailItem,
         decision: Decision.NeedsAi,
     ): Verdict? =
@@ -198,7 +273,7 @@ class TriageOrchestrator(
      * again once the model is available.
      */
     private fun rulesOnly(decision: Decision.NeedsAi): Verdict =
-        Verdict.keep(Importance.NORMAL, VerdictSource.RULE, "${decision.reason}; left in Priority (AI unavailable)", 0f)
+        Verdict.keep(Importance.NORMAL, VerdictSource.RULE, "${decision.reason}$RULES_ONLY_MARK", 0f)
 
     /** Mail that failed authentication never alerts, whoever it claims to be from. */
     private fun noAlertIfUnauthenticated(
@@ -246,6 +321,9 @@ class TriageOrchestrator(
     }
 
     companion object {
+        /** Ends the reason of a rules-only fallback verdict; [reclassifyRulesOnly] finds them by it. */
+        const val RULES_ONLY_MARK = "; left in Priority (AI unavailable)"
+
         private const val BATCH = 50
         private val ALERT_WINDOW_MILLIS = TimeUnit.DAYS.toMillis(1)
         private const val UNREADABLE = "Could not be triaged; left in Priority"

@@ -19,6 +19,14 @@ data class SentFingerprint(
     val maxId: Long?,
 )
 
+/**
+ * A verdict the rules stored only because the AI couldn't run: source RULE, confidence 0, KEEP,
+ * no pending move, and the reason ending in the orchestrator's mark (bound as `:mark`).
+ */
+internal const val RULES_ONLY_WHERE =
+    "v.source = 'RULE' AND v.confidence = 0 AND v.action = 'KEEP' AND v.pendingMove = 0 " +
+        "AND v.reason LIKE '%' || :mark"
+
 /** Queries of the triage orchestrator (T24). */
 @Dao
 interface TriageDao {
@@ -34,6 +42,37 @@ interface TriageDao {
         folderPath: String,
         limit: Int,
     ): List<MessageEntity>
+
+    /**
+     * Inbox messages whose verdict is the rules-only fallback ([RULES_ONLY_WHERE]: kept in
+     * Priority because the AI couldn't run), newest first, strictly older than the cursor
+     * ([beforeReceivedMillis], [beforeId]). The foreground AI drain re-classifies them.
+     */
+    @Query(
+        "SELECT m.* FROM messages m JOIN verdicts v ON v.messageId = m.id " +
+            "WHERE m.folderPath = :folderPath AND $RULES_ONLY_WHERE " +
+            "AND (m.receivedAtMillis < :beforeReceivedMillis OR " +
+            "(m.receivedAtMillis = :beforeReceivedMillis AND m.id < :beforeId)) " +
+            "ORDER BY m.receivedAtMillis DESC, m.id DESC LIMIT :limit",
+    )
+    suspend fun rulesOnlyIn(
+        folderPath: String,
+        mark: String,
+        beforeReceivedMillis: Long,
+        beforeId: Long,
+        limit: Int,
+    ): List<MessageEntity>
+
+    /** Which of [ids] are still in [folderPath] with the rules-only fallback (nobody changed them since). */
+    @Query(
+        "SELECT m.id FROM messages m JOIN verdicts v ON v.messageId = m.id " +
+            "WHERE m.id IN (:ids) AND m.folderPath = :folderPath AND $RULES_ONLY_WHERE",
+    )
+    suspend fun stillRulesOnly(
+        ids: List<Long>,
+        folderPath: String,
+        mark: String,
+    ): List<Long>
 
     /** Messages still in [folderPath] whose triage move hasn't been confirmed (see [VerdictEntity.pendingMove]). */
     @Transaction
