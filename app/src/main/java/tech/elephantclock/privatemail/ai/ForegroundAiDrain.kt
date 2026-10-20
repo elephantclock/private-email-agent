@@ -33,8 +33,8 @@ interface AiBacklog {
  *
  * Each time the app comes to the front: one [AiBacklog.prepare], then small batches, newest
  * first, down to the oldest. Batches are small so a verdict is stored every few seconds and
- * little is lost when the user leaves. A batch where the model classified nothing (busy,
- * quota, failing) waits [retryDelayMillis]; after [maxIdleBatches] such batches in a row the
+ * little is lost when the user leaves. A batch that changed nothing (the model busy,
+ * over quota or failing) waits [retryDelayMillis]; after [maxIdleBatches] such batches in a row the
  * drain stops until the next return to the foreground.
  */
 class ForegroundAiDrain(
@@ -71,7 +71,8 @@ class ForegroundAiDrain(
             if (pass.considered == 0) break
             cursor = pass.next
             done += pass.report.byAi
-            if (pass.report.byAi > 0) {
+            // Progress is any new verdict: the AI's, or a rule's that decides now.
+            if (pass.report.triaged > 0) {
                 idle = 0
             } else {
                 if (++idle >= maxIdleBatches) break

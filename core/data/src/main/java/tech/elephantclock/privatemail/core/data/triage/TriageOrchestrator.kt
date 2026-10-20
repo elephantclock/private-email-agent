@@ -139,8 +139,9 @@ class TriageOrchestrator(
 
     /**
      * Asks [ai] again about up to [limit] Inbox messages left with the rules-only fallback,
-     * newest first, older than [after]. Only verdicts the AI actually gave replace the fallback;
-     * the rest stay as they are (the next pass, or the next foreground, tries again).
+     * newest first, older than [after]. A new verdict (the AI's, or a rule's that applies now, e.g.
+     * after the user made the sender a VIP) replaces the fallback; where the AI still couldn't
+     * answer the fallback stays as it is (the next foreground tries again).
      */
     suspend fun reclassifyRulesOnly(
         after: BacklogCursor,
@@ -190,7 +191,8 @@ class TriageOrchestrator(
         revisit: Boolean = false,
     ): TriageReport {
         val now = clock()
-        val classified = rows.map { classify(triage, it, ai) }.filter { !revisit || it.byAi }
+        // Revisiting: a second fallback changes nothing, so keep the old one; a rule may decide now.
+        val classified = rows.map { classify(triage, it, ai) }.filter { !revisit || !it.verdict.isRulesOnly() }
         if (classified.isEmpty()) return TriageReport()
         val autoFile = triage.settings.autoFile
         val results =
@@ -274,6 +276,8 @@ class TriageOrchestrator(
      */
     private fun rulesOnly(decision: Decision.NeedsAi): Verdict =
         Verdict.keep(Importance.NORMAL, VerdictSource.RULE, "${decision.reason}$RULES_ONLY_MARK", 0f)
+
+    private fun Verdict.isRulesOnly() = source == VerdictSource.RULE && reason.endsWith(RULES_ONLY_MARK)
 
     /** Mail that failed authentication never alerts, whoever it claims to be from. */
     private fun noAlertIfUnauthenticated(

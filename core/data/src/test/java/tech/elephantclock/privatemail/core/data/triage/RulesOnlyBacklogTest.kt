@@ -188,4 +188,21 @@ class RulesOnlyBacklogTest {
             assertEquals(VerdictAction.DISCARD, gone.action)
             assertEquals("label only: nothing moves", false, gone.pendingMove)
         }
+
+    @Test
+    fun `a fallback the rules now decide gets the rule's verdict and leaves the backlog`() =
+        runBlocking {
+            setUp()
+            val row = store("boss@stranger.example", received = 1_000)
+            val orchestrator = env.orchestrator()
+            orchestrator.drain()
+            // The user made the sender a VIP since: the rules decide, the AI isn't asked.
+            env.settings.set(account, env.settings.forAccount(account).copy(vips = setOf("boss@stranger.example")))
+            val pass = orchestrator.reclassifyRulesOnly(BacklogCursor.START, 10, TriageAi.UNAVAILABLE)
+            assertEquals(1, pass.report.triaged)
+            assertEquals(0, pass.report.byAi)
+            val v = checkNotNull(db.verdicts().get(row.id))
+            assertEquals(Importance.URGENT, v.importance)
+            assertEquals(0, orchestrator.reclassifyRulesOnly(BacklogCursor.START, 10, TriageAi.UNAVAILABLE).considered)
+        }
 }

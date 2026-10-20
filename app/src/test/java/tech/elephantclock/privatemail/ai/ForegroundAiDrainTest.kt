@@ -98,6 +98,28 @@ class ForegroundAiDrainTest {
         }
 
     @Test
+    fun `verdicts from rules that decide now count as progress, not as an idle model`() =
+        runTest {
+            var batches = 0
+            val backlog =
+                object : AiBacklog {
+                    override suspend fun prepare() = true
+
+                    override suspend fun pass(
+                        after: BacklogCursor,
+                        limit: Int,
+                    ): BacklogPass {
+                        if (++batches > 4) return BacklogPass(0, TriageReport(), after)
+                        return BacklogPass(2, TriageReport(triaged = 2, byAi = 0), BacklogCursor(10L - batches, 0))
+                    }
+                }
+            assertEquals(0, drain(Backlog(emptyList())).drain())
+            ForegroundAiDrain(Owner(), backlog, batchSize = 2, maxIdleBatches = 2, retryDelayMillis = 30_000).drain()
+            assertEquals("all four batches, no stop after two", 5, batches)
+            assertEquals(0L, currentTime)
+        }
+
+    @Test
     fun `drains while the app is resumed, stops when it leaves, and starts over next time`() {
         val owner = Owner().apply { registry.currentState = Lifecycle.State.CREATED }
         var runs = 0
