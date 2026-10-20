@@ -34,6 +34,8 @@
   "operatingSystem": "Android",
   "description": "On-device AI email agent for Android: classifies, summarises and drafts replies, keeps valuable mail in folders and discards marketing and spam. Works with any email account.",
   "url": "https://elephantclock.github.io/private-email-agent/",
+  "downloadUrl": "https://github.com/elephantclock/private-email-agent/releases/download/v0.1.0-prealpha/PEA-0.1.0-prealpha.apk",
+  "softwareVersion": "0.1.0-prealpha",
   "codeRepository": "https://github.com/elephantclock/private-email-agent",
   "license": "https://polyformproject.org/licenses/noncommercial/1.0.0",
   "publisher": { "@type": "Organization", "name": "Elephant Clock Technology", "url": "https://elephantclock.tech" }
@@ -209,6 +211,22 @@
     .nav a:not(.brand):not(.btn) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  /* devices */
+  .devices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .devices .card ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 17px; }
+  .tier { align-self: flex-start; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: var(--beige); color: var(--gold-ink); }
+  .tier.full { background: var(--green); color: var(--gold); }
+  /* story */
+  .story { max-width: 760px; display: flex; flex-direction: column; gap: 20px; font-size: 19px; }
+  .story h3 { font-size: 24px; font-weight: 800; margin-top: 12px; }
+  .story ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .story .sign { color: var(--muted); font-size: 17px; border-top: 1px solid var(--rule); padding-top: 16px; }
+  .story .logo { width: min(360px, 100%); height: auto; }
+  /* download */
+  .download { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .download .card .btn { align-self: flex-start; }
+  .download code { font-size: 13px; word-break: break-all; }
+  @media (max-width: 960px) { .devices, .download { grid-template-columns: minmax(0, 1fr); } }
   .brand-sub { font-weight: 500; font-size: 0.8em; opacity: 0.7; margin-left: 4px; }
   @media (max-width: 640px) { .brand-sub { display: none; } }
 </style>
@@ -225,8 +243,10 @@
     <a href="#features">Features</a>
     <a href="#foldables">Foldables</a>
     <a href="#privacy">Privacy</a>
+    <a href="#devices">Devices</a>
+    <a href="#story">Story</a>
     <a href="https://github.com/elephantclock/private-email-agent">GitHub</a>
-    <a class="btn small" href="https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml">Join the waitlist</a>
+    <a class="btn small" href="#download">Download</a>
   </div>
 </header>
 
@@ -234,14 +254,14 @@
 <div class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow">Coming soon · Android</div>
+      <div class="eyebrow">Pre-alpha · Android</div>
       <h1>Keep what matters.<br><span>Discard the rest.</span></h1>
       <p class="lede">An AI email agent that runs on your phone. It sorts every email into the right folder, writes a short brief, drafts the reply in your tone, and only interrupts you when something actually needs you.</p>
       <div class="ctas">
-        <a class="btn" href="https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml">Join the waitlist</a>
-        <a class="btn ghost" href="#features">See how it works</a>
+        <a class="btn" href="#download">Download the APK</a>
+        <a class="btn ghost" href="#story">Why I built it</a>
       </div>
-      <p class="status"><strong>In development.</strong> Designed first for the Samsung Galaxy Z Fold7.</p>
+      <p class="status"><strong>Pre-alpha, 0.1.0.</strong> Built for my own work mail at izi.TRAVEL, on a Samsung Galaxy Z Fold7.</p>
     </div>
 
     <div class="phone" role="img" aria-label="Illustration of the app's Priority inbox on a phone: an urgent payout request, a duplicate-payment alert and a customer waiting for access, followed by a note that 61 emails were discarded today.">
@@ -406,39 +426,135 @@
   </div>
 </section>
 
-<section style="padding-top: 0">
+<section id="story" class="band">
   <div class="wrap">
     <div class="section-head">
-      <div class="num">06 · UNDER THE HOOD</div>
-      <h2>Fast because it does less</h2>
-      <p>Built on what Android and Google already put on the phone, so the app stays small and quick.</p>
+      <div class="num">06 · THE STORY</div>
+      <h2>Why I built PEA</h2>
     </div>
-    <div class="stack">
-      <div><b>Interface</b>Kotlin, Jetpack Compose, Material 3 adaptive layouts</div>
-      <div><b>On-device AI</b>Gemini Nano via ML Kit GenAI APIs, on the phone's NPU</div>
-      <div><b>Languages</b>ML Kit Language ID and offline Translation</div>
-      <div><b>Mail</b>IMAP push while open, efficient background sync otherwise</div>
-      <div><b>Efficiency</b>Rules first, AI second; headers and a small slice of each body; results cached</div>
-      <div><b>Storage</b>Local database with full-text search</div>
+    <div class="story">
+      <picture>
+        <source srcset="brand/pea-logo-dark.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="brand/pea-logo.svg" alt="PEA: Private Email Agent" width="360" height="108">
+      </picture>
+      <p>I work on the technical and product side of <a href="https://izi.travel">izi.TRAVEL</a>, the audio-guide platform. My work inbox is where everything lands at once: helpdesk tickets from customers about payments and access, automated alerts from our payment providers, pull-request reviews for the website and the app, partner and sales mail, store and ad-network reports. It arrives in English, Russian and other languages. In the 30 days I measured, almost 1,900 emails reached my inbox. Most were useful to somebody; very few needed me; and those few were the easiest to miss.</p>
+
+      <h3>First, an agent on my Mac</h3>
+      <p>On 16 October 2026 I built a mail watcher with Claude Code. Every ten minutes it sorted new mail into action buckets with plain rules, asked an AI model which emails mattered, notified me, and opened a short brief of the thread with a reply I could edit and send in the sender's language. It worked, and it taught me two things. I read most of my mail on my phone, a Galaxy Z Fold7, not at my desk. And every brief meant sending customers' email to a cloud AI model, which I didn't want to do with other people's messages.</p>
+
+      <h3>So: the same agent, on the phone, private</h3>
+      <p>The Fold7 ships with Gemini Nano, Google's on-device model, so the AI can run on the phone's own chip with no server in between. I set a few rules for myself before writing any code: never lose an email, never send without my tap, keep a discarded email recoverable for 30 days, and make the AI optional, so the app is still useful on phones without it.</p>
+
+      <h3>How it was built</h3>
+      <p>The same day I wrote the design and a 55-task plan, each task small enough to finish and test on its own. Claude Code was the engineer and I was the product owner and tester: several AI agents worked in parallel on separate branches, and every change had to pass the same checks before it landed (unit tests, screenshot tests at every Fold7 screen size, lint and CI). I then ran it read-only against my real work mailbox: over 30 days of mail, the rules never discarded an email from someone I'd written to or a thread I'd replied in, and nothing in the mailbox was changed.</p>
+
+      <h3>What the phone taught me</h3>
+      <ul>
+        <li><strong>Gemini Nano only works while the app is on screen.</strong> So background sync sorts with rules, and the AI catches up when I open the app.</li>
+        <li><strong>Android said the model was "still downloading" for days while it worked fine.</strong> PEA now tests the model with a tiny prompt instead of trusting the flag.</li>
+        <li><strong>Translation with a dedicated on-device library made the app 74 MB.</strong> Gemini Nano translates instead, and the app is 6.6 MB.</li>
+        <li><strong>Nano translated "Tuesday" into Russian as "Monday", every time.</strong> Weekdays are now spelled out for it and checked afterwards; a translation that changes a day isn't shown.</li>
+        <li><strong>It's quick enough to use:</strong> about 3 seconds to sort an email, 5 to 8 for a thread summary and about 2 for a reply draft on the Fold7.</li>
+      </ul>
+
+      <h3>Where it is now</h3>
+      <p>PEA is pre-alpha. I use it on my own work mail, and I'm sharing the build so others with the same problem can try it. Next comes measuring the AI on real mail, battery and speed, a security review and a signed beta.</p>
+      <p class="sign">Nishad Aliyar, technical and product at izi.TRAVEL. Built with Claude Code; published by Elephant Clock Technology.</p>
     </div>
-    <p class="note">On-device AI needs a phone with Gemini Nano, such as the Galaxy Z Fold7 or Galaxy S25 series. Other Android phones get rules-based sorting.</p>
   </div>
 </section>
 
 <section style="padding-top: 0">
   <div class="wrap">
     <div class="section-head">
-      <div class="num">07 · ROADMAP</div>
+      <div class="num">07 · UNDER THE HOOD</div>
+      <h2>Fast because it does less</h2>
+      <p>Built on what Android and Google already put on the phone, so the app stays small and quick.</p>
+    </div>
+    <div class="stack">
+      <div><b>Interface</b>Kotlin, Jetpack Compose, Material 3 adaptive layouts</div>
+      <div><b>On-device AI</b>Gemini Nano via ML Kit GenAI APIs, on the phone's NPU</div>
+      <div><b>Languages</b>Language detection from Google Play services; translation with Gemini Nano, so no extra models to download</div>
+      <div><b>Mail</b>IMAP push while open, efficient background sync otherwise</div>
+      <div><b>Efficiency</b>Rules first, AI second; headers and a small slice of each body; results cached</div>
+      <div><b>Storage</b>Local database with full-text search</div>
+    </div>
+    <p class="note">The whole app is 6.6 MB in its optimised build. See <a href="#devices">supported devices</a> for which phones get on-device AI.</p>
+  </div>
+</section>
+
+<section id="devices" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="num">08 · SUPPORTED DEVICES</div>
+      <h2>Runs on Android 12 and newer</h2>
+      <p>Sorting, the Priority inbox, alerts and replies work on any Android 12+ phone. How much AI you get depends on whether Google supports Gemini Nano on your model.</p>
+    </div>
+    <div class="devices">
+      <div class="card">
+        <span class="tier full">Full on-device AI</span>
+        <h3>Gemini Nano with the Prompt API</h3>
+        <ul>
+          <li>Galaxy Z Fold7, Galaxy Z TriFold</li>
+          <li>Galaxy S26, S26+, S26 Ultra</li>
+          <li>Galaxy Z Flip8, Z Fold8, Z Fold8 Ultra</li>
+        </ul>
+        <p>AI sorting, thread summaries, reply drafts, rewriting, proofreading and translation, including Russian and other non-English mail.</p>
+      </div>
+      <div class="card">
+        <span class="tier">Rules only, for now</span>
+        <h3>Google's smaller AI features only</h3>
+        <ul>
+          <li>Galaxy S25, S25+, S25 Ultra</li>
+        </ul>
+        <p>These phones have Google's summarising, rewriting and proofreading models but not the general Gemini Nano model PEA builds on. Today they get the rules-only app; English summaries, rewriting and proofreading are planned.</p>
+      </div>
+      <div class="card">
+        <span class="tier">Rules only</span>
+        <h3>Every other Android 12+ phone</h3>
+        <ul>
+          <li>Older Galaxy S, Z Flip and Z Fold, Galaxy A, tablets</li>
+          <li>Pixel and other Android phones</li>
+        </ul>
+        <p>The full app without AI. Sorting runs on rules that read every email's signals. The AI buttons stay hidden.</p>
+      </div>
+    </div>
+    <p class="note">Device lists are Google's (ML Kit GenAI, updated 16 October 2026). Gemini Nano only runs while the app is on screen, so background sync always uses rules. Tested so far on a Galaxy Z Fold7.</p>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap download">
+    <div class="section-head" style="margin-bottom: 0">
+      <div class="num">09 · DOWNLOAD</div>
+      <h2>Try the pre-alpha</h2>
+      <p>It's the build I run on my own phone. Expect rough edges, and please tell me what breaks.</p>
+    </div>
+    <div class="card">
+      <h3>PEA 0.1.0 pre-alpha</h3>
+      <p>Android 12+, 49 MB. Open the file on your phone and allow installs from your browser when asked.</p>
+      <a class="btn" href="https://github.com/elephantclock/private-email-agent/releases/download/v0.1.0-prealpha/PEA-0.1.0-prealpha.apk">Download the APK</a>
+      <p><strong>Your mailbox is safe by default.</strong> PEA only labels mail until you turn on folder moves, and nothing is sent without your tap on Send.</p>
+      <p><strong>Debug build:</strong> signed with a development key. Uninstall it before installing a signed build later. Gmail needs an app password; Microsoft accounts usually block password sign-in for now.</p>
+      <p>SHA-256 <code>16fbe7d68032f64c6ea64dc6a4abbaa0868ed2d97986a538d6cf15a40b027248</code> · <a href="https://github.com/elephantclock/private-email-agent/releases/tag/v0.1.0-prealpha">Release notes</a></p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="num">10 · ROADMAP</div>
       <h2>Where we are</h2>
-      <p>Design is done. Development is starting.</p>
+      <p>34 of the 55 planned tasks are done, and I use it on my own work mailbox. Next: measuring the AI on real mail, battery and speed, a security review, then a signed beta.</p>
     </div>
     <ol class="roadmap">
-      <li>Mail sync, local storage, inbox and rules engine</li>
-      <li>On-device classification, summaries and alerts</li>
-      <li>Suggested replies with edit, rewrite and translation</li>
-      <li>First-run 30-day clean-up and folder moves</li>
-      <li>Foldable layouts, performance and battery tuning</li>
-      <li>Google and Microsoft sign-in, multiple accounts</li>
+      <li><strong>Done.</strong> Mail sync, local storage, inbox and rules engine</li>
+      <li><strong>Done.</strong> On-device classification, summaries and alerts</li>
+      <li><strong>Done.</strong> Suggested replies with rewrite, proofreading and translation</li>
+      <li><strong>Done.</strong> First-run 30-day clean-up, with folder moves off until you turn them on</li>
+      <li><strong>In progress.</strong> Half-folded layout check, performance and battery tuning</li>
+      <li><strong>Later.</strong> Google and Microsoft sign-in (multiple accounts already work)</li>
     </ol>
   </div>
 </section>
@@ -446,9 +562,10 @@
 <section class="cta">
   <div class="wrap">
     <h2>Get your inbox back</h2>
-    <p>Join the waitlist for the beta. Tell us your phone and email provider, and we'll invite you when it's ready.</p>
+    <p>Download the pre-alpha, or join the waitlist for the signed beta. Tell me your phone and email provider.</p>
     <div class="ctas">
-      <a class="btn" href="https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml">Join the waitlist</a>
+      <a class="btn" href="https://github.com/elephantclock/private-email-agent/releases/download/v0.1.0-prealpha/PEA-0.1.0-prealpha.apk">Download the APK</a>
+      <a class="btn ghost" href="https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml">Join the waitlist</a>
       <a class="btn ghost" href="https://github.com/elephantclock/private-email-agent">View on GitHub</a>
     </div>
   </div>

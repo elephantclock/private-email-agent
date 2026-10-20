@@ -1,4 +1,7 @@
-<img src="docs/brand/pea-logo.svg" alt="PEA: Private Email Agent" width="360">
+<picture>
+  <source srcset="docs/brand/pea-logo-dark.svg" media="(prefers-color-scheme: dark)">
+  <img src="docs/brand/pea-logo.svg" alt="PEA: Private Email Agent" width="360">
+</picture>
 
 # PEA: Private Email Agent
 
@@ -6,9 +9,21 @@
 
 PEA (Private Email Agent) classifies, summarises and drafts replies to your email on your phone. It runs on the phone's own AI chip, so your email isn't sent to an AI server. It sorts valuable mail into folders, holds marketing and low-value mail for review before it's binned, and only interrupts you for email that needs you.
 
-> **Status:** design / pre-alpha. The features below describe the target app; nothing is downloadable yet.
+> **Status:** pre-alpha (0.1.0). I built PEA for my own work mail at izi.TRAVEL and use it daily on a Galaxy Z Fold7. [Read the story](https://elephantclock.github.io/private-email-agent/#story).
 >
-> 🌐 **Website:** https://elephantclock.github.io/private-email-agent/ · **Early access:** [request here](https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml)
+> ⬇️ **Download:** [PEA-0.1.0-prealpha.apk](https://github.com/elephantclock/private-email-agent/releases/download/v0.1.0-prealpha/PEA-0.1.0-prealpha.apk) (Android 12+, debug build; [release notes](https://github.com/elephantclock/private-email-agent/releases/tag/v0.1.0-prealpha)) · 🌐 **Website:** https://elephantclock.github.io/private-email-agent/ · **Early access to the signed beta:** [request here](https://github.com/elephantclock/private-email-agent/issues/new?template=early-access.yml)
+
+## Supported devices
+
+PEA runs on any Android 12+ phone. On-device AI depends on Google's Gemini Nano support for your model:
+
+| Devices | What you get |
+|---|---|
+| Galaxy Z Fold7, Z TriFold, S26 / S26+ / S26 Ultra, Z Flip8, Z Fold8, Z Fold8 Ultra | Everything: AI sorting, thread summaries, reply drafts, rewriting, proofreading and translation |
+| Galaxy S25 / S25+ / S25 Ultra | Rules only for now (these phones have Google's smaller summarising/rewriting/proofreading models; support is planned) |
+| Every other Android 12+ phone | The full app with rules-based sorting; AI buttons hidden |
+
+Tested so far on a Galaxy Z Fold7. Gemini Nano only runs while the app is on screen, so background sync always uses rules.
 
 ---
 

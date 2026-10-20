@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 108" width="720" height="216">
+  <!-- PEA logo with wordmark, for dark backgrounds: the icon, "PEA" in Figtree Bold, and the descriptor. -->
+  <rect width="108" height="108" rx="24" fill="#2D3628"/>
+  <rect x="29" y="37" width="50" height="36" rx="5" fill="none" stroke="#C29B40" stroke-width="3.6" stroke-linejoin="round"/>
+  <path d="M31 40 L46.4 51.4 M77 40 L61.6 51.4" fill="none" stroke="#C29B40" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="54" cy="57" r="7.5" fill="#C29B40"/>
+  <circle cx="51.4" cy="54.4" r="2.2" fill="#F5F0E8" fill-opacity="0.85"/>
+  <text x="128" y="66" font-family="Figtree, 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="52" letter-spacing="2" fill="#F5F0E8">PEA</text>
+  <text x="130" y="88" font-family="Figtree, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="15" letter-spacing="0.6" fill="#D9B865">Private Email Agent</text>
+</svg>
