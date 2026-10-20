@@ -2,18 +2,23 @@ package tech.elephantclock.privatemail.feature.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.AiFeature
 import tech.elephantclock.privatemail.core.data.db.AccountEntity
 import tech.elephantclock.privatemail.core.data.db.MessageWithVerdict
 import tech.elephantclock.privatemail.core.data.db.decodeAddresses
 import tech.elephantclock.privatemail.core.data.db.toBody
+import tech.elephantclock.privatemail.core.data.repo.BriefOutcome
 import tech.elephantclock.privatemail.core.data.repo.ContentResult
 import tech.elephantclock.privatemail.core.mail.auth.needsUserAction
 import tech.elephantclock.privatemail.core.model.Address
@@ -27,12 +32,18 @@ import java.io.File
  * full text is fetched when the screen opens (read-only, `BODY.PEEK`), attachments only when
  * tapped. Opening a message never marks it read: the plan keeps the app read-only on the server
  * except for triage moves and the user's explicit actions.
+ *
+ * The thread brief (T32) comes from [briefs] while the screen collects [watchBrief]; null keeps
+ * the rules-only text. It is asked for only while the email is on screen (GenAI is foreground-only,
+ * and ViewModels of emails the user has left stay alive), and gives up after [briefTimeoutMillis].
  */
 class DetailViewModel(
     private val messageId: Long,
     private val source: DetailSource,
     ai: AiAvailability,
     private val times: TimeLabels = TimeLabels(),
+    private val briefs: BriefSource? = null,
+    private val briefTimeoutMillis: Long = BRIEF_TIMEOUT_MILLIS,
 ) : ViewModel() {
     private val local = MutableStateFlow(DetailUiState())
 
@@ -40,13 +51,42 @@ class DetailViewModel(
     private val finished = mutableSetOf<String>()
     val state: StateFlow<DetailUiState> = local.asStateFlow()
 
+    /** The gist can come from the Summarization or the Prompt API, so either one is enough. */
+    private val aiOn: Flow<Boolean> =
+        combine(ai.status(AiFeature.SUMMARIZE), ai.status(AiFeature.PROMPT)) { s, p -> s.canRun || p.canRun }
+            .distinctUntilChanged()
+
     init {
         viewModelScope.launch {
-            combine(source.message(messageId), source.accounts(), ai.status(AiFeature.SUMMARIZE)) { m, accounts, s ->
-                Triple(m, accounts, s.canRun)
-            }.collect { (message, accounts, aiOn) -> show(message, accounts, aiOn) }
+            combine(source.message(messageId), source.accounts(), aiOn) { m, accounts, on ->
+                Triple(m, accounts, on)
+            }.collect { (message, accounts, on) -> show(message, accounts, on) }
         }
         viewModelScope.launch { loadBody() }
+    }
+
+    /**
+     * Keeps the thread brief current while the caller collects (the screen, in a LaunchedEffect):
+     * asks again when the thread changes or the model becomes available; cancelling stops it.
+     */
+    suspend fun watchBrief() {
+        val briefs = briefs ?: return
+        combine(aiOn, briefs.changes(messageId)) { on, key -> on to key }
+            .distinctUntilChanged()
+            .collectLatest { (on, key) ->
+                if (!on || key == null) {
+                    local.update { it.copy(thread = ThreadBriefState.Off) }
+                    return@collectLatest
+                }
+                local.update { it.copy(thread = ThreadBriefState.Loading) }
+                val outcome = withTimeoutOrNull(briefTimeoutMillis) { briefs.brief(messageId) }
+                val next =
+                    when (outcome) {
+                        is BriefOutcome.Ready -> outcome.brief.toState()
+                        is BriefOutcome.Failed, null -> ThreadBriefState.Fallback
+                    }
+                local.update { it.copy(thread = next) }
+            }
     }
 
     private fun show(
@@ -171,6 +211,12 @@ class DetailViewModel(
 
     private fun List<Address>.label() = joinToString(", ") { a -> a.name?.takeIf { it.isNotBlank() } ?: a.email }
 }
+
+/**
+ * Above the model's own budgets (Summarization 10 s + Prompt 15 s, `AiTimeouts`) plus fetching the
+ * newest texts and a short wait in the AI queue; after it the rules-only text stays.
+ */
+const val BRIEF_TIMEOUT_MILLIS = 35_000L
 
 internal fun ContentResult<*>.problem(): Problem =
     when (this) {

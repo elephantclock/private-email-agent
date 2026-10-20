@@ -53,6 +53,8 @@ fun DetailRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // The brief is asked for only while this email is on screen (GenAI is foreground-only).
+    LaunchedEffect(viewModel) { viewModel.watchBrief() }
     LaunchedEffect(state.open) {
         val request = state.open ?: return@LaunchedEffect
         viewModel.opened(AttachmentFiles.open(context, request.file, request.mimeType))
@@ -135,16 +137,7 @@ private fun Reading(
         style = MaterialTheme.typography.bodyMedium,
         color = BrandTheme.colors.textMuted,
     )
-    if (state.brief.isNotBlank()) {
-        Text(
-            stringResource(
-                if (state.briefFromAi) R.string.detail_brief_ai else R.string.detail_brief_preview,
-            ).uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = BrandTheme.colors.sectionLabel,
-        )
-        Text(state.brief, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("brief"))
-    }
+    BriefBlock(state)
     state.triage?.let {
         Text(
             stringResource(R.string.detail_why, it.reason),

@@ -65,18 +65,55 @@ data class DetailUiState(
     val missing: Boolean = false,
     val header: DetailHeader? = null,
     val triage: TriageBrief? = null,
-    /** The AI summary, else the stored preview's start. */
+    /** Rules-only text: the stored classification summary, else the stored preview's start. */
     val brief: String = "",
     val briefFromAi: Boolean = false,
-    /** Next steps need the on-device model (T32); hidden while it isn't available. */
-    val nextSteps: List<String> = emptyList(),
     val aiAvailable: Boolean = false,
+    /** The thread brief from the on-device model (T32); [brief] stays the fallback. */
+    val thread: ThreadBriefState = ThreadBriefState.Off,
     val body: BodyState = BodyState.Loading,
     val originalExpanded: Boolean = false,
     val attachments: List<AttachmentItem> = emptyList(),
     val open: OpenRequest? = null,
 ) {
+    /** Next steps exist only in a model brief. */
+    val nextSteps: List<String> get() = (thread as? ThreadBriefState.Ready)?.nextSteps.orEmpty()
+
     val showNextSteps: Boolean get() = aiAvailable && nextSteps.isNotEmpty()
+}
+
+/** The thread brief's state on screen. Never stuck in [Loading]: the ViewModel times out to [Fallback]. */
+sealed interface ThreadBriefState {
+    /** The model isn't available (or not wired): rules-only text, and the screen says why. */
+    data object Off : ThreadBriefState
+
+    data object Loading : ThreadBriefState
+
+    data class Ready(
+        val gist: String,
+        val status: ThreadStatus?,
+        /** ISO date (YYYY-MM-DD). */
+        val deadline: String?,
+        val nextSteps: List<String>,
+    ) : ThreadBriefState
+
+    /** The model failed or took too long: rules-only text with a short note. */
+    data object Fallback : ThreadBriefState
+}
+
+/** The model's thread status keys (core:ai `BriefStatus`), as the screen words them. */
+enum class ThreadStatus(
+    val key: String,
+) {
+    WAITING_ON_YOU("waiting_on_you"),
+    WAITING_ON_THEM("waiting_on_them"),
+    RESOLVED("resolved"),
+    INFO("info"),
+    ;
+
+    companion object {
+        fun of(key: String?): ThreadStatus? = entries.firstOrNull { it.key == key }
+    }
 }
 
 private const val BRIEF_CHARS = 420

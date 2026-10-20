@@ -28,6 +28,7 @@ dependencies {
     // Gemini Nano through AICore (beta: no stable release yet, see T01 Log).
     implementation(libs.mlkit.genai.prompt)
     implementation(libs.mlkit.genai.common)
+    implementation(libs.mlkit.genai.summarization)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)

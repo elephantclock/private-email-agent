@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- T32 thread brief on the email screen. -->
+    <string name="brief_thread_summary">Thread summary</string>
+    <string name="brief_loading">Summarising the thread on this phone…</string>
+    <string name="brief_fallback">A summary isn’t available right now, so this is the start of the email.</string>
+    <string name="brief_status_waiting_on_you">Waiting for you</string>
+    <string name="brief_status_waiting_on_them">Waiting for others</string>
+    <string name="brief_status_resolved">Settled</string>
+    <string name="brief_status_info">For information</string>
+    <string name="brief_deadline">Due %1$s</string>
+    <string name="brief_ai_note">Written on this phone by on-device AI. Check the original email before acting.</string>
+</resources>
