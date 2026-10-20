@@ -13,13 +13,23 @@ import tech.elephantclock.privatemail.ai.ForegroundAiDrain
 import tech.elephantclock.privatemail.ai.QueueTriageAi
 import tech.elephantclock.privatemail.core.ai.AiEngine
 import tech.elephantclock.privatemail.core.ai.AiFeature
+import tech.elephantclock.privatemail.core.ai.LanguageTag
 import tech.elephantclock.privatemail.core.ai.isAvailable
+import tech.elephantclock.privatemail.core.ai.mlkit.GenerationSettings
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitAiEngine
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitAvailability
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitClassifier
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitLanguageId
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitPromptModel
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitProofreadBackend
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitProofreader
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitReplyDrafter
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriteBackend
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitRewriter
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitSummarizer
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitTranslator
 import tech.elephantclock.privatemail.core.ai.mlkit.PromptModel
+import tech.elephantclock.privatemail.core.ai.mlkit.TextGenerator
 import tech.elephantclock.privatemail.core.ai.queue.AiPriority
 import tech.elephantclock.privatemail.core.ai.queue.AiQueue
 import tech.elephantclock.privatemail.core.ai.safety.SafeAiEngine
@@ -59,10 +69,38 @@ class AiGraph internal constructor(
     /** Thread briefs (T32): Summarization API for English gists, the Prompt API for the rest. */
     private val summarization by lazy { MlKitSummarizer.create(appContext) }
 
-    /** Redacting, injection-guarding engine; T33 adds its components to [MlKitAiEngine] here. */
+    /** Translation models (T33): never downloaded implicitly, only on Wi-Fi when the user asks. */
+    val translator: MlKitTranslator by lazy { MlKitTranslator() }
+
+    private val languageId by lazy { MlKitLanguageId() }
+
+    /** Redacting, injection-guarding engine over every ML Kit component. */
     val engine: AiEngine by lazy {
         val (summarizer, _) = summarization
-        SafeAiEngine(MlKitAiEngine(classifier, summarize = summarizer::summarize))
+        // The shared Prompt API client, for drafts and for rewrites/proofreads ML Kit's own APIs can't do.
+        val generator =
+            TextGenerator { prompt, maxTokens ->
+                model
+                    .generate(
+                        prompt,
+                        GenerationSettings(temperature = 0.3f, topK = 16, maxOutputTokens = maxTokens),
+                    ).text
+            }
+        // Called from inside a queue entry: going through the (single-flight) queue again would wait forever.
+        val languageOf: suspend (String) -> LanguageTag = {
+            languageId.detectLanguage(it).getOrNull()?.language ?: LanguageTag.UNDETERMINED
+        }
+        SafeAiEngine(
+            MlKitAiEngine(
+                classifier,
+                summarize = summarizer::summarize,
+                draftReply = MlKitReplyDrafter(generator)::draftReply,
+                rewrite = MlKitRewriter(MlKitRewriteBackend(appContext), generator, languageOf)::rewrite,
+                proofread = MlKitProofreader(MlKitProofreadBackend(appContext), generator, languageOf)::proofread,
+                detectLanguage = languageId::detectLanguage,
+                translate = translator::translate,
+            ),
+        )
     }
 
     /** Every model call goes through this queue: one at a time, foreground first. */

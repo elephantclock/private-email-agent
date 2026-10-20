@@ -10,13 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import tech.elephantclock.privatemail.core.ai.AiAvailability
-import tech.elephantclock.privatemail.core.ai.NoAiAvailability
-import tech.elephantclock.privatemail.core.data.repo.OutgoingMailRepository
-import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
-import tech.elephantclock.privatemail.core.data.secure.StoredSecret
-import tech.elephantclock.privatemail.core.mail.imap.ImapClient
-import tech.elephantclock.privatemail.core.mail.smtp.SmtpSender
 import tech.elephantclock.privatemail.feature.detail.DetailRoute
 import tech.elephantclock.privatemail.feature.detail.DetailViewModel
 import tech.elephantclock.privatemail.feature.inbox.FolderListRoute
@@ -26,7 +19,6 @@ import tech.elephantclock.privatemail.feature.inbox.InboxViewModel
 import tech.elephantclock.privatemail.feature.inbox.RoomInboxSource
 import tech.elephantclock.privatemail.feature.reply.ReplyRoute
 import tech.elephantclock.privatemail.feature.reply.ReplyViewModel
-import tech.elephantclock.privatemail.feature.reply.RoomReplySource
 import tech.elephantclock.privatemail.feature.shell.LocalShellNavigation
 import tech.elephantclock.privatemail.feature.shell.PlaceholderDetail
 import tech.elephantclock.privatemail.feature.shell.PlaceholderList
@@ -43,12 +35,6 @@ import tech.elephantclock.privatemail.feature.shell.ShellListPane
 fun MailGraph.inboxSource() = RoomInboxSource(database, repository, afterSync = { orchestrator.drain() })
 
 fun MailGraph.inboxViewModel(mode: InboxMode) = InboxViewModel(inboxSource(), mode)
-
-/** Its own connector over the same password store and pins as sync (MailGraph's is private). */
-private fun MailGraph.readingConnector() = PasswordImapConnector(secrets, ImapClient(certificatePins))
-
-/** Replies have no on-device model yet (T33): every AI feature shows as unavailable there. */
-private val readingAi: AiAvailability = NoAiAvailability()
 
 /** The email with its thread brief (T32), from the process's one AI queue. */
 fun MailGraph.detailViewModel(
@@ -115,15 +101,13 @@ private fun ReadingList(
     }
 }
 
-fun MailGraph.replyViewModel(parentId: Long): ReplyViewModel {
-    val outgoing =
-        OutgoingMailRepository(
-            db = database,
-            connector = readingConnector(),
-            passwords = { id -> (secrets.get(id) as? StoredSecret.Found)?.password },
-            sender = SmtpSender(certificatePins),
-        )
-    return ReplyViewModel(parentId, RoomReplySource(database, outgoing), readingAi)
+/** The reply editor with the AI tools (T33); sending is unchanged. */
+fun MailGraph.replyViewModel(
+    context: Context,
+    parentId: Long,
+): ReplyViewModel {
+    val ai = ai(context)
+    return replyViewModelWithAi(parentId, ai.availability, replyAi(ai.queue, ai.translator))
 }
 
 /**
@@ -139,8 +123,9 @@ private fun ReadingDetail(
     var replying by rememberSaveable(messageId) { mutableStateOf(false) }
     // A new editor after each sent reply; backing out without sending keeps the draft.
     var session by rememberSaveable(messageId) { mutableIntStateOf(0) }
+    val context = LocalContext.current
     if (replying) {
-        val vm = viewModel(key = "reply:$messageId:$session") { graph.replyViewModel(messageId) }
+        val vm = viewModel(key = "reply:$messageId:$session") { graph.replyViewModel(context, messageId) }
         ReplyRoute(
             vm,
             onClose = {
@@ -149,7 +134,6 @@ private fun ReadingDetail(
             },
         )
     } else {
-        val context = LocalContext.current
         val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(context, messageId) }
         DetailRoute(vm, onReply = { replying = true })
     }

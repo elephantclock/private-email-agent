@@ -33,7 +33,7 @@ fun MailGraph.flexReadingDetailPane(other: ShellDetailPane = { _, _ -> Placehold
                     FlexReadingDetail(
                         messageId = id,
                         detailViewModel = { detailViewModel(context, id) },
-                        replyViewModel = { replyViewModel(id) },
+                        replyViewModel = { replyViewModel(context, id) },
                     )
                 }
             }
