@@ -123,6 +123,8 @@ fun interface TextGenerator {
 /** Gemini Nano through `Generation.getClient()`. One client, created on first use. */
 class PromptTextGenerator(
     private val client: () -> GenerativeModel = { Generation.getClient() },
+    /** 0 for tasks that must keep the meaning (translation, proofreading). */
+    private val temperature: Float = TEMPERATURE,
 ) : TextGenerator {
     private val model by lazy(client)
 
@@ -132,7 +134,7 @@ class PromptTextGenerator(
     ): String? {
         val request =
             generateContentRequest(TextPart(prompt)) {
-                temperature = TEMPERATURE
+                temperature = this@PromptTextGenerator.temperature
                 this.maxOutputTokens = maxOutputTokens
             }
         return model
@@ -142,7 +144,7 @@ class PromptTextGenerator(
             ?.text
     }
 
-    private companion object {
+    companion object {
         const val TEMPERATURE = 0.3f
     }
 }

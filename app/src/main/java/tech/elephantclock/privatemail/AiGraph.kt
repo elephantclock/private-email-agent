@@ -70,21 +70,26 @@ class AiGraph internal constructor(
     private val summarization by lazy { MlKitSummarizer.create(appContext) }
 
     /**
-     * The shared Prompt API path for drafts, translation, and the rewrites/proofreads ML Kit's own
-     * APIs can't do (T33): one `PromptModel` client for the process.
+     * The shared Prompt API path for drafts and rewrites (T33): one `PromptModel` client for the
+     * process, some freedom in wording.
      */
-    private val generator: TextGenerator by lazy {
-        TextGenerator { prompt, maxTokens ->
-            model
-                .generate(
-                    prompt,
-                    GenerationSettings(temperature = 0.3f, topK = 16, maxOutputTokens = maxTokens),
-                ).text
-        }
+    private val generator: TextGenerator by lazy { generatorAt(temperature = 0.3f, topK = 16) }
+
+    /**
+     * Greedy, for tasks that must keep the meaning: translation and proofreading. At 0.3 the Fold7
+     * once translated "Tuesday" as "понедельник" (Monday).
+     */
+    private val literalGenerator: TextGenerator by lazy { generatorAt(temperature = 0f, topK = 1) }
+
+    private fun generatorAt(
+        temperature: Float,
+        topK: Int,
+    ) = TextGenerator { prompt, maxTokens ->
+        model.generate(prompt, GenerationSettings(temperature, topK, maxOutputTokens = maxTokens)).text
     }
 
     /** Translation with Gemini Nano (T33): no translation models to download. */
-    val translator: NanoTranslator by lazy { NanoTranslator(generator) }
+    val translator: NanoTranslator by lazy { NanoTranslator(literalGenerator) }
 
     private val languageId by lazy { MlKitLanguageId() }
 
@@ -101,7 +106,11 @@ class AiGraph internal constructor(
                 summarize = summarizer::summarize,
                 draftReply = MlKitReplyDrafter(generator)::draftReply,
                 rewrite = MlKitRewriter(MlKitRewriteBackend(appContext), generator, languageOf)::rewrite,
-                proofread = MlKitProofreader(MlKitProofreadBackend(appContext), generator, languageOf)::proofread,
+                proofread = MlKitProofreader(
+                    MlKitProofreadBackend(appContext),
+                    literalGenerator,
+                    languageOf,
+                )::proofread,
                 detectLanguage = languageId::detectLanguage,
                 translate = translator::translate,
             ),

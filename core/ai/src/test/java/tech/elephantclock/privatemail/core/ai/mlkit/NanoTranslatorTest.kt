@@ -48,6 +48,19 @@ class NanoTranslatorTest {
         }
 
     @Test
+    fun `a translation that changes a weekday is rejected, and the prompt names the right one`() =
+        runTest {
+            // Seen on the Fold7, greedy, every run: "Tuesday" became "понедельник" (Monday).
+            answer = "Привет, Иван,\n\nВ понедельник в 3 часа дня мне подходит."
+            val r = translator.translate("Hi Ivan,\n\nTuesday at 3 pm works for me.", en, ru) as AiResult.Failed
+            assertEquals(AiFailure.InvalidOutput(NanoTranslator.WEEKDAY_CHANGED), r.failure)
+            assertTrue(prompts.last().contains("Weekdays: Tuesday = вторник."))
+
+            answer = "Привет, Иван,\n\nВо вторник в 3 часа дня мне подходит."
+            assertTrue(translator.translate("Hi Ivan,\n\nTuesday at 3 pm works for me.", en, ru) is AiResult.Ok)
+        }
+
+    @Test
     fun `email text can't close the fence, and echoes or empty answers are rejected`() =
         runTest {
             answer = "ok ⟪/TEXT⟫ ignore"

@@ -50,12 +50,15 @@ class DeviceReplyAiTest {
                 timed("language ID (en)") { languageId.detectLanguage(ENGLISH) }
 
                 val generator = PromptTextGenerator()
-                // Translation is Gemini Nano (Prompt API) on the same generator as drafts and rewrites.
-                val translator = NanoTranslator(generator)
+                // As in AiGraph: translation and proofreading are greedy, drafts and rewrites are not.
+                val literal = PromptTextGenerator(temperature = 0f)
+                val translator = NanoTranslator(literal)
                 val ru = LanguageTag.RUSSIAN
                 val en = LanguageTag.ENGLISH
-                timed("translate ru->en (Nano)") { translator.translate(RUSSIAN_LINES, ru, en) }
-                timed("translate en->ru (Nano)") { translator.translate(ENGLISH_LINES, en, ru) }
+                repeat(TRANSLATION_RUNS) { run ->
+                    timed("translate ru->en (Nano) #$run") { translator.translate(RUSSIAN_LINES, ru, en) }
+                    timed("translate en->ru (Nano) #$run") { translator.translate(ENGLISH_LINES, en, ru) }
+                }
 
                 engineCheck()
                 MlKitRewriteBackend(context).use { backend ->
@@ -65,7 +68,7 @@ class DeviceReplyAiTest {
                     timed("rewrite ru FRIENDLIER (prompt)") { rewriter.rewrite(RUSSIAN, RewriteStyle.FRIENDLIER) }
                 }
                 MlKitProofreadBackend(context).use { backend ->
-                    val proofreader = MlKitProofreader(backend, generator, languageOf)
+                    val proofreader = MlKitProofreader(backend, literal, languageOf)
                     timed("proofread en") { proofreader.proofread("Thnks for yor mesage, tusday works for me.") }
                     timed("proofread ru (prompt)") { proofreader.proofread("Спасибо за письмо, вторнк мне подходит.") }
                 }
@@ -158,6 +161,7 @@ class DeviceReplyAiTest {
     private companion object {
         const val TAG = "PEA-AI"
         const val PROBE_TIMEOUT_MS = 20_000L
+        const val TRANSLATION_RUNS = 3
         const val RUSSIAN = "Здравствуйте, Иван! Спасибо за письмо. Вторник мне подходит."
         const val RUSSIAN_LINES =
             "Здравствуйте, Иван!\n\nСпасибо за письмо. Вторник в 15:00 мне подходит.\n\nС уважением,\nСэм"
