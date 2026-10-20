@@ -115,21 +115,22 @@
   .status strong { color: #FFFFFF; }
 
   /* phone illustration */
-  .phone { width: min(340px, 100%); margin-inline: auto; background: #F5F0E8; border-radius: 34px; border: 10px solid #141A12; box-shadow: 0 30px 60px rgba(0,0,0,0.35); overflow: hidden; color: #1E241B; }
-  .phone .bar { background: #2D3628; color: #F5F0E8; padding: 22px 16px 12px; }
-  .phone .bar b { font-size: 21px; }
-  .chips { display: flex; gap: 6px; margin-top: 10px; }
-  .chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; border: 1px solid #5B6753; color: #E8DCC6; white-space: nowrap; }
-  .chip.on { background: #C29B40; border-color: #C29B40; color: #2D3628; }
-  .mail { padding: 10px 14px; border-bottom: 1px solid #E3D8C3; background: #FFFFFF; }
-  .mail .row { display: flex; gap: 8px; align-items: center; }
-  .pill { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; }
-  .pill.u { background: #913D3D; color: #FFFFFF; }
-  .pill.h { background: #F1D9C7; color: #7A3A15; }
-  .mail .from { font-weight: 700; font-size: 14px; flex: 1; }
-  .mail .t { font-size: 11px; color: #5C6356; }
-  .mail p { font-size: 13px; line-height: 1.4; color: #4E5549; margin-top: 3px; }
-  .digest { margin: 12px; background: #E8DCC6; border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.4; color: #2D3628; }
+  .shots { width: min(330px, 100%); margin-inline: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .frame { width: 100%; border-radius: 34px; border: 10px solid #141A12; box-shadow: 0 30px 60px rgba(0,0,0,0.35); overflow: hidden; background: #141A12; }
+  .track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
+  .track::-webkit-scrollbar { display: none; }
+  .track:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+  .slide { flex: 0 0 100%; margin: 0; scroll-snap-align: center; }
+  .slide img { display: block; width: 100%; height: auto; }
+  .shot-caption { min-height: 4.4em; font-size: 15px; line-height: 1.45; text-align: center; color: var(--on-green-muted); }
+  .shot-controls { display: flex; align-items: center; gap: 6px; }
+  .shot-controls .dot { width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 0; background: #5B6753; cursor: pointer; }
+  .shot-controls .dot[aria-current="true"] { background: var(--gold); width: 24px; border-radius: 5px; }
+  .shot-controls .nav-btn { min-width: 36px; height: 36px; border-radius: 18px; border: 1.5px solid #5B6753; background: transparent; color: var(--on-green); font-size: 18px; line-height: 1; cursor: pointer; }
+  .shot-controls .nav-btn:hover { border-color: var(--gold); }
+  .shot-controls .play { font-size: 11px; margin-left: 6px; }
+  .shot-note { font-size: 13px; color: var(--on-green-muted); opacity: 0.8; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .track { scroll-behavior: auto; } }
 
   /* sections */
   section { padding-block: 96px; }
@@ -264,16 +265,60 @@
       <p class="status"><strong>Pre-alpha, 0.1.0.</strong> Built for my own work mail at izi.TRAVEL, on a Samsung Galaxy Z Fold7.</p>
     </div>
 
-    <div class="phone" role="img" aria-label="Illustration of the app's Priority inbox on a phone: an urgent payout request, a duplicate-payment alert and a customer waiting for access, followed by a note that 61 emails were discarded today.">
-      <div class="bar">
-        <b>Priority</b>
-        <div class="chips"><span class="chip on">All · 3</span><span class="chip">People</span><span class="chip">Money</span><span class="chip">Work</span></div>
+    <div class="shots" role="region" aria-roledescription="carousel" aria-label="Screens from the app">
+      <div class="frame">
+        <div class="track" tabindex="0" aria-label="Screens, use the arrow keys to move">
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="1 of 6" data-caption="Priority inbox: only what needs you, across all accounts, with the day's filed and discarded counts.">
+          <picture>
+            <source srcset="shots/inbox-priority-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/inbox-priority-light.jpg" alt="The Priority inbox with urgent, high and normal emails and a note that 38 were filed and 61 discarded today" width="600" height="1398" loading="eager" decoding="async">
+          </picture>
+        </figure>
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="2 of 6" data-caption="Thread summary, written on the phone: who is waiting on whom, the due date and next steps.">
+          <picture>
+            <source srcset="shots/detail-thread-brief-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/detail-thread-brief-light.jpg" alt="An email with an on-device thread summary, status and due date chips and two next steps" width="600" height="1398" loading="lazy" decoding="async">
+          </picture>
+        </figure>
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="3 of 6" data-caption="Reply in the sender's language, rewrite or proofread it, and see what it says in yours.">
+          <picture>
+            <source srcset="shots/reply-ai-ready-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/reply-ai-ready-light.jpg" alt="The reply editor with a Russian draft, rewrite buttons and an English translation preview" width="600" height="1398" loading="lazy" decoding="async">
+          </picture>
+        </figure>
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="4 of 6" data-caption="Discarded mail, grouped by sender. Held 30 days; restore or unsubscribe in one tap.">
+          <picture>
+            <source srcset="shots/discarded-by-sender-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/discarded-by-sender-light.jpg" alt="The Discarded screen listing low-value senders with Restore, Never discard and Unsubscribe buttons" width="600" height="1398" loading="lazy" decoding="async">
+          </picture>
+        </figure>
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="5 of 6" data-caption="First run: the last 30 days sorted into keep and discard, checked before anything moves.">
+          <picture>
+            <source srcset="shots/first-run-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/first-run-light.jpg" alt="The first-run summary: 2,060 emails sorted, keep 412 in folders, discard 1,648" width="600" height="1398" loading="lazy" decoding="async">
+          </picture>
+        </figure>
+        <figure class="slide" role="group" aria-roledescription="slide" aria-label="6 of 6" data-caption="Set up in plain words: people you write to are never discarded; folders are yours to define.">
+          <picture>
+            <source srcset="shots/personalise-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="shots/personalise-light.jpg" alt="The What matters to you screen with people never discarded, folder toggles and a custom folder" width="600" height="1398" loading="lazy" decoding="async">
+          </picture>
+        </figure>
+        </div>
       </div>
-      <div class="mail"><div class="row"><span class="pill u">URGENT</span><span class="from">Finance team</span><span class="t">15:02</span></div><p>Confirm the Q3 payout figures by Monday.</p></div>
-      <div class="mail"><div class="row"><span class="pill u">URGENT</span><span class="from">Payment alerts</span><span class="t">14:10</span></div><p>3 duplicate charges listed; refunds may be needed.</p></div>
-      <div class="mail"><div class="row"><span class="pill h">HIGH</span><span class="from">Customer · from Russian</span><span class="t">12:03</span></div><p>Paid but can't access the purchase; travels tomorrow.</p></div>
-      <div class="mail"><div class="row"><span class="pill h">HIGH</span><span class="from">New client</span><span class="t">10:41</span></div><p>Wants a proposal and a call next week.</p></div>
-      <div class="digest"><b>Today: 38 filed, 61 discarded.</b> Nothing else needs you.</div>
+      <p class="shot-caption" aria-live="polite">Priority inbox: only what needs you, across all accounts, with the day's filed and discarded counts.</p>
+      <div class="shot-controls">
+        <button class="nav-btn" type="button" data-step="-1" aria-label="Previous screen">&#8249;</button>
+        <button class="dot" type="button" aria-label="Show screen 1"></button>
+        <button class="dot" type="button" aria-label="Show screen 2"></button>
+        <button class="dot" type="button" aria-label="Show screen 3"></button>
+        <button class="dot" type="button" aria-label="Show screen 4"></button>
+        <button class="dot" type="button" aria-label="Show screen 5"></button>
+        <button class="dot" type="button" aria-label="Show screen 6"></button>
+        <button class="nav-btn" type="button" data-step="1" aria-label="Next screen">&#8250;</button>
+        <button class="nav-btn play" type="button" aria-label="Pause the slideshow">&#10074;&#10074;</button>
+      </div>
+      <p class="shot-note">Real app screens on the Galaxy Z Fold7 cover screen, rendered with demo mail.</p>
     </div>
   </div>
 </div>
@@ -578,5 +623,62 @@
     <a href="https://github.com/elephantclock/private-email-agent">Source on GitHub</a>
   </div>
 </footer>
+<script>
+(() => {
+  const root = document.querySelector('.shots');
+  if (!root) return;
+  const track = root.querySelector('.track');
+  const slides = [...root.querySelectorAll('.slide')];
+  const dots = [...root.querySelectorAll('.dot')];
+  const caption = root.querySelector('.shot-caption');
+  const play = root.querySelector('.play');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let index = 0, timer = null, paused = reduce, hovering = false;
+
+  const show = (i) => {
+    index = (i + slides.length) % slides.length;
+    track.scrollTo({ left: slides[index].offsetLeft - track.offsetLeft, behavior: reduce ? 'instant' : 'smooth' });
+    mark();
+  };
+  const mark = () => {
+    dots.forEach((d, i) => d.setAttribute('aria-current', i === index ? 'true' : 'false'));
+    caption.textContent = slides[index].dataset.caption;
+  };
+  const schedule = () => {
+    clearInterval(timer);
+    if (!paused && !hovering && !document.hidden) timer = setInterval(() => show(index + 1), 4500);
+  };
+  const setPaused = (p) => {
+    paused = p;
+    play.innerHTML = p ? '&#9654;' : '&#10074;&#10074;';
+    play.setAttribute('aria-label', p ? 'Play the slideshow' : 'Pause the slideshow');
+    schedule();
+  };
+
+  root.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => { show(index + Number(b.dataset.step)); schedule(); }));
+  dots.forEach((d, i) => d.addEventListener('click', () => { show(i); schedule(); }));
+  play.addEventListener('click', () => setPaused(!paused));
+  track.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1); }
+  });
+  // Swipes: follow the slide the user scrolled to.
+  let settle;
+  track.addEventListener('scroll', () => {
+    clearTimeout(settle);
+    settle = setTimeout(() => {
+      const i = Math.round(track.scrollLeft / track.clientWidth);
+      if (i !== index) { index = i; mark(); schedule(); }
+    }, 120);
+  }, { passive: true });
+  root.addEventListener('mouseenter', () => { hovering = true; schedule(); });
+  root.addEventListener('mouseleave', () => { hovering = false; schedule(); });
+  root.addEventListener('focusin', () => { hovering = true; schedule(); });
+  root.addEventListener('focusout', () => { hovering = false; schedule(); });
+  document.addEventListener('visibilitychange', schedule);
+  mark();
+  setPaused(paused);
+})();
+</script>
 </body>
 </html>
