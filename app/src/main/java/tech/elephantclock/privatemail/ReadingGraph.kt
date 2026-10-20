@@ -1,5 +1,6 @@
 package tech.elephantclock.privatemail
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,16 +12,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import tech.elephantclock.privatemail.core.ai.AiAvailability
 import tech.elephantclock.privatemail.core.ai.NoAiAvailability
-import tech.elephantclock.privatemail.core.data.repo.MessageContentRepository
 import tech.elephantclock.privatemail.core.data.repo.OutgoingMailRepository
 import tech.elephantclock.privatemail.core.data.repo.PasswordImapConnector
 import tech.elephantclock.privatemail.core.data.secure.StoredSecret
 import tech.elephantclock.privatemail.core.mail.imap.ImapClient
 import tech.elephantclock.privatemail.core.mail.smtp.SmtpSender
-import tech.elephantclock.privatemail.feature.detail.AttachmentFiles
 import tech.elephantclock.privatemail.feature.detail.DetailRoute
 import tech.elephantclock.privatemail.feature.detail.DetailViewModel
-import tech.elephantclock.privatemail.feature.detail.RoomDetailSource
 import tech.elephantclock.privatemail.feature.inbox.FolderListRoute
 import tech.elephantclock.privatemail.feature.inbox.InboxMode
 import tech.elephantclock.privatemail.feature.inbox.InboxRoute
@@ -35,7 +33,6 @@ import tech.elephantclock.privatemail.feature.shell.PlaceholderList
 import tech.elephantclock.privatemail.feature.shell.ShellDestination
 import tech.elephantclock.privatemail.feature.shell.ShellDetailPane
 import tech.elephantclock.privatemail.feature.shell.ShellListPane
-import java.io.File
 
 /*
  * The reading screens (T44–T46) on top of MailGraph, as extensions so MailGraph itself stays
@@ -50,16 +47,16 @@ fun MailGraph.inboxViewModel(mode: InboxMode) = InboxViewModel(inboxSource(), mo
 /** Its own connector over the same password store and pins as sync (MailGraph's is private). */
 private fun MailGraph.readingConnector() = PasswordImapConnector(secrets, ImapClient(certificatePins))
 
-/** The on-device model isn't wired yet (T31–T33): every AI feature shows as unavailable. */
+/** Replies have no on-device model yet (T33): every AI feature shows as unavailable there. */
 private val readingAi: AiAvailability = NoAiAvailability()
 
+/** The email with its thread brief (T32), from the process's one AI queue. */
 fun MailGraph.detailViewModel(
+    context: Context,
     messageId: Long,
-    cacheDir: File,
 ): DetailViewModel {
-    AttachmentFiles.pruneOld(cacheDir)
-    val content = MessageContentRepository(database, readingConnector())
-    return DetailViewModel(messageId, RoomDetailSource(database, content, cacheDir), readingAi)
+    val ai = ai(context)
+    return briefDetailViewModel(messageId, context.cacheDir, ai.availability, ai.queue)
 }
 
 /**
@@ -152,8 +149,8 @@ private fun ReadingDetail(
             },
         )
     } else {
-        val cacheDir = LocalContext.current.cacheDir
-        val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(messageId, cacheDir) }
+        val context = LocalContext.current
+        val vm = viewModel(key = "detail:$messageId") { graph.detailViewModel(context, messageId) }
         DetailRoute(vm, onReply = { replying = true })
     }
 }

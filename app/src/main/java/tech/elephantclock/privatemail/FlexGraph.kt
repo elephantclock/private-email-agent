@@ -29,10 +29,10 @@ fun MailGraph.flexReadingDetailPane(other: ShellDetailPane = { _, _ -> Placehold
                 if (id == null) {
                     PlaceholderDetail()
                 } else {
-                    val cacheDir = LocalContext.current.cacheDir
+                    val context = LocalContext.current
                     FlexReadingDetail(
                         messageId = id,
-                        detailViewModel = { detailViewModel(id, cacheDir) },
+                        detailViewModel = { detailViewModel(context, id) },
                         replyViewModel = { replyViewModel(id) },
                     )
                 }

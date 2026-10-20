@@ -47,6 +47,11 @@ class MlKitSummarizer(
     private val summarizeText: suspend (String, Boolean) -> String,
     /** Prompt API: prompt → raw answer. */
     private val generate: suspend (String) -> String,
+    /**
+     * Whether the Summarization feature is downloaded. Asked before each English gist: on the Fold7
+     * a call to a feature that isn't there hangs until the timeout (10 s) instead of failing.
+     */
+    private val summarizationReady: suspend () -> Boolean = { true },
     private val timeouts: AiTimeouts = AiTimeouts(),
     private val zone: () -> ZoneId = { ZoneId.systemDefault() },
     private val today: () -> LocalDate = { LocalDate.now(zone()) },
@@ -56,7 +61,7 @@ class MlKitSummarizer(
         val trimmed = BriefPrompt.trim(thread)
         val english = BriefPrompt.isEnglish(trimmed.messages.joinToString("\n") { it.text })
         val gist: AiResult<String>? =
-            if (english) {
+            if (english && summarizationReady()) {
                 call(timeouts.summarizeMillis) {
                     val conversation = trimmed.messages.size > 1
                     cleanGist(summarizeText(BriefPrompt.summarizationInput(trimmed, zone()), conversation))
@@ -148,7 +153,8 @@ class MlKitSummarizer(
             timeouts: AiTimeouts = AiTimeouts(),
         ): Pair<MlKitSummarizer, MlKitClients> {
             val clients = MlKitClients(context.applicationContext)
-            return MlKitSummarizer(clients::summarize, clients::generate, timeouts) to clients
+            return MlKitSummarizer(clients::summarize, clients::generate, clients::summarizationReady, timeouts) to
+                clients
         }
     }
 }
@@ -217,6 +223,21 @@ class MlKitClients internal constructor(
     /** The Summarization feature's status (ML Kit `FeatureStatus`), for `AiAvailability`. */
     suspend fun summarizationStatus(): ModelStatus =
         MlKitAvailability.statusOf(summarizer(true).checkFeatureStatus().await())
+
+    @Volatile private var summarizationAvailable = false
+
+    /** True once the feature reports Available (then remembered); false on any error. */
+    internal suspend fun summarizationReady(): Boolean {
+        if (summarizationAvailable) return true
+        val available =
+            try {
+                summarizationStatus() is ModelStatus.Available
+            } catch (e: GenAiException) {
+                false
+            }
+        if (available) summarizationAvailable = true
+        return available
+    }
 
     fun close() {
         synchronized(this) {

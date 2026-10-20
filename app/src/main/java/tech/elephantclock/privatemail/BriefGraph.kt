@@ -15,11 +15,7 @@ import java.util.WeakHashMap
 
 /*
  * Thread briefs (T32) on top of MailGraph, as extensions so MailGraph stays untouched while other
- * lanes work on it. The coordinator wires them in ReadingGraph by replacing
- * `graph.detailViewModel(messageId, cacheDir)` with
- * `graph.briefDetailViewModel(messageId, cacheDir, ai = <app AiAvailability>, queue = <app AiQueue>)`,
- * where the queue's engine is `SafeAiEngine(MlKitAiEngine(...))` and `MlKitAiEngine.summarize`
- * delegates to `MlKitSummarizer.summarize`.
+ * lanes work on it. `ReadingGraph.detailViewModel` uses it with [AiGraph]'s availability and queue.
  */
 
 private val briefRepositories = WeakHashMap<MailGraph, BriefRepository>()

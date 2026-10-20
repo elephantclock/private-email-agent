@@ -18,6 +18,7 @@ import tech.elephantclock.privatemail.core.ai.mlkit.MlKitAiEngine
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitAvailability
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitClassifier
 import tech.elephantclock.privatemail.core.ai.mlkit.MlKitPromptModel
+import tech.elephantclock.privatemail.core.ai.mlkit.MlKitSummarizer
 import tech.elephantclock.privatemail.core.ai.mlkit.PromptModel
 import tech.elephantclock.privatemail.core.ai.queue.AiPriority
 import tech.elephantclock.privatemail.core.ai.queue.AiQueue
@@ -55,8 +56,14 @@ class AiGraph internal constructor(
 
     val classifier: MlKitClassifier by lazy { MlKitClassifier(model, onModelGone = availability::invalidate) }
 
-    /** Redacting, injection-guarding engine; T32/T33 add their components to [MlKitAiEngine] here. */
-    val engine: AiEngine by lazy { SafeAiEngine(MlKitAiEngine(classifier)) }
+    /** Thread briefs (T32): Summarization API for English gists, the Prompt API for the rest. */
+    private val summarization by lazy { MlKitSummarizer.create(appContext) }
+
+    /** Redacting, injection-guarding engine; T33 adds its components to [MlKitAiEngine] here. */
+    val engine: AiEngine by lazy {
+        val (summarizer, _) = summarization
+        SafeAiEngine(MlKitAiEngine(classifier, summarize = summarizer::summarize))
+    }
 
     /** Every model call goes through this queue: one at a time, foreground first. */
     val queue: AiQueue by lazy { AiQueue(engine, CoroutineScope(SupervisorJob() + Dispatchers.Default)) }

@@ -53,6 +53,7 @@ class MlKitSummarizerTest {
     private fun summarizer(
         summary: suspend (String, Boolean) -> String = { _, _ -> GIST },
         answer: suspend (String) -> String = { details },
+        ready: Boolean = true,
     ) = MlKitSummarizer(
         summarizeText = { input, conv ->
             summarizationCalls++
@@ -62,6 +63,7 @@ class MlKitSummarizerTest {
             prompts += it
             answer(it)
         },
+        summarizationReady = { ready },
         timeouts = AiTimeouts(summarizeMillis = 1_000, generateMillis = 1_000),
         zone = { ZoneOffset.UTC },
         today = { LocalDate.of(2026, 10, 20) },
@@ -85,6 +87,16 @@ class MlKitSummarizerTest {
     fun `Russian skips the Summarization API is skipped and the Prompt API writes the gist`() =
         runTest {
             val s = summarizer(answer = { detailsWithGist }).summarize(russian).ok()
+            assertEquals("Иван просит оплатить счёт до пятницы.", s.gist)
+            assertEquals(0, summarizationCalls)
+            assertTrue("\"gist\"" in prompts.single())
+        }
+
+    @Test
+    fun `English skips the Summarization API until it is downloaded`() =
+        runTest {
+            // On the Fold7 a call to a missing feature hangs until the timeout instead of failing.
+            val s = summarizer(answer = { detailsWithGist }, ready = false).summarize(english).ok()
             assertEquals("Иван просит оплатить счёт до пятницы.", s.gist)
             assertEquals(0, summarizationCalls)
             assertTrue("\"gist\"" in prompts.single())
