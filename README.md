@@ -119,8 +119,8 @@ You need JDK 21 and the Android SDK (Android Studio ships both).
 
 PEA started as my own tool. If your business wants a secure, customised private email agent (your folders and rules, your languages including Arabic and English, your mail staying with you), Elephant Clock can build one for you.
 
-📧 [info@elephantclock.ae](mailto:info@elephantclock.ae) · 📞 / WhatsApp [+971 50 702 2916](https://wa.me/971507022916) · [Book a free consultation](https://www.elephantclock.ae/get-free-consultation.html)
+📧 [nishad@elephantclock.tech](mailto:nishad@elephantclock.tech) · 📞 / WhatsApp [+971 50 702 2916](https://wa.me/971507022916) · [Book a free consultation](https://www.elephantclock.ae/get-free-consultation.html)
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](LICENSE). For commercial use, contact [Elephant Clock Technology](https://www.elephantclock.ae) at info@elephantclock.ae.
+[PolyForm Noncommercial 1.0.0](LICENSE). For commercial use, contact [Elephant Clock Technology](https://www.elephantclock.ae) at nishad@elephantclock.tech.
