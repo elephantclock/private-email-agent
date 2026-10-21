@@ -38,7 +38,7 @@
   "softwareVersion": "0.1.0-prealpha",
   "codeRepository": "https://github.com/elephantclock/private-email-agent",
   "license": "https://polyformproject.org/licenses/noncommercial/1.0.0",
-  "publisher": { "@type": "Organization", "name": "Elephant Clock Technology", "url": "https://elephantclock.tech" }
+  "publisher": { "@type": "Organization", "name": "Elephant Clock Technology", "url": "https://www.elephantclock.ae", "email": "info@elephantclock.ae", "telephone": "+971507022916" }
 }
 </script>
 
@@ -183,6 +183,16 @@
   .stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; border-top: 2px solid var(--gold); }
   .stack div { padding: 18px 0; border-bottom: 1px solid var(--rule); font-size: 17px; }
   .stack b { display: block; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-ink); margin-bottom: 4px; }
+  .biz { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+  .biz > div { border-radius: 16px; padding: 32px; }
+  .biz .offer { background: var(--green); color: var(--on-green); }
+  .biz .offer h3, .biz .contact h3 { font-size: 24px; font-weight: 800; margin-bottom: 18px; }
+  .biz .contact { background: var(--ground); border: 1.5px solid var(--rule); display: flex; flex-direction: column; gap: 14px; }
+  .biz .contact p { color: var(--muted); }
+  .biz .contact dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: 17px; }
+  .biz .contact dt { color: var(--muted); }
+  .biz .contact dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+  .biz .contact .btn { align-self: flex-start; margin-top: 6px; }
   .note { margin-top: 24px; font-size: 16px; color: var(--muted); }
 
   /* roadmap */
@@ -208,7 +218,7 @@
   @media (max-width: 640px) {
     body { font-size: 17px; }
     section { padding-block: 64px; }
-    .features, .accounts, .roadmap, .kd, .stack, .folders { grid-template-columns: minmax(0, 1fr); }
+    .features, .accounts, .roadmap, .kd, .stack, .folders, .biz { grid-template-columns: minmax(0, 1fr); }
     .nav a:not(.brand):not(.btn) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
@@ -246,6 +256,7 @@
     <a href="#privacy">Privacy</a>
     <a href="#devices">Devices</a>
     <a href="#story">Story</a>
+    <a href="#business">Business</a>
     <a href="https://github.com/elephantclock/private-email-agent">GitHub</a>
     <a class="btn small" href="#download">Download</a>
   </div>
@@ -604,6 +615,38 @@
   </div>
 </section>
 
+<section id="business" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="num">11 · FOR YOUR BUSINESS</div>
+      <h2>A private email agent for your team</h2>
+      <p>PEA started as my own tool. If your business wants a secure email agent built around how you work, Elephant Clock can build a customised one for you.</p>
+    </div>
+    <div class="biz">
+      <div class="offer">
+        <h3>Built around your business</h3>
+        <ul class="checks">
+          <li><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--gold)"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#2D3628" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Your folders, rules and priorities, described in your own words</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--gold)"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#2D3628" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Your languages, including Arabic and English</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--gold)"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#2D3628" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Your mail stays with you: no third-party AI server reads it</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--gold)"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#2D3628" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Works with your existing mail system and accounts</span></li>
+        </ul>
+      </div>
+      <div class="contact">
+        <h3>Talk to us</h3>
+        <p>Tell us about your team and your mail, and we'll get back to you.</p>
+        <dl>
+          <dt>Email</dt><dd><a href="mailto:info@elephantclock.ae?subject=Private%20email%20agent%20for%20our%20business">info@elephantclock.ae</a></dd>
+          <dt>Phone</dt><dd><a href="tel:+971507022916">+971 50 702 2916</a></dd>
+          <dt>WhatsApp</dt><dd><a href="https://wa.me/971507022916">+971 50 702 2916</a></dd>
+          <dt>Office</dt><dd>World Trade Center, Abu Dhabi, UAE</dd>
+        </dl>
+        <a class="btn" href="https://www.elephantclock.ae/get-free-consultation.html">Book a free consultation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="cta">
   <div class="wrap">
     <h2>Get your inbox back</h2>
@@ -619,7 +662,7 @@
 
 <footer>
   <div class="wrap">
-    <span>© 2026 PEA (Private Email Agent). Built by <a href="https://elephantclock.tech">Elephant Clock Technology</a>.</span>
+    <span>© 2026 PEA (Private Email Agent). Built by <a href="https://www.elephantclock.ae">Elephant Clock Technology</a> · <a href="#business">Custom agents for business</a>.</span>
     <a href="https://github.com/elephantclock/private-email-agent">Source on GitHub</a>
   </div>
 </footer>
