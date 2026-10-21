@@ -408,8 +408,8 @@ These build on the `XOAUTH2` extension point from T11. Until then, Gmail works w
 | T25 | Evaluation on a real mailbox [USER] | done | 2026-10-19 | see Log |
 | T30 | AI interfaces, fake and availability [device] | done | 2026-10-19 | 7ee1926 + see Log |
 | T31 | Classification with Gemini Nano [device] | done | 2026-10-20 | f7b02e4 |
-| T32 | Thread summaries [device] | done | 2026-10-20 | |
-| T33 | Replies, rewriting and translation [device] | done | 2026-10-20 | |
+| T32 | Thread summaries [device] | done | 2026-10-20 | fc9afce |
+| T33 | Replies, rewriting and translation [device] | done | 2026-10-20 | a65ddd0 |
 | T34 | AI safety | done | 2026-10-18 | d5ed780 |
 | T35 | AI work queue | done | 2026-10-18 | b171846 |
 | T36 | Evaluation with AI [USER][device] | todo | | |

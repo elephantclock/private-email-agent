@@ -52,8 +52,9 @@ Priority (stays in Inbox) · People · Money · Work updates · Orders & travel 
 
 ## Works with any email account
 
-- **Google and Microsoft:** OAuth sign-in (IMAP with XOAUTH2). No password stored.
-- **Any other provider:** IMAP/SMTP with automatic server discovery.
+- **Any IMAP/SMTP provider:** company and hosting mail, with server settings found automatically (or entered by hand).
+- **Gmail and Google Workspace:** works today with an [app password](https://support.google.com/accounts/answer/185833).
+- **Google and Microsoft sign-in (OAuth):** planned. Until then most Microsoft 365 and Outlook.com accounts won't connect, because they block password sign-in.
 - Rules are general, not tied to one mailbox. They use the signals every email carries (mailing-list and bulk headers, SPF/DKIM/DMARC results, whether you know the sender), then on-device AI sorts the rest using your folder descriptions.
 - Every correction you make becomes a rule.
 
@@ -71,12 +72,12 @@ Designed first for the **Samsung Galaxy Z Fold7**, and adapts to any Android pho
 ## How it works
 
 - **Kotlin + Jetpack Compose**, Material 3 Adaptive layouts, Jetpack WindowManager for fold posture.
-- **On-device AI:** Gemini Nano through the ML Kit GenAI APIs (Prompt, Summarization, Rewriting, Proofreading), running in Android's AICore system service on the phone's NPU. ML Kit Language ID and Translation for other languages.
+- **On-device AI:** Gemini Nano through the ML Kit GenAI APIs (Prompt, Summarization, Rewriting, Proofreading), running in Android's AICore system service on the phone's NPU. Language detection from Google Play services; Gemini Nano also translates, so there are no extra models to download.
 - **Rules first, AI second:** fast header-based rules handle most mail instantly; the AI only sees what rules can't decide.
-- **Efficient sync:** IMAP IDLE while open, WorkManager in the background; headers plus a small slice of each body; AI results cached per message.
+- **Efficient sync:** IMAP IDLE while open, WorkManager in the background; headers plus a small slice of each body. AI runs only while the app is on screen, and results are cached per message.
 - **Storage:** Room with full-text search. Passwords encrypted with Android Keystore.
 
-Gemini Nano is available on recent flagship phones only (for example the Galaxy Z Fold7 and Galaxy S25 series). Other phones get rules-based sorting.
+Which phones get the AI: see [Supported devices](#supported-devices).
 
 ## Privacy
 
@@ -86,14 +87,33 @@ Gemini Nano is available on recent flagship phones only (for example the Galaxy 
 
 ## Roadmap
 
-1. IMAP sync, local storage, inbox UI, rules engine
-2. On-device classification, summaries and notifications
-3. Suggested replies with edit, rewrite and translation
-4. First-run 30-day clean-up and folder moves
-5. Foldable layouts, performance and battery tuning
-6. Google and Microsoft OAuth, multiple accounts
+1. **Done.** Mail sync, local storage, inbox and rules engine
+2. **Done.** On-device classification, summaries and alerts
+3. **Done.** Suggested replies with rewrite, proofreading and translation
+4. **Done.** First-run 30-day clean-up, with folder moves off until you turn them on
+5. **Done.** Foldable layouts and multiple accounts
+6. **In progress.** AI evaluation on real mail, half-folded layout check on the Fold7, performance, battery, accessibility and a security review, then a signed beta
+7. **Later.** Google and Microsoft sign-in
 
-See [docs/DESIGN.md](docs/DESIGN.md) for the design plan.
+The task-by-task plan and its log are in [docs/DEV_PLAN.md](docs/DEV_PLAN.md); the design is in [docs/DESIGN.md](docs/DESIGN.md).
+
+## Build from source
+
+You need JDK 21 and the Android SDK (Android Studio ships both).
+
+```sh
+./gradlew assembleDebug        # app/build/outputs/apk/debug/
+./gradlew spotlessCheck lint unitTest :app:verifyRoborazziDebug   # what CI runs
+```
+
+| Module | What's in it |
+|---|---|
+| `:app` | Compose UI, adaptive and Flex layouts, workers, notifications, wiring |
+| `:core:model` | Domain types (messages, verdicts, folders, rules) |
+| `:core:triage` | Signals, protections and the rules engine, tested against a corpus of sample emails |
+| `:core:mail` | IMAP/SMTP (Angus Mail), server discovery, sync, IDLE, send and move |
+| `:core:data` | Room database with full-text search, the triage orchestrator, settings, Keystore-encrypted secrets |
+| `:core:ai` | ML Kit GenAI clients, prompts, safety checks, the AI work queue |
 
 ## License
 

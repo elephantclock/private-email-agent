@@ -1,4 +1,4 @@
-# PEA (Private Email Agent): design plan (v0.2, 16 Oct 2026)
+# PEA (Private Email Agent): design plan (v0.3, 21 Oct 2026)
 
 ## Goals
 
@@ -15,11 +15,11 @@
 | UI | Kotlin, Jetpack Compose, Material 3 Adaptive (`NavigationSuiteScaffold`, `ListDetailPaneScaffold`) |
 | Fold posture | Jetpack WindowManager (`FoldingFeature`) for Flex mode |
 | Mail | Angus Mail (IMAP/SMTP). IDLE while the app is open; WorkManager every 15 min otherwise |
-| Accounts | Google and Microsoft OAuth (XOAUTH2); other providers via autoconfig (Thunderbird ISPDB, DNS SRV) or manual settings |
+| Accounts | Password sign-in via autoconfig (Thunderbird ISPDB, DNS SRV) or manual settings; Google and Microsoft OAuth (XOAUTH2) in phase 7 |
 | Storage | Room + FTS; one row per message with its verdict, keyed by Message-ID |
 | Secrets | Android Keystore (AES-GCM) for IMAP passwords; OAuth refresh tokens likewise |
 | On-device AI | ML Kit GenAI APIs on Gemini Nano via AICore: Prompt (classify, draft), Summarization, Rewriting, Proofreading |
-| Language | ML Kit Language ID + on-device Translation |
+| Language | ML Kit Language ID from Google Play services; translation with Gemini Nano (Prompt API), weekdays checked |
 
 ## Triage pipeline
 
@@ -32,7 +32,7 @@
 4. **Gemini Nano** for anything rules can't decide: importance (urgent/high/normal/low), folder (chosen from the user's folder names and plain-language descriptions), one-line summary, reason. Structured output only; the model has no tools.
 5. **Act:** file into the folder, discard, or leave in Priority. Notify for urgent and high.
 
-Every result is cached, so nothing is classified twice. Bulk work (first-run, re-sorting) runs only while charging or idle.
+Every result is cached, so nothing is classified twice. AICore runs Gemini Nano only for the app on screen, so AI work is drained in the foreground; background sync uses rules alone.
 
 ## Folders
 
